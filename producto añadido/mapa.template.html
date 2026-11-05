@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c64032">
+  <meta name="description" content="Estratificación por manzana de Bogotá y clientes del CSV agrupados por estrato.">
+  <title>Bogotá · Estratos y clientes</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css" crossorigin="anonymous">
+  <style>
+    :root{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#23332e;background:#f5f4ef;font-synthesis:none;--line:#e1e5df;--accent:#c64032;--muted:#68756d}
+    *{box-sizing:border-box}body{margin:0}button,input{font:inherit}button,a,input{touch-action:manipulation}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}a{color:#a63025;text-underline-offset:3px}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #176c91;outline-offset:3px}button{color:inherit}[hidden]{display:none!important}
+    .topbar{height:82px;padding:0 30px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);background:#fff}
+    .brand{display:flex;align-items:center;gap:13px;min-width:0}.brand-icon{width:46px;height:46px;flex-shrink:0;border-radius:50%;object-fit:contain}.brand h1{font-size:20px;letter-spacing:-.6px;margin:0 0 3px;font-weight:700;line-height:1.2}.brand p{font-size:12px;color:var(--muted);margin:0}.top-link{font-size:13px;font-weight:600;text-decoration:none;padding:11px 14px;border:1px solid #e8d9d4;border-radius:9px;white-space:nowrap;background:#fff;flex-shrink:0}
+    .app{display:grid;grid-template-columns:348px minmax(0,1fr);height:calc(100dvh - 82px);min-height:590px}.sidebar{padding:25px 23px;overflow:auto;border-right:1px solid var(--line);background:#fafbf7}.eyebrow{margin:0 0 7px;color:#7a8075;letter-spacing:1.3px;text-transform:uppercase;font-size:10px;font-weight:700}.sidebar h2{font-size:23px;letter-spacing:-.7px;margin:0 0 10px;line-height:1.2}.intro{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 21px}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:23px 0 11px}.section-title h3{font-size:13px;margin:0}.text-button{border:0;background:none;padding:5px 0;color:#ad392d;font-size:12px}.strata{display:grid;gap:6px}.stratum{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);background:white;padding:11px 12px;border-radius:9px;text-align:left;min-height:43px;transition:opacity .15s,border-color .15s}.stratum[aria-pressed="false"]{opacity:.43;background:#f2f3ee}.stratum[aria-pressed="true"]{border-color:#cbd2c7}.swatch{width:11px;height:11px;border-radius:3px;background:var(--swatch)}.stratum-label{font-size:12px;font-weight:600}.stratum-count{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted);line-height:1.6}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 11px}.stat:first-child{grid-column:1/-1}.stat span{font-size:11px;color:var(--muted);display:block;margin-bottom:7px}.stat strong{font-size:22px;font-weight:650;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.stat:first-child strong{font-size:30px}.stat small{font-size:10px;color:var(--muted);display:block;margin-top:5px}.stat.wide{grid-column:1/-1}.stat.wide strong{font-size:20px}
+    .detail{margin-top:21px;border:1px solid #d9dfd3;border-left:3px solid #758d65;border-radius:9px;background:#fff;padding:15px}.detail h3{font-size:13px;margin:0 0 9px}.detail p{font-size:12px;line-height:1.65;margin:5px 0;color:var(--muted)}.detail strong{color:#293c30}.detail .detail-label{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);color:#42533f;font-size:11px;font-weight:650}.detail button{margin-top:10px}
+    .layer-controls{border:1px solid var(--line);border-radius:10px;background:white;padding:13px;margin-bottom:19px}.layer-controls h3{margin:0 0 12px;font-size:13px}.layer-toggle{display:flex;gap:9px;align-items:flex-start;font-size:12px;margin:11px 0;line-height:1.5}.layer-toggle input{accent-color:var(--accent);margin:3px 0 0}.layer-toggle span{display:block}.layer-toggle small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.layer-field{display:block;font-size:11px;margin-top:14px;color:#42533f}.layer-field select{display:block;width:100%;font:inherit;font-size:12px;background:#fafbf8;border:1px solid var(--line);border-radius:7px;padding:9px;margin-top:7px;color:inherit}.layer-field input[type=range]{width:100%;accent-color:var(--accent);margin-top:10px}.coverage-legend{padding-top:11px;margin-top:11px;border-top:1px solid var(--line)}.coverage-legend img{max-width:100%;height:auto;display:block;margin-bottom:7px}.layer-note{font-size:10px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+    details{margin-top:23px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.8}summary{cursor:pointer;color:#344637;font-size:12px;font-weight:600}details p{margin:9px 0}details a{color:#4e6452}
+    .workspace{position:relative;min-width:0;display:flex;flex-direction:column;background:#e9eee4}.toolbar{height:68px;flex-shrink:0;padding:12px 21px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:13px}.view-tabs{display:flex;background:#f1f3ed;border:1px solid var(--line);padding:3px;border-radius:9px}.view-tabs button{border:0;background:none;padding:8px 13px;border-radius:6px;font-size:12px;font-weight:600}.view-tabs button[aria-selected="true"]{background:#fff;box-shadow:0 1px 4px #263e2314}.search{max-width:330px;width:47%;position:relative}.search input{width:100%;padding:10px 13px 10px 34px;border:1px solid var(--line);border-radius:8px;background:#fafbf8;font-size:12px}.search svg{position:absolute;top:11px;left:11px;color:#7d8a7b}.canvas-area{flex:1;min-height:420px;position:relative}#map{position:absolute;inset:0}.map-actions{position:absolute;z-index:2;top:18px;left:18px;display:flex;gap:7px;flex-wrap:wrap}.map-actions button{border:1px solid #d7ddd3;background:#fff;padding:10px 12px;border-radius:8px;font-size:11px;box-shadow:0 2px 8px #283a2514}.map-note{position:absolute;z-index:2;bottom:43px;left:18px;max-width:280px;padding:10px 12px;border-radius:8px;background:#fffffff2;font-size:11px;line-height:1.5;box-shadow:0 2px 8px #283a2510;color:#52634e;pointer-events:none}.map-loading{position:absolute;inset:0;display:grid;place-items:center;z-index:1;background:#e9eee4;color:#65775d;font-size:13px}.map-loading p{max-width:290px;text-align:center;line-height:1.7}.statusbar{min-height:35px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:8px 20px;gap:10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line)}.statusbar strong{font-weight:500;color:#3e6144}.notice{padding:11px 20px;background:#fff3da;color:#73571b;font-size:12px;line-height:1.6;border-bottom:1px solid #eed9a8}.notice button{margin-left:9px;background:transparent;border:0;text-decoration:underline;color:inherit;font-size:12px}.list-panel{height:100%;overflow:auto;background:#f8faf5;padding:24px}.list-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:17px}.list-heading h2{font-size:18px;margin:0;letter-spacing:-.4px}.list-heading p{font-size:11px;color:var(--muted);margin:5px 0 0}.blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}.block-card{background:white;border:1px solid var(--line);border-radius:10px;text-align:left;padding:15px;min-height:89px;display:flex;gap:11px;align-items:flex-start}.block-card:hover{border-color:#9aa992}.block-card .swatch{margin-top:3px;flex-shrink:0}.block-card strong{font-size:12px;display:block;margin-bottom:7px}.block-card small{font-size:11px;color:var(--muted)}.pager{display:flex;align-items:center;justify-content:center;gap:17px;margin:22px 0 7px}.pager button{border:1px solid var(--line);border-radius:7px;background:white;padding:9px 13px;font-size:12px}.pager span{font-size:11px;color:var(--muted)}.empty{padding:35px;text-align:center;color:var(--muted);font-size:13px}.maplibregl-popup-content{padding:16px;border-radius:10px;font-family:inherit;min-width:180px;box-shadow:0 5px 20px #2635232a}.maplibregl-popup-content h3{margin:0 0 7px;font-size:14px}.maplibregl-popup-content p{margin:5px 0;font-size:12px;line-height:1.6}.maplibregl-ctrl-attrib{font-size:10px!important}.maplibregl-ctrl-attrib a{color:#324e3c}.maplibregl-ctrl-group button{min-width:33px;min-height:33px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:800px){.topbar{padding:0 17px;height:73px}.brand h1{font-size:17px}.brand p{font-size:10px}.brand-icon{width:35px;height:35px}.top-link{font-size:11px;padding:9px}.app{height:auto;min-height:0;display:flex;flex-direction:column}.sidebar{order:2;border-right:0;padding:22px 19px;overflow:visible}.workspace{order:1;height:64dvh;min-height:490px}.toolbar{height:60px;padding:9px 12px;gap:9px}.view-tabs button{padding:8px 11px}.search{width:60%}.search input{font-size:12px}.canvas-area{min-height:0}.map-note{font-size:10px;bottom:45px;max-width:230px;left:12px}.map-actions{left:12px;top:12px}.statusbar{padding:8px 12px;line-height:1.5}.strata{grid-template-columns:1fr 1fr}.stratum{padding:10px;gap:7px}.sidebar h2{font-size:22px}.stats{grid-template-columns:1fr 1fr}.stat:first-child{grid-column:auto}.stat:first-child strong{font-size:25px}.stat.wide{grid-column:auto}.stat.wide strong{font-size:19px}.blocks{grid-template-columns:1fr 1fr}.list-panel{padding:15px}.block-card{padding:12px;min-height:81px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img class="brand-icon" src="__CLARO_LOGO_DATA_URL__" width="46" height="46" alt="Claro"><div><h1>Bogotá · Estratos y clientes</h1><p>Exploración territorial del reto Claro</p></div></div>
+    <a class="top-link" href="https://www.claro.com.co/personas/servicios/servicios-moviles/cobertura/" target="_blank" rel="noopener noreferrer">Cobertura Claro ↗</a>
+  </header>
+  <main class="app">
+    <aside class="sidebar" aria-label="Filtros y estadísticas de clientes">
+      <p class="eyebrow">Bogotá D.C.</p><h2>Una ciudad,<br>seis estratos.</h2>
+      <p class="intro">Explora las manzanas oficiales y consulta los clientes del CSV por estrato.</p>
+      <section class="layer-controls" aria-label="Capas del mapa">
+        <h3>Capas del mapa</h3>
+        <label class="layer-toggle"><input id="toggle-strata" type="checkbox" checked><span>Estratos oficiales<small>Manzanas · Secretaría de Planeación</small></span></label>
+        <label class="layer-toggle"><input id="toggle-antennas" type="checkbox" checked><span>Antenas de Claro<small id="antenna-source">Sitios móviles reportados · CRC</small></span></label>
+        <label class="layer-field" for="coverage-select">Cobertura móvil Claro<select id="coverage-select"><option value="none">Ocultar cobertura</option><option value="4g">Mostrar cobertura 4G</option><option value="5g">Mostrar cobertura 5G</option></select></label>
+        <label class="layer-field" for="coverage-opacity">Opacidad de cobertura <output id="coverage-opacity-value">50 %</output><input id="coverage-opacity" type="range" min="10" max="90" value="50" step="5"></label>
+        <div class="coverage-legend" id="coverage-legend" hidden><img id="coverage-legend-image" alt="Leyenda oficial de intensidad de cobertura Claro"><span class="tiny" id="coverage-source"></span></div>
+        <p class="layer-note">Antenas: histórico reportado en Bogotá y alrededores, sin certificación de operación actual. Cobertura móvil estimada; no certifica disponibilidad de Hogar.</p>
+      </section>
+      <div class="section-title"><h3>Estratos visibles</h3><button class="text-button" id="all-strata">Mostrar todos</button></div>
+      <div class="strata" id="strata" role="group" aria-label="Seleccionar estratos"></div>
+      <p class="tiny">Las cifras de los filtros son clientes de Bogotá en el CSV.</p>
+      <div class="section-title"><h3>Clientes del CSV</h3><span class="tiny">Estratos seleccionados</span></div>
+      <div class="stats">
+        <div class="stat"><span>Clientes de Bogotá</span><strong id="clients-total">—</strong><small id="clients-scope">Agregado por estrato</small></div>
+        <div class="stat"><span>Sin servicio Hogar</span><strong id="clients-no-home">—</strong><small id="no-home-share">—</small></div>
+        <div class="stat"><span>Consumo de datos medio</span><strong id="clients-usage">—</strong><small>Del plan mensual</small></div>
+        <div class="stat wide"><span>ARPU móvil medio</span><strong id="clients-arpu">—</strong><small>COP por cliente y mes</small></div>
+      </div>
+      <p class="tiny">Los clientes son sintéticos y no tienen coordenadas. Las cifras corresponden a todo Bogotá por estrato, sin asignación a manzanas.</p>
+      <section class="detail" id="detail" aria-live="polite"><h3>Consulta una manzana</h3><p>Selecciona un polígono del mapa o una manzana de la lista para ver su detalle.</p></section>
+      <details><summary>Fuentes y alcance</summary><p>Manzanas: <a href="https://sinu.sdp.gov.co/serverp/rest/services/ESTRATO/Estratificacion/FeatureServer/2" target="_blank" rel="noopener noreferrer">Secretaría Distrital de Planeación</a>.</p><p id="snapshot-date"></p><p id="csv-source"></p><p>Antenas: recorte del <a href="https://www.postdata.gov.co/mapa/sitios-de-infraestructura-movil" target="_blank" rel="noopener noreferrer">mapa público de sitios móviles de la CRC</a>, filtrado por Claro/COMCEL en Bogotá y alrededores. Incluye varios periodos publicados, sin un corte único actual. Es una capa cartográfica, sin inventario individual descargado.</p><p>Cobertura: recorte de teselas 4G/5G del visor oficial de Claro, con leyenda original. Las capas de red son instantáneas incluidas en este HTML.</p><p>La consulta cartográfica es informativa. El estrato específico de un inmueble puede requerir certificación oficial.</p></details>
+    </aside>
+    <section class="workspace" aria-label="Mapa y lista de manzanas">
+      <div class="toolbar">
+        <div class="view-tabs" role="tablist" aria-label="Vista de manzanas"><button id="map-tab" role="tab" aria-controls="map-view" aria-selected="true">Mapa</button><button id="list-tab" role="tab" aria-controls="list-view" aria-selected="false">Lista</button></div>
+        <label class="search"><span class="sr-only">Buscar código de manzana</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" placeholder="Buscar código de manzana" maxlength="32" autocomplete="off"></label>
+      </div>
+      <div class="notice" id="notice" role="status" hidden><span id="notice-text"></span><button id="retry-map">Reintentar mapa</button></div>
+      <div class="canvas-area">
+        <section id="map-view" role="tabpanel" aria-labelledby="map-tab" style="position:absolute;inset:0">
+          <div id="map" aria-label="Mapa de estratos por manzana de Bogotá"></div>
+          <div class="map-loading" id="map-loading"><p>Preparando el mapa y las manzanas de Bogotá…</p></div>
+          <div class="map-actions"><button id="reset-map" disabled>Ver toda Bogotá</button><button id="locate" disabled>Mi ubicación</button></div>
+          <div class="map-note" id="map-hint">Selecciona una manzana para consultar su estrato. Los colores representan la capa oficial.</div>
+        </section>
+        <section id="list-view" class="list-panel" role="tabpanel" aria-labelledby="list-tab" hidden>
+          <div class="list-heading"><div><h2>Manzanas de Bogotá</h2><p id="list-count">Preparando la lista…</p></div></div>
+          <div class="blocks" id="blocks"></div><p class="empty" id="empty-list" hidden>No hay manzanas para estos filtros.</p>
+          <div class="pager"><button id="previous-page" disabled>Anterior</button><span id="page-label">—</span><button id="next-page" disabled>Siguiente</button></div>
+        </section>
+      </div>
+      <footer class="statusbar"><span id="data-status" role="status" aria-live="polite">Preparando datos…</span><span>SDP · CSV del reto</span></footer>
+    </section>
+  </main>
+  <noscript><p>Activa JavaScript para consultar el mapa, sus filtros y las estadísticas.</p></noscript>
+  <script id="metadata" type="application/json">__META_JSON__</script>
+  <script id="basemap-style" type="application/json">__STYLE_JSON__</script>
+  <script id="network-layers" type="application/json">__NETWORK_JSON__</script>
+  <script id="geometry-gzip" type="application/octet-stream">__GEO_GZIP_BASE64__</script>
+  <script>
+  (() => {
+    'use strict';
+    // Optional public Protomaps v4 PMTiles archive, with Range and CORS support.
+    // Empty uses the OpenFreeMap source from the GrouPay reference style.
+    const SETTINGS = Object.freeze({ pmtilesUrl: '', pageSize: 36 });
+    const META = JSON.parse(document.getElementById('metadata').textContent);
+    const NETWORK = JSON.parse(document.getElementById('network-layers').textContent);
+    const COLORS = {0:'#a9b0a4',1:'#e6ba56',2:'#e78c60',3:'#d66065',4:'#b75e87',5:'#886dba',6:'#5b69aa'};
+    const NAMES = {0:'Sin estrato',1:'Bajo-bajo',2:'Bajo',3:'Medio-bajo',4:'Medio',5:'Medio-alto',6:'Alto'};
+    const selected = new Set([1,2,3,4,5,6,0]);
+    const nf = new Intl.NumberFormat('es-CO');
+    const money = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+    const decimal = new Intl.NumberFormat('es-CO',{maximumFractionDigits:1});
+    const $ = id => document.getElementById(id);
+    let geojson = null, byId = new Map(), filtered = [], search = '', page = 0;
+    let map = null, maplibre = null, mapReady = false, mapLoading = false, mapGeneration = 0;
+    let chosenId = null, currentPopup = null, currentView = 'map';
+
+    function node(tag, text, className) {
+      const el = document.createElement(tag);
+      if (text !== undefined) el.textContent = text;
+      if (className) el.className = className;
+      return el;
+    }
+
+    function showNotice(text, retry = true) {
+      $('notice-text').textContent = text; $('notice').hidden = false; $('retry-map').hidden = !retry;
+    }
+
+    function setView(view) {
+      currentView = view;
+      $('map-tab').setAttribute('aria-selected', String(view === 'map'));
+      $('list-tab').setAttribute('aria-selected', String(view === 'list'));
+      $('map-view').hidden = view !== 'map'; $('list-view').hidden = view !== 'list';
+      if (view === 'map' && map) requestAnimationFrame(() => map.resize());
+    }
+
+    function updateStats() {
+      const totals = {clientes:0,sin_hogar:0,arpu_total:0,consumo_total:0};
+      for (const stratum of selected) {
+        const b = META.csv.byStratum[String(stratum)];
+        if (b) for (const key of Object.keys(totals)) totals[key] += b[key];
+      }
+      $('clients-total').textContent = nf.format(totals.clientes);
+      $('clients-no-home').textContent = nf.format(totals.sin_hogar);
+      $('no-home-share').textContent = totals.clientes ? decimal.format(totals.sin_hogar / totals.clientes * 100) + ' % de los seleccionados' : 'Sin clientes en estos estratos';
+      $('clients-usage').textContent = totals.clientes ? decimal.format(totals.consumo_total / totals.clientes) + ' %' : '—';
+      $('clients-arpu').textContent = totals.clientes ? money.format(totals.arpu_total / totals.clientes) : '—';
+      $('clients-scope').textContent = 'De ' + nf.format(META.csv.bogota) + ' clientes de Bogotá';
+    }
+
+    function paintFilters() {
+      const fragment = document.createDocumentFragment();
+      for (const stratum of [1,2,3,4,5,6,0]) {
+        const button = node('button', undefined, 'stratum');
+        button.type = 'button'; button.dataset.stratum = stratum;
+        button.setAttribute('aria-pressed', String(selected.has(stratum)));
+        button.style.setProperty('--swatch',COLORS[stratum]);
+        button.append(node('span','', 'swatch'), node('span',stratum ? 'Estrato '+stratum : 'Sin estrato','stratum-label'),node('span',nf.format(META.csv.byStratum[String(stratum)]?.clientes || 0),'stratum-count'));
+        button.addEventListener('click', () => {
+          selected.has(stratum) ? selected.delete(stratum) : selected.add(stratum);
+          button.setAttribute('aria-pressed',String(selected.has(stratum)));
+          page = 0; updateStats(); filterFeatures();
+        });
+        fragment.append(button);
+      }
+      $('strata').replaceChildren(fragment);
+    }
+
+    function featureFilter() {
+      const clauses = [['in',['get','estrato'],['literal',[...selected]]]];
+      if (search) clauses.push(['in',search,['downcase',['get','manzana']]]);
+      return ['all',...clauses];
+    }
+
+    function filterFeatures() {
+      if (!geojson) return;
+      filtered = geojson.features.filter(f => selected.has(f.properties.estrato) && f.properties.manzana.toLowerCase().includes(search));
+      renderList();
+      if (mapReady) {
+        map.setFilter('strata-fill',featureFilter()); map.setFilter('strata-outline',featureFilter());
+        if (chosenId !== null && !filtered.some(f => f.id === chosenId)) clearSelection();
+      }
+      $('data-status').textContent = nf.format(filtered.length) + ' manzanas coinciden · ' + nf.format(META.csv.bogota) + ' clientes de Bogotá en el CSV';
+    }
+
+    function renderList() {
+      const pages = Math.max(1,Math.ceil(filtered.length / SETTINGS.pageSize));
+      page = Math.min(page,pages - 1);
+      const fragment = document.createDocumentFragment();
+      for (const f of filtered.slice(page * SETTINGS.pageSize,(page + 1) * SETTINGS.pageSize)) {
+        const button = node('button',undefined,'block-card');
+        button.type = 'button'; button.style.setProperty('--swatch',COLORS[f.properties.estrato]);
+        const text = node('span'); text.append(node('strong','Manzana ' + f.properties.manzana),node('small',f.properties.estrato ? 'Estrato ' + f.properties.estrato + ' · ' + NAMES[f.properties.estrato] : 'Sin estrato'));
+        button.append(node('span','','swatch'),text);
+        button.addEventListener('click',() => selectFeature(f,mapReady)); fragment.append(button);
+      }
+      $('blocks').replaceChildren(fragment);
+      $('list-count').textContent = nf.format(filtered.length) + ' coincidencias en la capa oficial';
+      $('empty-list').hidden = filtered.length > 0;
+      $('page-label').textContent = 'Página ' + nf.format(page + 1) + ' de ' + nf.format(pages);
+      $('previous-page').disabled = page === 0; $('next-page').disabled = page >= pages - 1;
+    }
+
+    function clearSelection() {
+      chosenId = null; currentPopup?.remove(); currentPopup = null;
+      if (mapReady) map.setFilter('selected-block',['==',['id'],-1]);
+      $('detail').replaceChildren(node('h3','Consulta una manzana'),node('p','Selecciona un polígono del mapa o una manzana de la lista para ver su detalle.'));
+    }
+
+    function geometryBounds(feature) {
+      let west = Infinity,south = Infinity,east = -Infinity,north = -Infinity;
+      function walk(coords) {
+        if (typeof coords[0] === 'number') {west = Math.min(west,coords[0]);east = Math.max(east,coords[0]);south = Math.min(south,coords[1]);north = Math.max(north,coords[1]);}
+        else for (const child of coords) walk(child);
+      }
+      if (!feature.geometry) return null;
+      walk(feature.geometry.coordinates); return [[west,south],[east,north]];
+    }
+
+    function selectFeature(feature, focus = false, position = null) {
+      chosenId = feature.id;
+      const p = feature.properties, bucket = META.csv.byStratum[String(p.estrato)];
+      const detail = $('detail');
+      detail.replaceChildren(node('h3','Manzana ' + p.manzana),node('p',p.estrato ? 'Estrato '+p.estrato+' · '+NAMES[p.estrato] : 'Sin estrato asignado en la capa'));
+      if (p.NORMATIVA) detail.append(node('p','Referencia normativa: '+p.NORMATIVA));
+      detail.append(node('p','Clientes del mismo estrato en todo Bogotá','detail-label'),node('p',bucket ? nf.format(bucket.clientes) + ' clientes · ' + nf.format(bucket.sin_hogar) + ' sin Hogar' : 'El CSV no contiene clientes sin estrato.'),node('p','Estas cifras no corresponden exclusivamente a la manzana seleccionada.'));
+      if (mapReady) {
+        map.setFilter('selected-block',['==',['id'],feature.id]);
+        const bounds = geometryBounds(feature);
+        if (focus && bounds) {setView('map'); map.fitBounds(bounds,{padding:95,maxZoom:17,duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650});}
+        const content = node('div');content.append(node('h3',p.estrato ? 'Estrato '+p.estrato : 'Sin estrato'),node('p','Manzana '+p.manzana));
+        const center = position || (bounds ? [(bounds[0][0]+bounds[1][0])/2,(bounds[0][1]+bounds[1][1])/2] : null);
+        currentPopup?.remove();
+        if (center) currentPopup = new maplibre.Popup({closeButton:true,closeOnClick:false,maxWidth:'240px'}).setLngLat(center).setDOMContent(content).addTo(map);
+      } else if (window.innerWidth <= 800) detail.scrollIntoView({block:'center',behavior:'smooth'});
+    }
+
+    async function decodeGeometry() {
+      const base64 = $('geometry-gzip').textContent.trim();
+      const bytes = Uint8Array.from(atob(base64),c => c.charCodeAt(0));
+      let raw;
+      if ('DecompressionStream' in window) raw = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      else {const {gunzipSync,strFromU8} = await import('https://cdn.jsdelivr.net/npm/fflate@0.8.2/+esm'); raw = strFromU8(gunzipSync(bytes));}
+      geojson = JSON.parse(raw);
+      if (geojson.type !== 'FeatureCollection' || geojson.features.length !== META.blocks) throw new Error('Geometrías incompletas.');
+      byId = new Map(geojson.features.map(f => [f.id,f]));
+      filterFeatures(); return geojson;
+    }
+
+    function addStrataLayers() {
+      if (!geojson || !map || !map.isStyleLoaded() || map.getSource('strata')) return;
+      map.addSource('strata',{type:'geojson',data:geojson});
+      const colors = ['match',['get','estrato'],1,COLORS[1],2,COLORS[2],3,COLORS[3],4,COLORS[4],5,COLORS[5],6,COLORS[6],COLORS[0]];
+      const labels = map.getLayer('claro-4g') ? 'claro-4g' : map.getStyle().layers.find(l => l.type === 'symbol')?.id;
+      map.addLayer({id:'strata-fill',type:'fill',source:'strata',filter:featureFilter(),paint:{'fill-color':colors,'fill-opacity':0.72}},labels);
+      map.addLayer({id:'strata-outline',type:'line',source:'strata',filter:featureFilter(),paint:{'line-color':'#ffffff','line-width':['interpolate',['linear'],['zoom'],10,0.1,15,0.6,18,1.2],'line-opacity':0.62}},labels);
+      map.addLayer({id:'selected-block',type:'line',source:'strata',filter:['==',['id'],-1],paint:{'line-color':'#203d30','line-width':3}});
+      map.on('click','strata-fill',event => {const feature = byId.get(Number(event.features?.[0]?.id)); if (feature) selectFeature(feature,false,event.lngLat);});
+      map.on('mouseenter','strata-fill',() => {map.getCanvas().style.cursor = 'pointer';});
+      map.on('mouseleave','strata-fill',() => {map.getCanvas().style.cursor = '';});
+      updateNetworkVisibility();
+    }
+
+    function updateNetworkVisibility() {
+      const technology = $('coverage-select').value;
+      $('coverage-opacity').disabled = technology === 'none';
+      $('coverage-opacity-value').textContent = $('coverage-opacity').value + ' %';
+      $('coverage-legend').hidden = technology === 'none';
+      if (technology !== 'none') {
+        $('coverage-legend-image').src = NETWORK.coverage[technology].legend;
+        $('coverage-source').textContent = 'Claro ' + technology.toUpperCase() + ' · corte 27 de octubre de 2026 · recorte de Bogotá';
+      }
+      $('map-hint').textContent = technology !== 'none' ? 'Cobertura móvil Claro ' + technology.toUpperCase() + '. Consulta la leyenda y ajusta la opacidad en el panel de capas.' : $('toggle-strata').checked ? 'Selecciona una manzana para consultar su estrato. Los colores representan la capa oficial.' : $('toggle-antennas').checked ? 'Sitios móviles de Claro reportados a la CRC. Recorte histórico, sin certificación de operación actual.' : 'Activa una capa en el panel para explorar la información territorial.';
+      if (!mapReady) return;
+      const strataVisible = $('toggle-strata').checked ? 'visible' : 'none';
+      for (const id of ['strata-fill','strata-outline','selected-block']) if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',strataVisible);
+      if (map.getLayer('claro-antennas')) map.setLayoutProperty('claro-antennas','visibility',$('toggle-antennas').checked ? 'visible' : 'none');
+      for (const id of ['4g','5g']) if (map.getLayer('claro-'+id)) {
+        map.setLayoutProperty('claro-'+id,'visibility',technology === id ? 'visible' : 'none');
+        map.setPaintProperty('claro-'+id,'raster-opacity',Number($('coverage-opacity').value)/100);
+      }
+    }
+
+    function addNetworkLayers() {
+      if (!map || !mapReady || map.getSource('claro-antennas')) return;
+      const labels = map.getStyle().layers.find(l => l.type === 'symbol')?.id;
+      for (const technology of ['4g','5g']) {
+        const entry = NETWORK.coverage[technology];
+        map.addSource('claro-'+technology,{type:'image',url:entry.image,coordinates:entry.coordinates});
+        map.addLayer({id:'claro-'+technology,type:'raster',source:'claro-'+technology,layout:{visibility:'none'},paint:{'raster-opacity':0.5,'raster-fade-duration':0,'raster-resampling':'nearest'}},labels);
+      }
+      const entry = NETWORK.antennas;
+      map.addSource('claro-antennas',{type:'image',url:entry.image,coordinates:entry.coordinates});
+      map.addLayer({id:'claro-antennas',type:'raster',source:'claro-antennas',paint:{'raster-opacity':1,'raster-fade-duration':0,'raster-resampling':'nearest'}},labels);
+      updateNetworkVisibility();
+    }
+
+    function loadMapLibrary() {
+      if (window.maplibregl) return Promise.resolve(window.maplibregl);
+      // This distribution includes a classic worker, supported by file:// pages.
+      // Module workers in MapLibre 6 fail on Chrome's opaque local-file origin.
+      return new Promise((resolve,reject) => {
+        const script = document.createElement('script');
+        const timer = setTimeout(() => {script.remove();reject(new Error('La biblioteca del mapa tardo demasiado en cargar.'));},15000);
+        script.src = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js';
+        script.crossOrigin = 'anonymous';
+        script.onload = () => {clearTimeout(timer);window.maplibregl ? resolve(window.maplibregl) : reject(new Error('La biblioteca del mapa no esta disponible.'));};
+        script.onerror = () => {clearTimeout(timer);script.remove();reject(new Error('No se pudo descargar la biblioteca del mapa.'));};
+        document.head.append(script);
+      });
+    }
+
+    async function loadMap() {
+      if (mapLoading) return;
+      mapLoading = true; mapReady = false;
+      const generation = ++mapGeneration;
+      $('map-loading').hidden = false; $('notice').hidden = true;
+      $('reset-map').disabled = true; $('locate').disabled = true;
+      if (map) {map.remove(); map = null;}
+      try {
+        maplibre = await loadMapLibrary();
+        if (generation !== mapGeneration) return;
+        let style = JSON.parse($('basemap-style').textContent);
+        if (SETTINGS.pmtilesUrl) {
+          const [{Protocol},{layers,namedFlavor}] = await Promise.all([import('https://cdn.jsdelivr.net/npm/pmtiles@4.5.0/+esm'),import('https://cdn.jsdelivr.net/npm/@protomaps/basemaps@5.7.2/+esm')]);
+          if (!window.__bogotaPmtilesProtocol) {window.__bogotaPmtilesProtocol = new Protocol();maplibre.addProtocol('pmtiles',window.__bogotaPmtilesProtocol.tile);}
+          style = {version:8,glyphs:'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',sprite:'https://protomaps.github.io/basemaps-assets/sprites/v4/light',sources:{protomaps:{type:'vector',url:'pmtiles://'+SETTINGS.pmtilesUrl,attribution:'<a href="https://protomaps.com">Protomaps</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}},layers:layers('protomaps',namedFlavor('light'),{lang:'es'})};
+        }
+        map = new maplibre.Map({container:'map',style,center:[-74.10,4.66],zoom:11.2,minZoom:9,maxZoom:19,maxBounds:[[-74.7,4.25],[-73.7,5.1]],attributionControl:false,pixelRatio:Math.min(window.devicePixelRatio || 1,2)});
+        map.addControl(new maplibre.NavigationControl({showCompass:false}),'top-right');
+        map.addControl(new maplibre.AttributionControl({compact:true,customAttribution:'Estratos: <a href="'+META.source+'" target="_blank" rel="noopener">SDP Bogotá</a> · Antenas: <a href="https://www.postdata.gov.co/mapa/sitios-de-infraestructura-movil" target="_blank" rel="noopener">CRC</a> · Cobertura: <a href="https://www.claro.com.co/personas/servicios/servicios-moviles/cobertura/" target="_blank" rel="noopener">Claro</a>'}),'bottom-right');
+        map.addControl(new maplibre.ScaleControl({unit:'metric'}),'bottom-left');
+        const watchdog = setTimeout(() => {if (generation === mapGeneration && !mapReady) failMap('La cartografía está tardando en cargar. Puedes consultar la lista de manzanas.');},22000);
+        map.on('load',() => {
+          if (generation !== mapGeneration) return;
+          clearTimeout(watchdog);mapReady = true;mapLoading = false;
+          addStrataLayers();addNetworkLayers();$('map-loading').hidden = true;
+          $('reset-map').disabled = false; $('locate').disabled = false;
+          if (currentView === 'map') map.resize();
+        });
+        let tilesFailed = false;
+        map.on('error',event => {
+          if (generation !== mapGeneration) return;
+          console.error('[Bogota mapa]',event.error || event);
+          if (!mapReady && /worker|webgl|gpu initialization/i.test(event.error?.message || '')) {clearTimeout(watchdog);failMap('No pudimos iniciar el motor del mapa. La lista y las estadísticas siguen disponibles.');}
+          else if (!tilesFailed) {tilesFailed = true; showNotice('Algunas partes de la cartografía no cargaron. Puedes consultar las manzanas en la lista.');}
+        });
+        map.getCanvas().addEventListener('webglcontextlost',() => failMap('Se perdió el contexto del mapa. Puedes seguir consultando la lista.'));
+      } catch (error) {console.error('[Bogota inicio]',error);if (generation === mapGeneration) failMap('No pudimos abrir el mapa. Puedes consultar las manzanas y los datos del CSV en la lista.');}
+    }
+
+    function failMap(message) {
+      mapLoading = false;mapReady = false;$('map-loading').hidden = true;
+      $('reset-map').disabled = true;$('locate').disabled = true;showNotice(message);setView('list');
+    }
+
+    $('map-tab').addEventListener('click',() => setView('map'));
+    $('list-tab').addEventListener('click',() => setView('list'));
+    document.querySelector('.view-tabs').addEventListener('keydown',event => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {event.preventDefault();const next = currentView === 'map' ? 'list' : 'map';setView(next);$(next+'-tab').focus();}
+    });
+    $('all-strata').addEventListener('click',() => {for (const s of [0,1,2,3,4,5,6]) selected.add(s);page = 0;paintFilters();updateStats();filterFeatures();});
+    for (const id of ['toggle-strata','toggle-antennas','coverage-select']) $(id).addEventListener('change',updateNetworkVisibility);
+    $('coverage-opacity').addEventListener('input',updateNetworkVisibility);
+    let searchTimer;
+    $('search').addEventListener('input',event => {clearTimeout(searchTimer);searchTimer = setTimeout(() => {search = event.target.value.trim().toLowerCase();page = 0;filterFeatures();if (search) setView('list');},180);});
+    $('previous-page').addEventListener('click',() => {page--;renderList();$('list-view').scrollTop = 0;});
+    $('next-page').addEventListener('click',() => {page++;renderList();$('list-view').scrollTop = 0;});
+    $('reset-map').addEventListener('click',() => {if (mapReady) map.fitBounds([[-74.235,4.47],[-73.995,4.85]],{padding:32,duration:650});});
+    $('retry-map').addEventListener('click',() => {setView('map');loadMap();});
+    $('locate').addEventListener('click',() => {
+      if (!navigator.geolocation || !mapReady) {showNotice('No hay ubicación disponible en este navegador.',false);return;}
+      $('locate').disabled = true;
+      navigator.geolocation.getCurrentPosition(position => {
+        $('locate').disabled = !mapReady;
+        const {latitude:lat,longitude:lng} = position.coords;
+        if (lat < 4.25 || lat > 5.1 || lng < -74.7 || lng > -73.7) {showNotice('Tu ubicación está fuera del área de consulta de Bogotá.',false);return;}
+        if (mapReady) {map.flyTo({center:[lng,lat],zoom:15});$('notice').hidden = true;}
+      },() => {$('locate').disabled = !mapReady;showNotice('No pudimos obtener tu ubicación. Puedes explorar el mapa manualmente.',false);},{timeout:10000,maximumAge:60000,enableHighAccuracy:false});
+    });
+    $('snapshot-date').textContent = 'Geometrías descargadas: ' + new Intl.DateTimeFormat('es-CO',{dateStyle:'long',timeZone:'America/Bogota'}).format(new Date(META.downloadedAt)) + '. ' + nf.format(META.blocks) + ' registros oficiales.';
+    $('csv-source').textContent = META.csv.file + ': ' + nf.format(META.csv.total) + ' clientes en total; ' + nf.format(META.csv.bogota) + ' de Bogotá.';
+    $('antenna-source').textContent = 'Sitios móviles reportados · CRC · ' + NETWORK.antennas.period.replace('-','-T');
+    paintFilters();updateStats();
+    const geometryReady = decodeGeometry().then(() => addStrataLayers()).catch(() => {$('data-status').textContent = 'No pudimos leer las geometrías incluidas.';showNotice('Las geometrías no pudieron abrirse. Las estadísticas del CSV siguen disponibles.',false);});
+    loadMap();
+  })();
+  </script>
+</body>
+</html>
