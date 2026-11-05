@@ -1,0 +1,325 @@
+<title>Consola Orquestador NBA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: panel de control de dos columnas; arriba la franja de indicadores, abajo los paneles de decisión */
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #14202b; --muted: #5b6875; --line: #dde2e8;
+  --accent: #1f4fd1; --accent-soft: #e6ecfb; --good: #1d7a4f; --good-soft: #e3f3ea; --bad: #b3261e; --bad-soft: #fbe7e5; --warn: #9a6100;
+  --bar: #c9d1da;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f151b; --surface: #17202a; --ink: #e8edf2; --muted: #98a6b3; --line: #2a3644;
+  --accent: #7d9cff; --accent-soft: #1d2a4d; --good: #5ccb92; --good-soft: #15302a; --bad: #ff8a80; --bad-soft: #3a1d1b; --warn: #f0b456; --bar: #3a4756; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #17202a; --ink: #e8edf2; --muted: #98a6b3; --line: #2a3644;
+  --accent: #7d9cff; --accent-soft: #1d2a4d; --good: #5ccb92; --good-soft: #15302a; --bad: #ff8a80; --bad-soft: #3a1d1b; --warn: #f0b456; --bar: #3a4756; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 16px }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px }
+h1 { font-family: var(--f-display); font-stretch: 85%; font-weight: 800; font-size: 26px; margin: 0; letter-spacing: -0.01em; text-wrap: balance }
+h2 { font-family: var(--f-display); font-stretch: 90%; font-weight: 700; font-size: 17px; margin: 0; text-wrap: balance }
+.sub { color: var(--muted); font-size: 13px }
+.chip { font-family: var(--f-mono); font-size: 11.5px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); white-space: nowrap }
+.chip.ok { color: var(--good); border-color: var(--good); background: var(--good-soft) }
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 8px }
+.kpi { padding: 14px 16px; border-left: 1px solid var(--line); min-width: 0 }
+.kpi:first-child { border-left: 0 }
+.kpi .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+.kpi .val { font-family: var(--f-display); font-stretch: 85%; font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1.2 }
+.kpi .d { font-family: var(--f-mono); font-size: 12px; font-variant-numeric: tabular-nums }
+.up { color: var(--good) } .down { color: var(--bad) } .flat { color: var(--muted) }
+.grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start }
+.col { display: grid; gap: 16px; min-width: 0 }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0 }
+.panel > header { align-items: baseline }
+.hint { color: var(--muted); font-size: 12.5px; max-width: 65ch }
+textarea { width: 100%; min-height: 64px; resize: vertical; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px }
+textarea:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.ejemplos { display: flex; flex-wrap: wrap; gap: 6px }
+.ejemplos button { font: inherit; font-size: 12.5px; text-align: left; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer }
+.ejemplos button:hover { border-color: var(--accent); color: var(--accent) }
+.btns { display: flex; flex-wrap: wrap; gap: 8px }
+.btn { font: inherit; font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer }
+.btn.pri { background: var(--accent); border-color: var(--accent); color: var(--surface) }
+.btn:disabled { opacity: .45; cursor: default }
+.tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px }
+table { border-collapse: collapse; width: 100%; font-family: var(--f-mono); font-size: 12px; font-variant-numeric: tabular-nums }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap }
+th { color: var(--muted); font-weight: 500; background: var(--bg) }
+tr:last-child td { border-bottom: 0 }
+.impacto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.cell { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0 }
+.cell .lbl { font-size: 11.5px; color: var(--muted) }
+.cell .v { font-family: var(--f-mono); font-size: 15px; font-variant-numeric: tabular-nums }
+.aviso { font-size: 12.5px; padding: 8px 10px; border-radius: 6px; background: var(--bad-soft); color: var(--bad) }
+.aviso.neutro { background: var(--accent-soft); color: var(--ink) }
+.bars { display: grid; gap: 6px }
+.bar { display: grid; grid-template-columns: 84px minmax(0, 1fr) 124px; gap: 8px; align-items: center; font-size: 12.5px }
+.bar .t { height: 10px; background: var(--bg); border-radius: 2px; overflow: hidden }
+.bar .f { height: 100%; background: var(--bar) }
+.bar .f.acc { background: var(--accent) }
+.bar .n { font-family: var(--f-mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums }
+.ctrl { display: grid; grid-template-columns: 120px minmax(0, 1fr) 70px; gap: 10px; align-items: center; font-size: 13px }
+.ctrl output { font-family: var(--f-mono); text-align: right; font-variant-numeric: tabular-nums }
+input[type=range] { width: 100%; accent-color: var(--accent) }
+select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; max-width: 100% }
+svg text { font-family: var(--f-mono) }
+.clientes { display: flex; flex-wrap: wrap; gap: 6px }
+.clientes button { font-family: var(--f-mono); font-size: 12px; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer }
+.clientes button[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: var(--surface) }
+.frase { font-family: var(--f-display); font-stretch: 95%; font-weight: 600; font-size: 18px; line-height: 1.35; border-left: 3px solid var(--accent); padding-left: 12px; text-wrap: balance }
+.perfil { display: flex; flex-wrap: wrap; gap: 6px }
+.tec { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); word-break: break-word }
+.log { display: grid; gap: 4px; font-size: 12.5px }
+.log div { display: flex; gap: 8px; align-items: baseline }
+.foot { color: var(--muted); font-size: 12px; max-width: 80ch }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr) } .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) } .kpi { border-left: 0; border-top: 1px solid var(--line) } .kpi:nth-child(-n+2) { border-top: 0 } .impacto { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } }
+@media (prefers-reduced-motion: no-preference) { .bar .f { transition: width .25s ease } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Consola del Orquestador NBA</h1>
+      <div class="sub">Maqueta del Grupo 5 · 100.000 clientes de prueba (sintéticos) · cada número viene de una corrida real del motor</div>
+    </div>
+    <div class="btns"><span class="chip ok">0 violaciones</span><span class="chip" id="cfg-ver">Configuración v1 · publicada</span></div>
+  </header>
+
+  <section class="kpis" aria-label="Resultado de la configuración actual">
+    <div class="kpi"><div class="lbl">Valor esperado</div><div class="val" id="k-valor"></div><div class="d" id="k-valor-d"></div></div>
+    <div class="kpi"><div class="lbl">Clientes con acción</div><div class="val" id="k-cli"></div><div class="d" id="k-cli-d"></div></div>
+    <div class="kpi"><div class="lbl">Productos ofrecidos</div><div class="val" id="k-prod"></div><div class="d" id="k-prod-d"></div></div>
+    <div class="kpi"><div class="lbl">Indicador de jerarquía</div><div class="val" id="k-jer"></div><div class="d" id="k-jer-d"></div></div>
+    <div class="kpi"><div class="lbl">Frente a la línea base</div><div class="val" id="k-vs"></div><div class="d flat">valor de la línea base del reto</div></div>
+  </section>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel" aria-labelledby="t-cambio">
+        <header><h2 id="t-cambio">Pide un cambio en español</h2><span class="chip">copiloto de reglas</span></header>
+        <p class="hint">Negocio escribe la regla como la diría en una reunión. El copiloto la convierte en filas de configuración, el motor simula el impacto y nada cambia hasta que alguien la aplica. En esta maqueta el copiloto reconoce los ejemplos; en el producto lo hace un modelo de lenguaje.</p>
+        <label for="pedido" class="sub">Cambio pedido</label>
+        <textarea id="pedido"></textarea>
+        <div class="ejemplos" id="ejemplos" aria-label="Ejemplos"></div>
+        <div class="btns"><button class="btn pri" id="b-simular" type="button">Simular impacto</button></div>
+        <div id="res-cambio" class="col"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-cliente">
+        <header><h2 id="t-cliente">Por qué este cliente</h2><span class="chip">explicación para el asesor</span></header>
+        <div class="clientes" id="clientes" role="group" aria-label="Clientes de ejemplo"></div>
+        <div id="ficha" class="col"></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="t-cupos">
+        <header><h2 id="t-cupos">Cupos y precio sombra</h2></header>
+        <p class="hint">El precio sombra es el valor que deja un cupo más de ese canal. Si vale 0, el canal tiene cupos de sobra.</p>
+        <div class="ctrl"><label for="s-asesor">Cupo asesor</label><input type="range" id="s-asesor" min="0" max="5" step="1" value="2"><output id="o-asesor"></output></div>
+        <div class="ctrl"><label for="s-wa">Cupo WhatsApp</label><input type="range" id="s-wa" min="0" max="4" step="1" value="2"><output id="o-wa"></output></div>
+        <div class="impacto" id="cupo-imp"></div>
+        <div class="sub">Precio sombra por cupo</div>
+        <div class="bars" id="sombra"></div>
+        <div class="sub">Uso de cupos</div>
+        <div class="bars" id="uso"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-jer">
+        <header><h2 id="t-jer">Jerarquía frente a valor</h2></header>
+        <p class="hint">El bono en 0 da el máximo valor. Subirlo obliga a respetar más la jerarquía, y la curva muestra cuánto cuesta.</p>
+        <div class="ctrl"><label for="s-orden">Jerarquía</label><select id="s-orden"></select><span></span></div>
+        <div class="ctrl"><label for="s-bono">Bono de jerarquía</label><input type="range" id="s-bono" min="0" max="5" step="1" value="0"><output id="o-bono"></output></div>
+        <div id="curva" style="overflow-x:auto"></div>
+        <div class="impacto" id="jer-imp"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-umbral">
+        <header><h2 id="t-umbral">Score mínimo de producto</h2></header>
+        <div class="ctrl"><label for="s-umbral">Umbral</label><input type="range" id="s-umbral" min="0" max="5" step="1" value="2"><output id="o-umbral"></output></div>
+        <div class="impacto" id="umb-imp"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-radar">
+        <header><h2 id="t-radar">Radar: cuánto cuesta cada regla</h2></header>
+        <p class="hint">Valor que se ganaría al apagar o mover cada palanca, como porcentaje del óptimo. En azul, los cupos.</p>
+        <div class="bars" id="radar"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" aria-labelledby="t-log">
+    <header><h2 id="t-log">Historial de cambios</h2></header>
+    <div class="log" id="log"></div>
+  </section>
+  <p class="foot">Los resultados de cada control son corridas reales del motor (Python, solver por precios sombra con certificado de optimalidad) sobre 100.000 clientes sintéticos con el esquema del reto. Con la base oficial los números cambian, pero no el método.</p>
+</div>
+
+<script>
+const D = {"base": {"valor": 12887.7, "clientes": 56562, "productos": 77435, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 20061, "sms": 19001}, "sombra": {}}, "optimo": {"valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, "grid": [{"asesor": 0, "whatsapp": 5000, "valor": 11900.8, "clientes": 54976, "productos": 77268, "jerarquia": 100.0, "uso": {"asesor": 0, "whatsapp": 5000, "correo": 25182, "sms": 24794}, "sombra": {"asesor": 0.5717, "whatsapp": 0.2032, "correo": 0.0, "sms": 0.0}}, {"asesor": 0, "whatsapp": 10000, "valor": 12669.8, "clientes": 57282, "productos": 79870, "jerarquia": 100.0, "uso": {"asesor": 0, "whatsapp": 10000, "correo": 23986, "sms": 23296}, "sombra": {"asesor": 0.5717, "whatsapp": 0.1163, "correo": 0.0, "sms": 0.0}}, {"asesor": 0, "whatsapp": 15000, "valor": 13132.0, "clientes": 59022, "productos": 81610, "jerarquia": 100.0, "uso": {"asesor": 0, "whatsapp": 15000, "correo": 22497, "sms": 21525}, "sombra": {"asesor": 0.5717, "whatsapp": 0.0715, "correo": 0.0, "sms": 0.0}}, {"asesor": 0, "whatsapp": 20000, "valor": 13407.4, "clientes": 59620, "productos": 82208, "jerarquia": 100.0, "uso": {"asesor": 0, "whatsapp": 20000, "correo": 20476, "sms": 19144}, "sombra": {"asesor": 0.5717, "whatsapp": 0.0398, "correo": 0.0, "sms": 0.0}}, {"asesor": 0, "whatsapp": 25000, "valor": 13538.2, "clientes": 59628, "productos": 82216, "jerarquia": 100.0, "uso": {"asesor": 0, "whatsapp": 25000, "correo": 18106, "sms": 16522}, "sombra": {"asesor": 0.5717, "whatsapp": 0.0134, "correo": 0.0, "sms": 0.0}}, {"asesor": 1250, "whatsapp": 5000, "valor": 12222.9, "clientes": 56042, "productos": 78227, "jerarquia": 99.9, "uso": {"asesor": 1250, "whatsapp": 5000, "correo": 25097, "sms": 24695}, "sombra": {"asesor": 0.2025, "whatsapp": 0.1972, "correo": 0.0, "sms": 0.0}}, {"asesor": 1250, "whatsapp": 10000, "valor": 12970.6, "clientes": 58374, "productos": 80893, "jerarquia": 99.9, "uso": {"asesor": 1250, "whatsapp": 10000, "correo": 23917, "sms": 23207}, "sombra": {"asesor": 0.1818, "whatsapp": 0.1145, "correo": 0.0, "sms": 0.0}}, {"asesor": 1250, "whatsapp": 15000, "valor": 13426.3, "clientes": 60144, "productos": 82700, "jerarquia": 99.9, "uso": {"asesor": 1250, "whatsapp": 15000, "correo": 22441, "sms": 21453}, "sombra": {"asesor": 0.1737, "whatsapp": 0.0708, "correo": 0.0, "sms": 0.0}}, {"asesor": 1250, "whatsapp": 20000, "valor": 13699.4, "clientes": 60765, "productos": 83332, "jerarquia": 99.9, "uso": {"asesor": 1250, "whatsapp": 20000, "correo": 20429, "sms": 19086}, "sombra": {"asesor": 0.1696, "whatsapp": 0.0394, "correo": 0.0, "sms": 0.0}}, {"asesor": 1250, "whatsapp": 25000, "valor": 13829.1, "clientes": 60793, "productos": 83369, "jerarquia": 99.9, "uso": {"asesor": 1250, "whatsapp": 25000, "correo": 18065, "sms": 16478}, "sombra": {"asesor": 0.1675, "whatsapp": 0.0132, "correo": 0.0, "sms": 0.0}}, {"asesor": 2500, "whatsapp": 5000, "valor": 12439.6, "clientes": 56982, "productos": 78995, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 5000, "correo": 24951, "sms": 24531}, "sombra": {"asesor": 0.1483, "whatsapp": 0.1888, "correo": 0.0, "sms": 0.0}}, {"asesor": 2500, "whatsapp": 10000, "valor": 13159.8, "clientes": 59200, "productos": 81535, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 10000, "correo": 23713, "sms": 22987}, "sombra": {"asesor": 0.1251, "whatsapp": 0.1109, "correo": 0.0, "sms": 0.0}}, {"asesor": 2500, "whatsapp": 15000, "valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, {"asesor": 2500, "whatsapp": 20000, "valor": 13867.7, "clientes": 61478, "productos": 83926, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 20000, "correo": 20177, "sms": 18801}, "sombra": {"asesor": 0.1044, "whatsapp": 0.0381, "correo": 0.0, "sms": 0.0}}, {"asesor": 2500, "whatsapp": 25000, "valor": 13991.9, "clientes": 61529, "productos": 83988, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 25000, "correo": 17812, "sms": 16217}, "sombra": {"asesor": 0.0977, "whatsapp": 0.0122, "correo": 0.0, "sms": 0.0}}, {"asesor": 3750, "whatsapp": 5000, "valor": 12600.7, "clientes": 57709, "productos": 79463, "jerarquia": 99.8, "uso": {"asesor": 3750, "whatsapp": 5000, "correo": 24717, "sms": 24242}, "sombra": {"asesor": 0.1106, "whatsapp": 0.1793, "correo": 0.0, "sms": 0.0}}, {"asesor": 3750, "whatsapp": 10000, "valor": 13289.9, "clientes": 59692, "productos": 81733, "jerarquia": 99.8, "uso": {"asesor": 3750, "whatsapp": 10000, "correo": 23382, "sms": 22560}, "sombra": {"asesor": 0.0838, "whatsapp": 0.1067, "correo": 0.0, "sms": 0.0}}, {"asesor": 3750, "whatsapp": 15000, "valor": 13714.5, "clientes": 61171, "productos": 83268, "jerarquia": 99.8, "uso": {"asesor": 3750, "whatsapp": 15000, "correo": 21773, "sms": 20648}, "sombra": {"asesor": 0.0684, "whatsapp": 0.0657, "correo": 0.0, "sms": 0.0}}, {"asesor": 3750, "whatsapp": 20000, "valor": 13966.5, "clientes": 61593, "productos": 83711, "jerarquia": 99.8, "uso": {"asesor": 3750, "whatsapp": 20000, "correo": 19681, "sms": 18162}, "sombra": {"asesor": 0.0569, "whatsapp": 0.0357, "correo": 0.0, "sms": 0.0}}, {"asesor": 3750, "whatsapp": 25000, "valor": 14079.4, "clientes": 61594, "productos": 83708, "jerarquia": 99.8, "uso": {"asesor": 3750, "whatsapp": 25000, "correo": 17277, "sms": 15567}, "sombra": {"asesor": 0.0475, "whatsapp": 0.01, "correo": 0.0, "sms": 0.0}}, {"asesor": 5000, "whatsapp": 5000, "valor": 12716.9, "clientes": 58063, "productos": 79443, "jerarquia": 99.8, "uso": {"asesor": 5000, "whatsapp": 5000, "correo": 24340, "sms": 23723}, "sombra": {"asesor": 0.0753, "whatsapp": 0.1698, "correo": 0.0, "sms": 0.0}}, {"asesor": 5000, "whatsapp": 10000, "valor": 13373.3, "clientes": 59885, "productos": 81512, "jerarquia": 99.8, "uso": {"asesor": 5000, "whatsapp": 10000, "correo": 22919, "sms": 21966}, "sombra": {"asesor": 0.0516, "whatsapp": 0.1017, "correo": 0.0, "sms": 0.0}}, {"asesor": 5000, "whatsapp": 15000, "valor": 13779.5, "clientes": 61243, "productos": 82938, "jerarquia": 99.8, "uso": {"asesor": 5000, "whatsapp": 15000, "correo": 21262, "sms": 19981}, "sombra": {"asesor": 0.0379, "whatsapp": 0.0628, "correo": 0.0, "sms": 0.0}}, {"asesor": 5000, "whatsapp": 20000, "valor": 14017.8, "clientes": 61594, "productos": 83285, "jerarquia": 99.8, "uso": {"asesor": 5000, "whatsapp": 20000, "correo": 19112, "sms": 17482}, "sombra": {"asesor": 0.0275, "whatsapp": 0.0333, "correo": 0.0, "sms": 0.0}}, {"asesor": 5000, "whatsapp": 25000, "valor": 14119.2, "clientes": 61594, "productos": 83271, "jerarquia": 99.8, "uso": {"asesor": 5000, "whatsapp": 25000, "correo": 16671, "sms": 14923}, "sombra": {"asesor": 0.0182, "whatsapp": 0.008, "correo": 0.0, "sms": 0.0}}, {"asesor": 7500, "whatsapp": 5000, "valor": 12833.9, "clientes": 58275, "productos": 78618, "jerarquia": 99.8, "uso": {"asesor": 7500, "whatsapp": 5000, "correo": 23337, "sms": 22438}, "sombra": {"asesor": 0.024, "whatsapp": 0.1577, "correo": 0.0, "sms": 0.0}}, {"asesor": 7500, "whatsapp": 10000, "valor": 13446.0, "clientes": 60149, "productos": 80752, "jerarquia": 99.8, "uso": {"asesor": 7500, "whatsapp": 10000, "correo": 21866, "sms": 20783}, "sombra": {"asesor": 0.0092, "whatsapp": 0.0949, "correo": 0.0, "sms": 0.0}}, {"asesor": 7500, "whatsapp": 15000, "valor": 13821.2, "clientes": 61362, "productos": 82141, "jerarquia": 99.8, "uso": {"asesor": 7310, "whatsapp": 15000, "correo": 20243, "sms": 18809}, "sombra": {"asesor": 0.0, "whatsapp": 0.0576, "correo": 0.0, "sms": 0.0}}, {"asesor": 7500, "whatsapp": 20000, "valor": 14038.8, "clientes": 61594, "productos": 82706, "jerarquia": 99.8, "uso": {"asesor": 6591, "whatsapp": 20000, "correo": 18377, "sms": 16626}, "sombra": {"asesor": 0.0, "whatsapp": 0.03, "correo": 0.0, "sms": 0.0}}, {"asesor": 7500, "whatsapp": 25000, "valor": 14128.0, "clientes": 61594, "productos": 82923, "jerarquia": 99.8, "uso": {"asesor": 5985, "whatsapp": 25000, "correo": 16183, "sms": 14426}, "sombra": {"asesor": 0.0, "whatsapp": 0.0062, "correo": 0.0, "sms": 0.0}}], "umbral": [{"umbral": 0.25, "valor": 15545.8, "clientes": 66511, "productos": 99762, "jerarquia": 99.4, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 25015, "sms": 23996}, "sombra": {"asesor": 0.1265, "whatsapp": 0.0843, "correo": 0.0, "sms": 0.0}}, {"umbral": 0.3, "valor": 14736.0, "clientes": 64300, "productos": 92487, "jerarquia": 99.7, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 23966, "sms": 22834}, "sombra": {"asesor": 0.1223, "whatsapp": 0.0779, "correo": 0.0, "sms": 0.0}}, {"umbral": 0.35, "valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, {"umbral": 0.4, "valor": 12125.6, "clientes": 55884, "productos": 72236, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 19693, "sms": 18691}, "sombra": {"asesor": 0.0967, "whatsapp": 0.057, "correo": 0.0, "sms": 0.0}}, {"umbral": 0.45, "valor": 10388.0, "clientes": 48995, "productos": 59813, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 16228, "sms": 15267}, "sombra": {"asesor": 0.0724, "whatsapp": 0.0422, "correo": 0.0, "sms": 0.0}}, {"umbral": 0.5, "valor": 8499.8, "clientes": 40640, "productos": 47003, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 12055, "sms": 11085}, "sombra": {"asesor": 0.0416, "whatsapp": 0.0207, "correo": 0.0, "sms": 0.0}}], "jerarquia": {"VCH > TER > OTT": [{"bono": 0, "valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, {"bono": 0.02, "valor": 13597.6, "clientes": 61368, "productos": 83792, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22418, "sms": 21450}, "sombra": {"asesor": 0.1208, "whatsapp": 0.0728, "correo": 0.0, "sms": 0.0}}, {"bono": 0.05, "valor": 13590.5, "clientes": 61588, "productos": 84036, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22517, "sms": 21571}, "sombra": {"asesor": 0.1267, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.1, "valor": 13589.1, "clientes": 61594, "productos": 84044, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22520, "sms": 21574}, "sombra": {"asesor": 0.1273, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.2, "valor": 13588.5, "clientes": 61594, "productos": 84044, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22520, "sms": 21574}, "sombra": {"asesor": 0.1273, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.4, "valor": 13588.5, "clientes": 61594, "productos": 84044, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22520, "sms": 21574}, "sombra": {"asesor": 0.1273, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}], "OTT > TER > VCH": [{"bono": 0, "valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 92.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, {"bono": 0.02, "valor": 13595.8, "clientes": 61325, "productos": 83796, "jerarquia": 93.3, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22401, "sms": 21424}, "sombra": {"asesor": 0.1128, "whatsapp": 0.0727, "correo": 0.0, "sms": 0.0}}, {"bono": 0.05, "valor": 13567.1, "clientes": 61487, "productos": 84011, "jerarquia": 94.4, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22477, "sms": 21510}, "sombra": {"asesor": 0.1105, "whatsapp": 0.0742, "correo": 0.0, "sms": 0.0}}, {"bono": 0.1, "valor": 13468.5, "clientes": 61501, "productos": 84075, "jerarquia": 96.6, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22487, "sms": 21514}, "sombra": {"asesor": 0.1077, "whatsapp": 0.0741, "correo": 0.0, "sms": 0.0}}, {"bono": 0.2, "valor": 13360.0, "clientes": 61502, "productos": 84088, "jerarquia": 97.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22488, "sms": 21514}, "sombra": {"asesor": 0.1072, "whatsapp": 0.074, "correo": 0.0, "sms": 0.0}}, {"bono": 0.4, "valor": 13344.7, "clientes": 61502, "productos": 84090, "jerarquia": 98.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22487, "sms": 21515}, "sombra": {"asesor": 0.1071, "whatsapp": 0.074, "correo": 0.0, "sms": 0.0}}], "TER > VCH > OTT": [{"bono": 0, "valor": 13602.3, "clientes": 60911, "productos": 83314, "jerarquia": 99.6, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22211, "sms": 21200}, "sombra": {"asesor": 0.1131, "whatsapp": 0.0688, "correo": 0.0, "sms": 0.0}}, {"bono": 0.02, "valor": 13597.3, "clientes": 61366, "productos": 83792, "jerarquia": 99.7, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22417, "sms": 21449}, "sombra": {"asesor": 0.1206, "whatsapp": 0.0727, "correo": 0.0, "sms": 0.0}}, {"bono": 0.05, "valor": 13588.4, "clientes": 61588, "productos": 84042, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22516, "sms": 21572}, "sombra": {"asesor": 0.1262, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.1, "valor": 13583.6, "clientes": 61594, "productos": 84050, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22517, "sms": 21577}, "sombra": {"asesor": 0.1266, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.2, "valor": 13580.5, "clientes": 61594, "productos": 84050, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22517, "sms": 21577}, "sombra": {"asesor": 0.1266, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}, {"bono": 0.4, "valor": 13580.0, "clientes": 61594, "productos": 84050, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 22517, "sms": 21577}, "sombra": {"asesor": 0.1266, "whatsapp": 0.0745, "correo": 0.0, "sms": 0.0}}]}, "ejemplos": [{"texto": "No ofrecer terminales a clientes prepago", "filas": [["R20", "Terminales no en prepago", "elegibilidad", "campana", "C-TER", "tipo_linea", "==", "Prepago", "excluir", "1"]], "parametros": {}, "accion": "", "valor": 11763.5, "clientes": 58210, "productos": 74807, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 20889, "sms": 19821}, "sombra": {"asesor": 0.0839, "whatsapp": 0.0569, "correo": 0.0, "sms": 0.0}}, {"texto": "Hogar solo para estratos 3 o más", "filas": [["R21", "Hogar desde estrato 3", "elegibilidad", "campana", "C-VCH", "estrato", "<", "3", "excluir", "1"]], "parametros": {}, "accion": "", "valor": 12424.0, "clientes": 59596, "productos": 78962, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 21573, "sms": 20523}, "sombra": {"asesor": 0.0972, "whatsapp": 0.062, "correo": 0.0, "sms": 0.0}}, {"texto": "No escribir por SMS a clientes de 70 años o más", "filas": [["R22", "Sin SMS a 70+", "canal", "canal", "sms", "edad", ">=", "70", "excluir", "1"]], "parametros": {}, "accion": "", "valor": 13302.4, "clientes": 59603, "productos": 81644, "jerarquia": 99.8, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 23756, "sms": 18347}, "sombra": {"asesor": 0.1318, "whatsapp": 0.0788, "correo": 0.0, "sms": 0.0}}, {"texto": "Terminales solo si el equipo es gama baja o media y el riesgo de churn es de 0,3 o más", "filas": [["R23", "Terminales: retencion", "elegibilidad", "campana", "C-TER", "gama_equipo", "en", "Baja|Media", "exigir", "1"], ["R23", "Terminales: retencion", "elegibilidad", "campana", "C-TER", "riesgo_churn", ">=", "0.3", "exigir", "1"]], "parametros": {}, "accion": "", "valor": 10116.0, "clientes": 55653, "productos": 67125, "jerarquia": 100.0, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 19618, "sms": 18535}, "sombra": {"asesor": 0.0513, "whatsapp": 0.0476, "correo": 0.0, "sms": 0.0}}, {"texto": "Pausar la campaña OTT", "filas": [], "parametros": {}, "accion": "config_campanas: C-OTT activa = 0", "valor": 8699.0, "clientes": 33985, "productos": 38302, "jerarquia": 99.8, "uso": {"asesor": 2500, "whatsapp": 14816, "correo": 8738, "sms": 7931}, "sombra": {"asesor": 0.1157, "whatsapp": 0.0, "correo": 0.0, "sms": 0.0}}, {"texto": "Agregar el canal SuperApp Mi Claro con 10.000 cupos", "filas": [], "parametros": {"canal.capacidad_por_corrida.app": 10000, "politica_contacto.max_productos_por_canal.app": 2}, "accion": "config_campanas: canales_permitidos += app; columna nueva score_canal_app", "valor": 14784.3, "clientes": 63332, "productos": 86607, "jerarquia": 99.9, "uso": {"asesor": 2500, "whatsapp": 15000, "correo": 18743, "sms": 17089, "app": 10000}, "sombra": {"asesor": 0.0567, "whatsapp": 0.0482, "correo": 0.0, "sms": 0.0, "app": 0.0423}}], "costo_reglas": [{"tipo": "regla", "palanca": "R06 No repetir un producto ya ofertado en el mes", "valor_ganado": 3945.9000000000015, "pct": 29.01}, {"tipo": "umbral", "palanca": "Score minimo de producto 0,35 -> 0", "valor_ganado": 2833.5, "pct": 20.83}, {"tipo": "regla", "palanca": "R04 Venta cruzada Hogar solo a quien no tiene Hogar", "valor_ganado": 1956.2000000000007, "pct": 14.38}, {"tipo": "regla", "palanca": "R02 Terminales solo con calificacion E, A o B", "valor_ganado": 1022.2000000000008, "pct": 7.51}, {"tipo": "regla", "palanca": "R01 Sin venta a clientes en mora", "valor_ganado": 1009.7000000000008, "pct": 7.42}, {"tipo": "regla", "palanca": "R03 Terminales solo con equipo de 18 meses o mas", "valor_ganado": 937.5, "pct": 6.89}, {"tipo": "regla", "palanca": "R09 Correo requiere autorizacion", "valor_ganado": 905.0, "pct": 6.65}, {"tipo": "regla", "palanca": "R07 Sin venta a clientes con 3 o mas quejas", "valor_ganado": 894.0, "pct": 6.57}, {"tipo": "regla", "palanca": "R08 WhatsApp requiere autorizacion", "valor_ganado": 520.7000000000007, "pct": 3.83}, {"tipo": "politica", "palanca": "Tope semanal 3 -> sin tope", "valor_ganado": 469.8000000000011, "pct": 3.45}, {"tipo": "regla", "palanca": "R10 SMS requiere autorizacion", "valor_ganado": 299.90000000000146, "pct": 2.2}, {"tipo": "umbral", "palanca": "Score minimo de canal 0,25 -> 0", "valor_ganado": 194.1000000000004, "pct": 1.43}, {"tipo": "politica", "palanca": "Asesor 1 -> 2 productos", "valor_ganado": 95.60000000000036, "pct": 0.7}, {"tipo": "cupo", "palanca": "Cupo whatsapp +10% (15000 -> 16500)", "valor_ganado": 95.60000000000036, "pct": 0.7}, {"tipo": "regla", "palanca": "R05 Upgrade OTT solo si le falta alguna OTT", "valor_ganado": 43.20000000000073, "pct": 0.32}, {"tipo": "cupo", "palanca": "Cupo asesor +10% (2500 -> 2750)", "valor_ganado": 27.100000000000364, "pct": 0.2}, {"tipo": "regla", "palanca": "R11 Maximo 2 llamadas de asesor al mes", "valor_ganado": 3.700000000000728, "pct": 0.03}, {"tipo": "cupo", "palanca": "Cupo correo +10% (30000 -> 33000)", "valor_ganado": 0.0, "pct": 0.0}, {"tipo": "cupo", "palanca": "Cupo sms +10% (40000 -> 44000)", "valor_ganado": 0.0, "pct": 0.0}], "clientes": [{"id": "CL053476", "estado": "asignado", "canal": "asesor", "c1": "C-TER", "c2": "", "razon": "Optimo global: asesor con TER (valor 0.245); mejor alternativa whatsapp 0.195; costo de oportunidad del cupo asesor 0.113", "perfil": {"region": "Costa", "estrato": 3, "edad": 47, "linea": "Postpago", "riesgo": "E", "hogar": 1, "ott": 1, "equipo_meses": 43}, "valor_por_canal": {"asesor": 0.245, "whatsapp": 0.195, "correo": null, "sms": 0.105}}, {"id": "CL033796", "estado": "asignado", "canal": "whatsapp", "c1": "C-VCH", "c2": "C-TER", "razon": "Optimo global: whatsapp con VCH+TER (valor 0.549); mejor alternativa correo 0.463; costo de oportunidad del cupo whatsapp 0.069", "perfil": {"region": "Sur", "estrato": 4, "edad": 31, "linea": "Postpago", "riesgo": "A", "hogar": 0, "ott": 0, "equipo_meses": 47}, "valor_por_canal": {"asesor": 0.206, "whatsapp": 0.549, "correo": 0.463, "sms": 0.238}}, {"id": "CL032888", "estado": "asignado", "canal": "correo", "c1": "C-VCH", "c2": "C-OTT", "razon": "Optimo global: correo con VCH+OTT (valor 0.329); mejor alternativa whatsapp 0.280", "perfil": {"region": "Antioquia", "estrato": 3, "edad": 34, "linea": "Postpago", "riesgo": "C", "hogar": 0, "ott": 1, "equipo_meses": 56}, "valor_por_canal": {"asesor": 0.168, "whatsapp": 0.28, "correo": 0.329, "sms": null}}, {"id": "CL032996", "estado": "asignado", "canal": "sms", "c1": "C-VCH", "c2": "C-TER", "razon": "Optimo global: sms con VCH+TER (valor 0.289); mejor alternativa whatsapp 0.319", "perfil": {"region": "Antioquia", "estrato": 2, "edad": 67, "linea": "Postpago", "riesgo": "B", "hogar": 0, "ott": 1, "equipo_meses": 39}, "valor_por_canal": {"asesor": 0.196, "whatsapp": 0.319, "correo": null, "sms": 0.289}}, {"id": "CL000019", "estado": "sin_accion", "canal": "", "c1": "", "c2": "", "razon": "Sin cupo disponible en sus canales (otros clientes generaban mas valor)", "perfil": {"region": "Antioquia", "estrato": 3, "edad": 77, "linea": "Prepago", "riesgo": "B", "hogar": 1, "ott": 1, "equipo_meses": 19}, "valor_por_canal": {"asesor": null, "whatsapp": 0.054, "correo": null, "sms": null}}, {"id": "CL000015", "estado": "sin_accion", "canal": "", "c1": "", "c2": "", "razon": "Sin campana elegible (C-VCH:R01;C-TER:R01;C-OTT:R01)", "perfil": {"region": "Valle", "estrato": 3, "edad": 73, "linea": "Postpago", "riesgo": "A", "hogar": 0, "ott": 0, "equipo_meses": 9}, "valor_por_canal": {"asesor": null, "whatsapp": null, "correo": null, "sms": null}}]};
+const $ = id => document.getElementById(id);
+const nf = (v, d = 0) => v.toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (a, b) => (100 * (a / b - 1));
+const sgn = (v, d = 1, suf = '%') => `${v > 0 ? '+' : v < 0 ? '−' : '±'}${nf(Math.abs(v), d)}${suf}`;
+const cls = v => v > 0.0001 ? 'up' : v < -0.0001 ? 'down' : 'flat';
+const CANALES = ['asesor', 'whatsapp', 'correo', 'sms'];
+const NOMBRE_CANAL = { asesor: 'Asesor', whatsapp: 'WhatsApp', correo: 'Correo', sms: 'SMS', app: 'Mi Claro' };
+const PROD = { VCH: 'Hogar', TER: 'renovación de equipo', OTT: 'upgrade de streaming' };
+const CAMP = { 'C-VCH': 'VCH', 'C-TER': 'TER', 'C-OTT': 'OTT' };
+let actual = D.optimo; let version = 1;
+const log = [{ v: 1, t: 'Configuración inicial del reto, solver óptimo, bono de jerarquía 0' }];
+
+function kpis() {
+  const a = actual, o = D.optimo;
+  $('k-valor').textContent = nf(a.valor, 0);
+  $('k-cli').textContent = nf(a.clientes);
+  $('k-prod').textContent = nf(a.productos);
+  $('k-jer').textContent = nf(a.jerarquia, 1) + '%';
+  const dd = (id, v, suf = '% frente a v1', d = 1) => { const e = $(id); e.className = 'd ' + cls(v); e.textContent = version === 1 ? 'configuración inicial' : sgn(v, d, suf); };
+  dd('k-valor-d', pct(a.valor, o.valor)); dd('k-cli-d', pct(a.clientes, o.clientes)); dd('k-prod-d', pct(a.productos, o.productos));
+  dd('k-jer-d', a.jerarquia - o.jerarquia, ' pts frente a v1');
+  $('k-vs').textContent = sgn(pct(a.valor, D.base.valor)); $('k-vs').className = 'val ' + cls(pct(a.valor, D.base.valor));
+  $('cfg-ver').textContent = `Configuración v${version} · publicada`;
+  $('log').innerHTML = log.slice().reverse().map(l => `<div><span class="chip">v${l.v}</span><span>${l.t}</span></div>`).join('');
+}
+
+function celdas(el, m, ref) {
+  const items = [['Valor esperado', m.valor, ref.valor, 0], ['Clientes con acción', m.clientes, ref.clientes, 0], ['Jerarquía', m.jerarquia, ref.jerarquia, 1]];
+  el.innerHTML = items.map(([l, v, r, d]) => {
+    const delta = l === 'Jerarquía' ? sgn(v - r, 1, ' pts') : sgn(pct(v, r));
+    const c = cls(l === 'Jerarquía' ? v - r : pct(v, r));
+    return `<div class="cell"><div class="lbl">${l}</div><div class="v">${nf(v, d)}${l === 'Jerarquía' ? '%' : ''}</div><div class="d ${c}" style="font-family:var(--f-mono);font-size:12px">${delta}</div></div>`;
+  }).join('');
+}
+
+function barras(el, filas, max, fmt) {
+  el.innerHTML = filas.map(f => `<div class="bar"><span>${f.l}</span><div class="t"><div class="f ${f.acc ? 'acc' : ''}" style="width:${max ? Math.max(0, 100 * f.v / max) : 0}%"></div></div><span class="n">${fmt(f)}</span></div>`).join('');
+}
+
+/* ---- copiloto ---- */
+function normal(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function buscar(texto) {
+  const pal = new Set(normal(texto).split(/[^a-z0-9]+/).filter(w => w.length > 3));
+  let mejor = null, punt = 0;
+  D.ejemplos.forEach(e => { const p = normal(e.texto).split(/[^a-z0-9]+/).filter(w => pal.has(w)).length; if (p > punt) { punt = p; mejor = e; } });
+  return punt >= 2 ? mejor : null;
+}
+let propuesta = null;
+function simular() {
+  const t = $('pedido').value.trim(); const e = buscar(t); const out = $('res-cambio');
+  if (!e) { propuesta = null; out.innerHTML = `<div class="aviso neutro">El copiloto de la maqueta no reconoce ese cambio. Prueba uno de los ejemplos; en el producto, un modelo de lenguaje traduce cualquier pedido a filas de configuración y las valida antes de simular.</div>`; return; }
+  propuesta = e;
+  const filas = e.filas.length ? `<div class="tabla"><table><thead><tr><th>id</th><th>tipo</th><th>alcance</th><th>columna</th><th>operador</th><th>valor</th><th>acción</th></tr></thead><tbody>${e.filas.map(f => `<tr><td>${f[0]}</td><td>${f[2]}</td><td>${f[3]} ${f[4]}</td><td>${f[5]}</td><td>${f[6]}</td><td>${f[7]}</td><td>${f[8]}</td></tr>`).join('')}</tbody></table></div>${e.filas.length > 1 ? '<div class="hint">Dos filas con el mismo id se combinan con Y.</div>' : ''}`
+    : `<div class="tabla"><table><tbody><tr><td>${e.accion}</td></tr>${Object.entries(e.parametros).map(([k, v]) => `<tr><td>${k} = ${nf(v)}</td></tr>`).join('')}</tbody></table></div>`;
+  const dv = pct(e.valor, actual.valor);
+  const usoFilas = Object.keys(e.uso).map(c => ({ l: NOMBRE_CANAL[c] || c, v: e.uso[c], antes: actual.uso[c] || 0, acc: !(c in actual.uso) }));
+  out.innerHTML = `<div class="sub">El copiloto entendió esto:</div>${filas}
+    <div class="sub">Impacto simulado frente a la configuración actual</div><div class="impacto" id="cmb-imp"></div>
+    ${dv < -0.05 ? `<div class="aviso">Este cambio quita ${nf(Math.abs(dv), 1)}% del valor esperado (${nf(actual.valor - e.valor, 0)} puntos). Aplícalo solo si la razón de negocio lo justifica.</div>` : `<div class="aviso neutro">Este cambio no reduce el valor esperado.</div>`}
+    <div class="sub">Uso de cupos después del cambio</div><div class="bars" id="cmb-uso"></div>
+    <div class="btns"><button class="btn pri" type="button" id="b-aplicar">Aplicar como v${version + 1}</button><button class="btn" type="button" id="b-descartar">Descartar</button></div>`;
+  celdas($('cmb-imp'), e, actual);
+  barras($('cmb-uso'), usoFilas, Math.max(...usoFilas.map(f => f.v)), f => `${nf(f.v)}${f.antes !== f.v ? ` (${f.v > f.antes ? '+' : '−'}${nf(Math.abs(f.v - f.antes))})` : ''}`);
+  $('b-aplicar').onclick = () => { actual = e; version++; log.push({ v: version, t: `${e.texto}: valor ${sgn(dv)}` }); out.innerHTML = `<div class="aviso neutro">Aplicado como v${version}. Los indicadores de arriba ya muestran la nueva configuración.</div>`; kpis(); };
+  $('b-descartar').onclick = () => { out.innerHTML = ''; propuesta = null; };
+}
+$('ejemplos').innerHTML = D.ejemplos.map((e, i) => `<button type="button" data-i="${i}">${e.texto}</button>`).join('');
+$('ejemplos').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; $('pedido').value = D.ejemplos[+b.dataset.i].texto; simular(); };
+$('b-simular').onclick = simular;
+
+/* ---- cupos ---- */
+const AS = [0, 1250, 2500, 3750, 5000, 7500], WA = [5000, 10000, 15000, 20000, 25000];
+function cupos() {
+  const a = AS[+$('s-asesor').value], w = WA[+$('s-wa').value];
+  $('o-asesor').textContent = nf(a); $('o-wa').textContent = nf(w);
+  const g = D.grid.find(x => x.asesor === a && x.whatsapp === w);
+  celdas($('cupo-imp'), g, D.optimo);
+  const s = CANALES.map(c => ({ l: NOMBRE_CANAL[c], v: g.sombra[c], acc: g.sombra[c] > 0 }));
+  barras($('sombra'), s, 0.2, f => nf(f.v, 3));
+  const cap = { asesor: a, whatsapp: w, correo: 30000, sms: 40000 };
+  barras($('uso'), CANALES.map(c => ({ l: NOMBRE_CANAL[c], v: g.uso[c] / cap[c] || 0, u: g.uso[c], c: cap[c], acc: g.uso[c] >= cap[c] && cap[c] > 0 })), 1, f => `${nf(f.u)} / ${nf(f.c)}`);
+}
+['s-asesor', 's-wa'].forEach(id => $(id).addEventListener('input', cupos));
+
+/* ---- jerarquia ---- */
+const ordenes = Object.keys(D.jerarquia);
+$('s-orden').innerHTML = ordenes.map(o => `<option>${o}</option>`).join('');
+$('s-orden').value = 'OTT > TER > VCH';
+function curva() {
+  const serie = D.jerarquia[$('s-orden').value], i = +$('s-bono').value, p = serie[i];
+  $('o-bono').textContent = nf(p.bono, 2);
+  const W = 480, H = 210, L = 64, R = 20, T = 16, B = 40;
+  const xs = serie.map(s => s.jerarquia), ys = serie.map(s => s.valor);
+  let x0 = Math.min(...xs) - 0.5, x1 = Math.max(...xs) + 0.5; if (x1 - x0 < 2) { x0 -= 1; x1 += 1; }
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = Math.max(20, (y1 - y0) * 0.15); y0 -= pad; y1 += pad;
+  const X = v => L + (v - x0) / (x1 - x0) * (W - L - R), Y = v => T + (y1 - v) / (y1 - y0) * (H - T - B);
+  const ticksY = [y0 + (y1 - y0) * 0.1, (y0 + y1) / 2, y1 - (y1 - y0) * 0.1];
+  const tx = []; for (let v = Math.ceil(x0); v <= Math.floor(x1); v++) tx.push(v);
+  const paso = Math.ceil(tx.length / 6);
+  const path = serie.map((s, k) => `${k ? 'L' : 'M'}${X(s.jerarquia).toFixed(1)} ${Y(s.valor).toFixed(1)}`).join('');
+  $('curva').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Frontera entre valor esperado e indicador de jerarquía">
+    ${ticksY.map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="10.5" fill="var(--muted)">${nf(v, 0)}</text>`).join('')}
+    ${tx.filter((v, k) => k % paso === 0).map(v => `<text x="${X(v)}" y="${H - B + 16}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${v}%</text>`).join('')}
+    <text x="${W - R}" y="${H - 6}" text-anchor="end" font-size="10.5" fill="var(--muted)">indicador de jerarquía</text>
+    <path d="${path}" fill="none" stroke="var(--bar)" stroke-width="2"/>
+    ${serie.map((s, k) => `<circle cx="${X(s.jerarquia)}" cy="${Y(s.valor)}" r="${k === i ? 6.5 : 4}" fill="${k === i ? 'var(--accent)' : 'var(--bar)'}"><title>bono ${s.bono}: jerarquía ${s.jerarquia}%, valor ${nf(s.valor)}</title></circle>`).join('')}
+  </svg>`;
+  celdas($('jer-imp'), p, serie[0]);
+}
+['s-orden', 's-bono'].forEach(id => $(id).addEventListener('input', curva));
+
+/* ---- umbral ---- */
+function umbral() { const u = D.umbral[+$('s-umbral').value]; $('o-umbral').textContent = nf(u.umbral, 2); celdas($('umb-imp'), u, D.optimo); }
+$('s-umbral').addEventListener('input', umbral);
+
+/* ---- radar ---- */
+const corto = s => s.replace('No repetir un producto ya ofertado en el mes', 'No repetir oferta del mes').replace('Venta cruzada Hogar solo a quien no tiene Hogar', 'Hogar solo sin Hogar').replace('Terminales solo con calificacion E, A o B', 'Terminales solo E, A, B').replace('Terminales solo con equipo de 18 meses o mas', 'Terminales: equipo 18+ m').replace('Sin venta a clientes con 3 o mas quejas', 'Sin venta con 3+ quejas').replace('Sin venta a clientes en mora', 'Sin venta en mora').replace('requiere autorizacion', 'con autorización').replace('Score minimo', 'Score mín.');
+const rad = D.costo_reglas.slice(0, 12).map(r => ({ l: corto(r.palanca), v: r.pct, acc: r.tipo === 'cupo' }));
+document.getElementById('radar').innerHTML = '';
+barras($('radar'), rad, Math.max(...rad.map(r => r.v)), f => `${nf(f.v, 1)}%`);
+document.querySelectorAll('#radar .bar').forEach(b => b.style.gridTemplateColumns = 'minmax(0,170px) minmax(0,1fr) 52px');
+
+/* ---- cliente ---- */
+function frase(c) {
+  const vals = c.valor_por_canal;
+  if (c.estado !== 'asignado') {
+    if (c.razon.startsWith('Sin cupo')) return 'Sin contacto en esta corrida: los cupos de sus canales rendían más con otros clientes.';
+    if (c.razon.startsWith('Tope')) return 'Sin contacto: ya recibió el máximo de contactos de la semana.';
+    return 'Sin contacto: no califica para ninguna campaña activa.';
+  }
+  const prods = [c.c1, c.c2].filter(Boolean).map(x => PROD[CAMP[x]]);
+  const que = prods.length > 1 ? `${prods[0]} y ${prods[1]}` : prods[0];
+  const alt = Object.entries(vals).filter(([k, v]) => k !== c.canal && v != null).sort((a, b) => b[1] - a[1])[0];
+  if (c.canal === 'asesor') {
+    return alt ? `Llámalo para ofrecerle ${que}: por ${NOMBRE_CANAL[alt[0]]} valdría ${nf(100 * alt[1] / vals.asesor, 0)}% de lo que vale tu llamada.` : `Llámalo para ofrecerle ${que}: el asesor es su único canal disponible.`;
+  }
+  return `Escríbele por ${NOMBRE_CANAL[c.canal]} con ${que}${alt ? `; es su mejor canal entre los que tienen cupo` : ''}.`;
+}
+function ficha(i) {
+  const c = D.clientes[i];
+  document.querySelectorAll('#clientes button').forEach((b, k) => b.setAttribute('aria-pressed', k === i));
+  const p = c.perfil;
+  const tags = [p.region, `estrato ${p.estrato}`, `${p.edad} años`, p.linea, `riesgo ${p.riesgo}`, p.hogar ? 'con Hogar' : 'sin Hogar', `${p.ott} OTT`, `equipo de ${p.equipo_meses} meses`];
+  const vals = CANALES.map(ch => ({ l: NOMBRE_CANAL[ch], v: c.valor_por_canal[ch] ?? 0, na: c.valor_por_canal[ch] == null, acc: ch === c.canal }));
+  $('ficha').innerHTML = `<div class="perfil">${tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>
+    <div class="frase">${frase(c)}</div>
+    <div class="sub">Valor de su mejor oferta en cada canal (antes de cupos)</div><div class="bars" id="f-bars"></div>
+    <div class="tec">Motor: ${c.razon}</div>`;
+  barras($('f-bars'), vals, Math.max(...vals.map(v => v.v), 0.01), f => f.na ? 'no habilitado' : nf(f.v, 3));
+}
+$('clientes').innerHTML = D.clientes.map((c, i) => `<button type="button" data-i="${i}" aria-pressed="false">${c.id} · ${c.estado === 'asignado' ? NOMBRE_CANAL[c.canal] : 'sin acción'}</button>`).join('');
+$('clientes').onclick = ev => { const b = ev.target.closest('button'); if (b) ficha(+b.dataset.i); };
+
+/* ---- estado inicial: un cambio ya simulado ---- */
+$('pedido').value = D.ejemplos[0].texto;
+kpis(); simular(); cupos(); curva(); umbral(); ficha(0);
+</script>

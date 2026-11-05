@@ -1,0 +1,20 @@
+tipo,palanca,valor_ganado,pct
+regla,R06 No repetir un producto ya ofertado en el mes,3945.9000000000015,29.01
+umbral,"Score minimo de producto 0,35 -> 0",2833.5,20.83
+regla,R04 Venta cruzada Hogar solo a quien no tiene Hogar,1956.2000000000007,14.38
+regla,"R02 Terminales solo con calificacion E, A o B",1022.2000000000007,7.51
+regla,R01 Sin venta a clientes en mora,1009.7000000000007,7.42
+regla,R03 Terminales solo con equipo de 18 meses o mas,937.5,6.89
+regla,R09 Correo requiere autorizacion,905.0,6.65
+regla,R07 Sin venta a clientes con 3 o mas quejas,894.0,6.57
+regla,R08 WhatsApp requiere autorizacion,520.7000000000007,3.83
+politica,Tope semanal 3 -> sin tope,469.8000000000011,3.45
+regla,R10 SMS requiere autorizacion,299.90000000000146,2.2
+umbral,"Score minimo de canal 0,25 -> 0",194.10000000000036,1.43
+politica,Asesor 1 -> 2 productos,95.60000000000036,0.7
+cupo,Cupo whatsapp +10% (15000 -> 16500),95.60000000000036,0.7
+regla,R05 Upgrade OTT solo si le falta alguna OTT,43.20000000000073,0.32
+cupo,Cupo asesor +10% (2500 -> 2750),27.100000000000364,0.2
+regla,R11 Maximo 2 llamadas de asesor al mes,3.7000000000007276,0.03
+cupo,Cupo correo +10% (30000 -> 33000),0.0,0.0
+cupo,Cupo sms +10% (40000 -> 44000),0.0,0.0
