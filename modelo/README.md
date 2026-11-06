@@ -60,3 +60,7 @@ Se retiraron la suite de pruebas, los comparadores ejecutables, el LP y la basel
 El objetivo predeterminado es `score_producto × score_canal × valor_negocio`, sumado sobre los productos asignados. Se admite un canal y hasta dos productos distintos por contacto; dos productos consumen un solo cupo de canal. Con `prioridad`, los pesos y el orden de la jerarquía cambian la función que maximiza el flujo. El panel informa por separado ese objetivo y el valor esperado comercial.
 
 Los perfiles guardados se pueden volver a entrenar de forma independiente con `python -m modelo.ejecutar --tarea perfiles --dispositivo cuda --fecha 2026-11-05`. No modifican los scores ni participan en la optimización NBA. Se conservan sus pesos locales; los notebooks no se incluyen.
+
+## Experimentos con clusters
+
+`modelo/experimentos/` agrega clusters por comportamiento, propuestas de mensaje por cluster con bandido y viabilidad por campaña. Es un plus sobre el optimizador: no cambia sus scores ni su resultado. Ver [su README](experimentos/README.md). Se ejecuta con `python -m modelo.experimentos` y se exporta a la consola con `python -m modelo.experimentos.exportar_app`.

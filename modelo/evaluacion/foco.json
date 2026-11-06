@@ -1,0 +1,416 @@
+{
+ "descripcion": "Foco en los clusters más probables: tres lecturas de «enfocar» el motor NBA (ver foco.py)",
+ "advertencia": "El cupo aislado es un techo no alcanzable. La prioridad reasigna cupos: lo que sube en el foco baja en otros clientes. La mejora de las propuestas es simulada (el CSV no trae respuestas reales).",
+ "criterio": "valor_por_cliente",
+ "region": "Bogota",
+ "fecha": "2026-11-05",
+ "ranking": [
+  {
+   "sector": "E6-P2",
+   "nombre": "Estrato 6 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 419,
+   "valor_por_cliente": 0.19512
+  },
+  {
+   "sector": "E5-P2",
+   "nombre": "Estrato 5 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 688,
+   "valor_por_cliente": 0.18034
+  },
+  {
+   "sector": "E5-P1",
+   "nombre": "Estrato 5 · Sin streaming · sin Hogar · sin Win",
+   "clientes": 299,
+   "valor_por_cliente": 0.15915
+  },
+  {
+   "sector": "E4-P2",
+   "nombre": "Estrato 4 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 1261,
+   "valor_por_cliente": 0.15771
+  },
+  {
+   "sector": "E4-P1",
+   "nombre": "Estrato 4 · Sin streaming · sin Hogar · sin Win",
+   "clientes": 891,
+   "valor_por_cliente": 0.14799
+  },
+  {
+   "sector": "E3-P2",
+   "nombre": "Estrato 3 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 2346,
+   "valor_por_cliente": 0.13862
+  },
+  {
+   "sector": "E4-P5",
+   "nombre": "Estrato 4 · Plan de datos ilimitado · postpago · gasto móvil alto",
+   "clientes": 185,
+   "valor_por_cliente": 0.13615
+  },
+  {
+   "sector": "E2-P2",
+   "nombre": "Estrato 2 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 1768,
+   "valor_por_cliente": 0.1297
+  },
+  {
+   "sector": "E3-P1",
+   "nombre": "Estrato 3 · Sin streaming · sin Hogar · sin Win",
+   "clientes": 2569,
+   "valor_por_cliente": 0.12403
+  },
+  {
+   "sector": "E3-P5",
+   "nombre": "Estrato 3 · Plan de datos ilimitado · postpago · gasto móvil alto",
+   "clientes": 432,
+   "valor_por_cliente": 0.12129
+  },
+  {
+   "sector": "E1-P2",
+   "nombre": "Estrato 1 · Muy digitales · compra en línea · usa banca digital",
+   "clientes": 476,
+   "valor_por_cliente": 0.11302
+  },
+  {
+   "sector": "E4-P4",
+   "nombre": "Estrato 4 · Poco activo en redes · poco digitales · con Win",
+   "clientes": 687,
+   "valor_por_cliente": 0.10692
+  },
+  {
+   "sector": "E5-P4",
+   "nombre": "Estrato 5 · Poco activo en redes · poco digitales · con Win",
+   "clientes": 277,
+   "valor_por_cliente": 0.1051
+  },
+  {
+   "sector": "E2-P5",
+   "nombre": "Estrato 2 · Plan de datos ilimitado · postpago · gasto móvil alto",
+   "clientes": 434,
+   "valor_por_cliente": 0.10122
+  },
+  {
+   "sector": "E5-P3",
+   "nombre": "Estrato 5 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 618,
+   "valor_por_cliente": 0.09925
+  },
+  {
+   "sector": "E2-P1",
+   "nombre": "Estrato 2 · Sin streaming · sin Hogar · sin Win",
+   "clientes": 3020,
+   "valor_por_cliente": 0.09583
+  },
+  {
+   "sector": "E6-P3",
+   "nombre": "Estrato 6 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 441,
+   "valor_por_cliente": 0.09379
+  },
+  {
+   "sector": "E2-P3",
+   "nombre": "Estrato 2 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 1492,
+   "valor_por_cliente": 0.0905
+  },
+  {
+   "sector": "E3-P3",
+   "nombre": "Estrato 3 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 2002,
+   "valor_por_cliente": 0.08857
+  },
+  {
+   "sector": "E1-P1",
+   "nombre": "Estrato 1 · Sin streaming · sin Hogar · sin Win",
+   "clientes": 1422,
+   "valor_por_cliente": 0.08842
+  },
+  {
+   "sector": "E4-P3",
+   "nombre": "Estrato 4 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 1075,
+   "valor_por_cliente": 0.08792
+  },
+  {
+   "sector": "E1-P3",
+   "nombre": "Estrato 1 · Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 525,
+   "valor_por_cliente": 0.08664
+  },
+  {
+   "sector": "E3-P4",
+   "nombre": "Estrato 3 · Poco activo en redes · poco digitales · con Win",
+   "clientes": 1759,
+   "valor_por_cliente": 0.08262
+  },
+  {
+   "sector": "E2-P4",
+   "nombre": "Estrato 2 · Poco activo en redes · poco digitales · con Win",
+   "clientes": 1829,
+   "valor_por_cliente": 0.07429
+  },
+  {
+   "sector": "E1-P4",
+   "nombre": "Estrato 1 · Poco activo en redes · poco digitales · con Win",
+   "clientes": 757,
+   "valor_por_cliente": 0.05848
+  }
+ ],
+ "focos": [
+  {
+   "nombre": "El cluster más probable",
+   "sectores": [
+    {
+     "sector": "E6-P2",
+     "nombre": "Estrato 6 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 419,
+     "valor_por_cliente": 0.19512
+    }
+   ],
+   "clientes": 419,
+   "base": {
+    "valor_foco": 81.75478836399999,
+    "valor_resto_region": 3020.746067192,
+    "valor_total": 10940.002451100001,
+    "clientes_con_accion": 298,
+    "valor_foco_con_propuestas": 85.49914700624126
+   },
+   "mejora_propuestas_pct": 4.579986955100554,
+   "aislado": {
+    "valor_foco": 83.68858974,
+    "clientes_con_accion": 298,
+    "delta_foco": 1.9338013760000052,
+    "delta_foco_pct": 2.3653677230379033,
+    "valor_foco_con_propuestas": 87.52151623299962
+   },
+   "prioridad": [
+    {
+     "peso": 3,
+     "valor_foco": 83.50082669400001,
+     "valor_resto_region": 3019.83299714,
+     "valor_total": 10938.964707888,
+     "clientes_con_accion": 298,
+     "delta_foco": 1.7460383300000188,
+     "delta_foco_pct": 2.1357016083584757,
+     "delta_resto_region": -0.9130700519999664,
+     "delta_total": -1.0377432120003505,
+     "delta_total_pct": -0.009485767637062992,
+     "valor_foco_con_propuestas": 87.32515366398634,
+     "segundos": 14.4
+    },
+    {
+     "peso": 10,
+     "valor_foco": 83.66282376200002,
+     "valor_resto_region": 3019.571512244,
+     "valor_total": 10938.249515802,
+     "clientes_con_accion": 298,
+     "delta_foco": 1.908035398000024,
+     "delta_foco_pct": 2.333851553140609,
+     "delta_resto_region": -1.1745549479996953,
+     "delta_total": -1.7529352980018302,
+     "delta_total_pct": -0.016023170980417056,
+     "valor_foco_con_propuestas": 87.49457017656839,
+     "segundos": 12.5
+    }
+   ],
+   "mejora_propuestas_p5": -0.2806895326630015,
+   "mejora_propuestas_p95": 8.915498310905553
+  },
+  {
+   "nombre": "Los 5 clusters más probables",
+   "sectores": [
+    {
+     "sector": "E6-P2",
+     "nombre": "Estrato 6 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 419,
+     "valor_por_cliente": 0.19512
+    },
+    {
+     "sector": "E5-P2",
+     "nombre": "Estrato 5 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 688,
+     "valor_por_cliente": 0.18034
+    },
+    {
+     "sector": "E5-P1",
+     "nombre": "Estrato 5 · Sin streaming · sin Hogar · sin Win",
+     "clientes": 299,
+     "valor_por_cliente": 0.15915
+    },
+    {
+     "sector": "E4-P2",
+     "nombre": "Estrato 4 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 1261,
+     "valor_por_cliente": 0.15771
+    },
+    {
+     "sector": "E4-P1",
+     "nombre": "Estrato 4 · Sin streaming · sin Hogar · sin Win",
+     "clientes": 891,
+     "valor_por_cliente": 0.14799
+    }
+   ],
+   "clientes": 3558,
+   "base": {
+    "valor_foco": 584.1380572840001,
+    "valor_resto_region": 2518.362798272,
+    "valor_total": 10940.002451100001,
+    "clientes_con_accion": 2535,
+    "valor_foco_con_propuestas": 612.9746079315403
+   },
+   "mejora_propuestas_pct": 4.936598512621875,
+   "aislado": {
+    "valor_foco": 605.362089882,
+    "clientes_con_accion": 2542,
+    "delta_foco": 21.224032597999894,
+    "delta_foco_pct": 3.6333932249993817,
+    "valor_foco_con_propuestas": 635.2463858070914
+   },
+   "prioridad": [
+    {
+     "peso": 1.5,
+     "valor_foco": 594.4910693180001,
+     "valor_resto_region": 2514.792326342,
+     "valor_total": 10937.894126696001,
+     "clientes_con_accion": 2542,
+     "delta_foco": 10.353012034000017,
+     "delta_foco_pct": 1.7723570489718288,
+     "delta_resto_region": -3.570471930000167,
+     "delta_total": -2.1083244040000864,
+     "delta_total_pct": -0.019271699557876776,
+     "valor_foco_con_propuestas": 623.8387066036223,
+     "segundos": 12.4
+    },
+    {
+     "peso": 3,
+     "valor_foco": 601.663024544,
+     "valor_resto_region": 2510.69661632,
+     "valor_total": 10930.156384584001,
+     "clientes_con_accion": 2542,
+     "delta_foco": 17.524967259999926,
+     "delta_foco_pct": 3.000141326432959,
+     "delta_resto_region": -7.666181951999988,
+     "delta_total": -9.846066516000064,
+     "delta_total_pct": -0.09000058784274234,
+     "valor_foco_con_propuestas": 631.3647124646349,
+     "segundos": 12.9
+    },
+    {
+     "peso": 10,
+     "valor_foco": 605.028049698,
+     "valor_resto_region": 2506.593482396,
+     "valor_total": 10917.950781412,
+     "clientes_con_accion": 2542,
+     "delta_foco": 20.88999241399995,
+     "delta_foco_pct": 3.5762080818924513,
+     "delta_resto_region": -11.769315875999837,
+     "delta_total": -22.051669688000402,
+     "delta_total_pct": -0.20156914759907885,
+     "valor_foco_con_propuestas": 634.8958554003366,
+     "segundos": 12.6
+    }
+   ],
+   "mejora_propuestas_p5": 3.144454476205937,
+   "mejora_propuestas_p95": 7.127078651600383
+  },
+  {
+   "nombre": "Los 10 clusters más probables",
+   "sectores": [
+    {
+     "sector": "E6-P2",
+     "nombre": "Estrato 6 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 419,
+     "valor_por_cliente": 0.19512
+    },
+    {
+     "sector": "E5-P2",
+     "nombre": "Estrato 5 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 688,
+     "valor_por_cliente": 0.18034
+    },
+    {
+     "sector": "E5-P1",
+     "nombre": "Estrato 5 · Sin streaming · sin Hogar · sin Win",
+     "clientes": 299,
+     "valor_por_cliente": 0.15915
+    },
+    {
+     "sector": "E4-P2",
+     "nombre": "Estrato 4 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 1261,
+     "valor_por_cliente": 0.15771
+    },
+    {
+     "sector": "E4-P1",
+     "nombre": "Estrato 4 · Sin streaming · sin Hogar · sin Win",
+     "clientes": 891,
+     "valor_por_cliente": 0.14799
+    },
+    {
+     "sector": "E3-P2",
+     "nombre": "Estrato 3 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 2346,
+     "valor_por_cliente": 0.13862
+    },
+    {
+     "sector": "E4-P5",
+     "nombre": "Estrato 4 · Plan de datos ilimitado · postpago · gasto móvil alto",
+     "clientes": 185,
+     "valor_por_cliente": 0.13615
+    },
+    {
+     "sector": "E2-P2",
+     "nombre": "Estrato 2 · Muy digitales · compra en línea · usa banca digital",
+     "clientes": 1768,
+     "valor_por_cliente": 0.1297
+    },
+    {
+     "sector": "E3-P1",
+     "nombre": "Estrato 3 · Sin streaming · sin Hogar · sin Win",
+     "clientes": 2569,
+     "valor_por_cliente": 0.12403
+    },
+    {
+     "sector": "E3-P5",
+     "nombre": "Estrato 3 · Plan de datos ilimitado · postpago · gasto móvil alto",
+     "clientes": 432,
+     "valor_por_cliente": 0.12129
+    }
+   ],
+   "clientes": 10858,
+   "base": {
+    "valor_foco": 1534.8610587580001,
+    "valor_resto_region": 1567.6397967980001,
+    "valor_total": 10940.002451100001,
+    "clientes_con_accion": 7358,
+    "valor_foco_con_propuestas": 1627.3845313596153
+   },
+   "mejora_propuestas_pct": 6.028133430949417,
+   "aislado": {
+    "valor_foco": 1602.0300522680002,
+    "clientes_con_accion": 7383,
+    "delta_foco": 67.16899351000006,
+    "delta_foco_pct": 4.376226312260001,
+    "valor_foco_con_propuestas": 1698.602561422624
+   },
+   "prioridad": [
+    {
+     "peso": 3,
+     "valor_foco": 1589.8131854720002,
+     "valor_resto_region": 1550.650995732,
+     "valor_total": 10906.67790427,
+     "clientes_con_accion": 7383,
+     "delta_foco": 54.95212671400009,
+     "delta_foco_pct": 3.5802671779598727,
+     "delta_resto_region": -16.98880106600018,
+     "delta_total": -33.324546830001054,
+     "delta_total_pct": -0.3046118771815265,
+     "valor_foco_con_propuestas": 1685.6492455950797,
+     "segundos": 19.4
+    }
+   ],
+   "mejora_propuestas_p5": 3.34653423523558,
+   "mejora_propuestas_p95": 7.934466331621543
+  }
+ ]
+}
