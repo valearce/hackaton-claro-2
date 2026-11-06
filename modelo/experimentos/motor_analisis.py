@@ -12,8 +12,6 @@ import time
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import linprog
-from scipy.sparse import coo_matrix
 
 CONFIG = Path(__file__).resolve().parents[1] / "config"
 OUTPUT_COLUMNS = ["id_cliente", "estado", "canal", "campana_1", "campana_2", "razon"]
@@ -271,6 +269,8 @@ class Engine:
         return grid, {"metodo": "baseline", "segundos": time.perf_counter() - start}
 
     def optimize(self):
+        from scipy.optimize import linprog  # solo aquí: la regla simple (baseline) no necesita scipy
+        from scipy.sparse import coo_matrix
         start = time.perf_counter()
         objective = self.params["optimizacion"]["objetivo"]
         if objective not in ("valor_esperado", "prioridad"):

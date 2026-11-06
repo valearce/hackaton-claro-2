@@ -223,33 +223,46 @@ def score(column):
     return _CLUSTERS[column]
 
 
-def by_cluster(key):
-    """Qué hizo la corrida en cada cluster: valor esperado (score producto x score canal x valor), clientes, ofertas y canales."""
-    record = load_run(key)
-    cached_result = record.get("clusters")
-    if cached_result:
-        return cached_result
-    config = record["config"]
+def breakdown(grid, config):
+    """Reparte por cluster el resultado de una parrilla: valor esperado (score producto x score canal x valor), clientes, ofertas y canales."""
     names, code = cluster_codes()
     n = len(names)
-    grid = grid_for(key).set_index("id_cliente").reindex(DATA.id_cliente)
+    grid = grid.set_index("id_cliente").reindex(DATA.id_cliente)
     channels = list(config["parametros"]["canal"]["capacidad_por_corrida"])
-    channel_index = grid.canal.map({c: i for i, c in enumerate(channels)}).fillna(-1).to_numpy(int)
+    channel_index = grid.canal.fillna("").map({c: i for i, c in enumerate(channels)}).fillna(-1).to_numpy(int)
     channel_scores = np.column_stack([score(config["parametros"]["canal"]["columnas_score"][c]) for c in channels])
     assigned = (grid.estado == "asignado").to_numpy()
     rows = np.arange(len(grid))
     value = np.zeros(len(grid))
     offers = {}
     for campaign in config["campanas"]:
-        picked = ((grid.campana_1 == campaign["id"]) | (grid.campana_2 == campaign["id"])).to_numpy() & assigned & (channel_index >= 0)
+        picked = ((grid.campana_1.fillna("") == campaign["id"]) | (grid.campana_2.fillna("") == campaign["id"])).to_numpy() & assigned & (channel_index >= 0)
         offers[campaign["id"]] = np.bincount(code, weights=picked.astype(float), minlength=n)
         value[picked] += score(campaign["columna_score"])[picked] * channel_scores[rows[picked], channel_index[picked]] * campaign["valor_negocio"]
     per_value = np.bincount(code, weights=value, minlength=n)
     acting = np.bincount(code, weights=assigned.astype(float), minlength=n)
     size = np.bincount(code, minlength=n)
-    used = {c: np.bincount(code, weights=(grid.canal == c).to_numpy().astype(float), minlength=n) for c in channels}
-    result = {"clusters": [{"id": names[i], "clientes": int(size[i]), "con_accion": int(acting[i]), "valor": float(per_value[i]),
-                            "ofertas": {k: int(v[i]) for k, v in offers.items()}, "canales": {k: int(v[i]) for k, v in used.items()}}
-                           for i in range(n)],
-              "total": {"valor": float(per_value.sum()), "con_accion": int(acting.sum())}}
+    used = {c: np.bincount(code, weights=(grid.canal.fillna("") == c).to_numpy().astype(float), minlength=n) for c in channels}
+    return {"clusters": [{"id": names[i], "clientes": int(size[i]), "con_accion": int(acting[i]), "valor": float(per_value[i]),
+                          "ofertas": {k: int(v[i]) for k, v in offers.items()}, "canales": {k: int(v[i]) for k, v in used.items()}}
+                         for i in range(n)],
+            "total": {"valor": float(per_value.sum()), "con_accion": int(acting.sum())}}
+
+
+def simple_rule_grid(config, date):
+    """Parrilla de la regla simple (línea base) con el motor de análisis; solo para comparar por cluster."""
+    from modelo.experimentos.motor_analisis import Engine as AnalysisEngine
+    numeric = pd.read_csv(DATA_PATH, keep_default_na=False)
+    return AnalysisEngine(numeric, config, date).baseline()[0]
+
+
+def by_cluster(key):
+    """Qué hizo la corrida en cada cluster, con el optimizador y con la regla simple."""
+    record = load_run(key)
+    if "clusters" in record:
+        return record["clusters"]
+    config = record["config"]
+    result = {"metodos": {"optimo": breakdown(grid_for(key), config),
+                          "baseline": breakdown(simple_rule_grid(config, record["fecha"]), config)}}
+    record["clusters"] = result
     return result
