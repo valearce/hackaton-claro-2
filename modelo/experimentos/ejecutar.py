@@ -12,7 +12,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from ..nba import Engine, load_config
+from .motor_analisis import Engine, load_config
 from ..rutas import DATOS, RAIZ
 from . import propuestas, simulador as sim, viabilidad
 from .sectores import RASGOS, config_perfil, construir_sectores, filtrar_region, indices_region

@@ -8,7 +8,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from ..nba import Engine, applies, condition_mask
+from .motor_analisis import Engine, applies, condition_mask
 
 OPERADORES = {"==": "es", "!=": "no es", "<": "es menor que", "<=": "es como máximo", ">": "es mayor que",
               ">=": "es al menos", "en": "está entre", "no_en": "no está entre", "contiene": "incluye"}

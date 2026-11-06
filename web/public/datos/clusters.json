@@ -1,0 +1,1418 @@
+{
+ "advertencia": "Los clusters son descriptivos (se forman con consumo de datos, streaming, uso digital y Hogar). El rendimiento de los mensajes es simulado con supuestos declarados: el CSV del reto no trae compras ni respuestas.",
+ "meta": {
+  "clientes": 100000,
+  "clusters": 5,
+  "segmentos": 30,
+  "contactos": 76841,
+  "perfil": "comportamiento",
+  "variables": [
+   "tiene_hogar",
+   "tiene_netflix",
+   "tiene_amazon_prime",
+   "tiene_win",
+   "usa_redes_sociales",
+   "usa_banca_digital",
+   "compras_digitales",
+   "consumo_datos_pct",
+   "plan_datos_gb"
+  ],
+  "fecha": "2026-11-05"
+ },
+ "campanas": {
+  "C-VCH": "Venta cruzada Hogar",
+  "C-TER": "Renovacion de terminal",
+  "C-OTT": "Upgrade OTT (Netflix, Amazon Prime, Win)"
+ },
+ "variantes": {
+  "ahorro": "Ahorro y precio",
+  "novedad": "Novedad y tecnología",
+  "familia": "Familia y hogar",
+  "entretenimiento": "Entretenimiento sin límites"
+ },
+ "clusters": [
+  {
+   "id": "P1",
+   "nombre": "Muy digitales · sin streaming · compra en línea",
+   "clientes": 31701,
+   "estratos": {
+    "1": 3609,
+    "2": 9877,
+    "3": 10507,
+    "4": 4667,
+    "5": 2032,
+    "6": 1009
+   },
+   "rasgos": {
+    "hogar": 0.1113,
+    "netflix": 0.3321,
+    "amazon": 0.1212,
+    "win": 0.0321,
+    "banca": 0.7171,
+    "compras": 0.7692,
+    "redes": 0.9467,
+    "ilimitado": 0.0,
+    "postpago": 0.6657
+   },
+   "consumo_datos_pct": 62.2,
+   "mejora_publicidad": {
+    "sector": 10.25,
+    "global": 8.13,
+    "p5": 7.13,
+    "p95": 12.97,
+    "contactos": 28131
+   }
+  },
+  {
+   "id": "P2",
+   "nombre": "Con streaming · con Hogar · con Amazon Prime",
+   "clientes": 26844,
+   "estratos": {
+    "1": 1672,
+    "2": 5936,
+    "3": 8684,
+    "4": 5262,
+    "5": 3091,
+    "6": 2199
+   },
+   "rasgos": {
+    "hogar": 0.7445,
+    "netflix": 0.8445,
+    "amazon": 0.5967,
+    "win": 0.3219,
+    "banca": 0.6333,
+    "compras": 0.705,
+    "redes": 0.9534,
+    "ilimitado": 0.0,
+    "postpago": 0.6619
+   },
+   "consumo_datos_pct": 62.3,
+   "mejora_publicidad": {
+    "sector": 6.59,
+    "global": 4.35,
+    "p5": 4.88,
+    "p95": 9.23,
+    "contactos": 19592
+   }
+  },
+  {
+   "id": "P3",
+   "nombre": "No compra en línea · no usa banca digital · poco digitales",
+   "clientes": 18749,
+   "estratos": {
+    "1": 3518,
+    "2": 6842,
+    "3": 5687,
+    "4": 1890,
+    "5": 610,
+    "6": 202
+   },
+   "rasgos": {
+    "hogar": 0.2667,
+    "netflix": 0.4559,
+    "amazon": 0.2263,
+    "win": 0.0,
+    "banca": 0.0,
+    "compras": 0.0,
+    "redes": 0.9917,
+    "ilimitado": 0.0,
+    "postpago": 0.662
+   },
+   "consumo_datos_pct": 62.1,
+   "mejora_publicidad": {
+    "sector": 5.41,
+    "global": -3.54,
+    "p5": 2.82,
+    "p95": 8.01,
+    "contactos": 14387
+   }
+  },
+  {
+   "id": "P4",
+   "nombre": "Poco activo en redes · poco digitales · con Win",
+   "clientes": 17903,
+   "estratos": {
+    "1": 2672,
+    "2": 6032,
+    "3": 5671,
+    "4": 2242,
+    "5": 908,
+    "6": 378
+   },
+   "rasgos": {
+    "hogar": 0.3142,
+    "netflix": 0.3245,
+    "amazon": 0.1367,
+    "win": 0.4701,
+    "banca": 0.3246,
+    "compras": 0.2357,
+    "redes": 0.3054,
+    "ilimitado": 0.0,
+    "postpago": 0.6628
+   },
+   "consumo_datos_pct": 62.4,
+   "mejora_publicidad": {
+    "sector": 2.85,
+    "global": -1.87,
+    "p5": 1.59,
+    "p95": 3.95,
+    "contactos": 10884
+   }
+  },
+  {
+   "id": "P5",
+   "nombre": "Plan de datos ilimitado · postpago · gasto móvil alto",
+   "clientes": 4803,
+   "estratos": {
+    "1": 589,
+    "2": 1474,
+    "3": 1527,
+    "4": 709,
+    "5": 310,
+    "6": 194
+   },
+   "rasgos": {
+    "hogar": 0.3606,
+    "netflix": 0.5061,
+    "amazon": 0.2819,
+    "win": 0.1899,
+    "banca": 0.4891,
+    "compras": 0.5007,
+    "redes": 0.8322,
+    "ilimitado": 1.0,
+    "postpago": 1.0
+   },
+   "consumo_datos_pct": 62.0,
+   "mejora_publicidad": {
+    "sector": 2.21,
+    "global": 5.7,
+    "p5": 0.84,
+    "p95": 3.1,
+    "contactos": 3847
+   }
+  }
+ ],
+ "publicidad": [
+  {
+   "cluster": "P1",
+   "campana": "C-OTT",
+   "contactos": 15313,
+   "principal": "novedad",
+   "principal_nombre": "Novedad y tecnología",
+   "reparto": {
+    "ahorro": 0.2251,
+    "novedad": 0.6554,
+    "familia": 0.0912,
+    "entretenimiento": 0.0282
+   },
+   "texto": "Sabemos que haces mucho desde el celular, activa Netflix, Amazon Prime o Win en un solo paquete.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 1801,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.989,
+     "lift_estimado_pct": 29.5,
+     "texto": "Si aún no tienes streaming, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 2,
+     "contactos": 4838,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.682,
+     "lift_estimado_pct": 4.9,
+     "texto": "Si aún no tienes streaming, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 3,
+     "contactos": 5077,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.536,
+     "lift_estimado_pct": 3.5,
+     "texto": "Sabemos que haces mucho desde el celular, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 4,
+     "contactos": 2159,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.577,
+     "lift_estimado_pct": 12.7,
+     "texto": "Sabemos que haces mucho desde el celular, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 5,
+     "contactos": 958,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.762,
+     "lift_estimado_pct": 19.6,
+     "texto": "Sabemos que haces mucho desde el celular, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 6,
+     "contactos": 480,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.535,
+     "lift_estimado_pct": 5.4,
+     "texto": "Sabemos que haces mucho desde el celular, activa Netflix, Amazon Prime o Win en un solo paquete."
+    }
+   ]
+  },
+  {
+   "cluster": "P1",
+   "campana": "C-TER",
+   "contactos": 6316,
+   "principal": "novedad",
+   "principal_nombre": "Novedad y tecnología",
+   "reparto": {
+    "ahorro": 0.1894,
+    "novedad": 0.7013,
+    "familia": 0.0955,
+    "entretenimiento": 0.0137
+   },
+   "texto": "Sabemos que haces mucho desde el celular, estrena el celular más nuevo: tu equipo ya cumplió su ciclo.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 715,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.71,
+     "lift_estimado_pct": 25.8,
+     "texto": "Si aún no tienes streaming, renueva tu celular con cuotas bajas y sin pagar de más."
+    },
+    {
+     "estrato": 2,
+     "contactos": 1975,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.685,
+     "lift_estimado_pct": 14.6,
+     "texto": "Si aún no tienes streaming, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 3,
+     "contactos": 2069,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.72,
+     "lift_estimado_pct": 10.9,
+     "texto": "Sabemos que haces mucho desde el celular, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 4,
+     "contactos": 947,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.948,
+     "lift_estimado_pct": 13.8,
+     "texto": "Sabemos que haces mucho desde el celular, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 5,
+     "contactos": 425,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.97,
+     "lift_estimado_pct": 47.1,
+     "texto": "Sabemos que haces mucho desde el celular, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 6,
+     "contactos": 185,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.524,
+     "lift_estimado_pct": 0.6,
+     "texto": "Sabemos que haces mucho desde el celular, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    }
+   ]
+  },
+  {
+   "cluster": "P1",
+   "campana": "C-VCH",
+   "contactos": 6502,
+   "principal": "novedad",
+   "principal_nombre": "Novedad y tecnología",
+   "reparto": {
+    "ahorro": 0.0599,
+    "novedad": 0.8171,
+    "familia": 0.075,
+    "entretenimiento": 0.048
+   },
+   "texto": "Sabemos que haces mucho desde el celular, llévate internet de fibra y lo último en TV con Claro Hogar.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 182,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.519,
+     "lift_estimado_pct": 14.9,
+     "texto": "Si aún no tienes streaming, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 2,
+     "contactos": 1180,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.552,
+     "lift_estimado_pct": 9.1,
+     "texto": "Si aún no tienes streaming, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 3,
+     "contactos": 2286,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.865,
+     "lift_estimado_pct": 18.9,
+     "texto": "Sabemos que haces mucho desde el celular, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 4,
+     "contactos": 1539,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.942,
+     "lift_estimado_pct": 18.3,
+     "texto": "Sabemos que haces mucho desde el celular, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 5,
+     "contactos": 840,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.88,
+     "lift_estimado_pct": 29.4,
+     "texto": "Sabemos que haces mucho desde el celular, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 6,
+     "contactos": 475,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.845,
+     "lift_estimado_pct": 30.4,
+     "texto": "Sabemos que haces mucho desde el celular, llévate internet de fibra y lo último en TV con Claro Hogar."
+    }
+   ]
+  },
+  {
+   "cluster": "P2",
+   "campana": "C-OTT",
+   "contactos": 12498,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.0045,
+    "novedad": 0.0689,
+    "familia": 0.533,
+    "entretenimiento": 0.3935
+   },
+   "texto": "Si ya disfrutas el streaming, un solo plan de streaming para ver con toda la familia.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 822,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.75,
+     "lift_estimado_pct": 19.3,
+     "texto": "Si ya disfrutas el streaming, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 2,
+     "contactos": 2899,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.731,
+     "lift_estimado_pct": 27.8,
+     "texto": "Si ya disfrutas el streaming, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 3,
+     "contactos": 3997,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.874,
+     "lift_estimado_pct": 38.6,
+     "texto": "Si ya disfrutas el streaming, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 4,
+     "contactos": 2379,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.945,
+     "lift_estimado_pct": 32.2,
+     "texto": "Si ya disfrutas el streaming, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 5,
+     "contactos": 1410,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.822,
+     "lift_estimado_pct": 27.1,
+     "texto": "Si ya disfrutas el streaming, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 6,
+     "contactos": 991,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.774,
+     "lift_estimado_pct": 31.1,
+     "texto": "Si ya disfrutas el streaming, más series y películas: completa tu paquete de streaming."
+    }
+   ]
+  },
+  {
+   "cluster": "P2",
+   "campana": "C-TER",
+   "contactos": 5247,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.0833,
+    "novedad": 0.0562,
+    "familia": 0.6187,
+    "entretenimiento": 0.2418
+   },
+   "texto": "Si ya disfrutas el streaming, renueva tu equipo y gana batería y memoria para toda tu vida diaria.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 305,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.525,
+     "lift_estimado_pct": 31.8,
+     "texto": "Si ya disfrutas el streaming, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    },
+    {
+     "estrato": 2,
+     "contactos": 1206,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.492,
+     "lift_estimado_pct": 32.1,
+     "texto": "Si ya disfrutas el streaming, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    },
+    {
+     "estrato": 3,
+     "contactos": 1663,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.805,
+     "lift_estimado_pct": 24.2,
+     "texto": "Si ya disfrutas el streaming, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 4,
+     "contactos": 1018,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.822,
+     "lift_estimado_pct": 36.8,
+     "texto": "Si ya disfrutas el streaming, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 5,
+     "contactos": 628,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.819,
+     "lift_estimado_pct": 38.8,
+     "texto": "Si ya disfrutas el streaming, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 6,
+     "contactos": 427,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.417,
+     "lift_estimado_pct": 33.5,
+     "texto": "Si ya disfrutas el streaming, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    }
+   ]
+  },
+  {
+   "cluster": "P2",
+   "campana": "C-VCH",
+   "contactos": 1847,
+   "principal": "entretenimiento",
+   "principal_nombre": "Entretenimiento sin límites",
+   "reparto": {
+    "ahorro": 0.0566,
+    "novedad": 0.2429,
+    "familia": 0.3202,
+    "entretenimiento": 0.3803
+   },
+   "texto": "Si ya disfrutas el streaming, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes.",
+   "canal_tipico": "correo",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 29,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.431,
+     "lift_estimado_pct": 21.5,
+     "texto": "Si ya disfrutas el streaming, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 2,
+     "contactos": 208,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.461,
+     "lift_estimado_pct": 33.6,
+     "texto": "Si ya disfrutas el streaming, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    {
+     "estrato": 3,
+     "contactos": 593,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.406,
+     "lift_estimado_pct": 18.1,
+     "texto": "Si ya disfrutas el streaming, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    {
+     "estrato": 4,
+     "contactos": 471,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.536,
+     "lift_estimado_pct": 46.9,
+     "texto": "Si ya disfrutas el streaming, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 5,
+     "contactos": 317,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.622,
+     "lift_estimado_pct": 28.4,
+     "texto": "Si ya disfrutas el streaming, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    {
+     "estrato": 6,
+     "contactos": 229,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.423,
+     "lift_estimado_pct": 6.1,
+     "texto": "Si ya disfrutas el streaming, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    }
+   ]
+  },
+  {
+   "cluster": "P3",
+   "campana": "C-OTT",
+   "contactos": 9173,
+   "principal": "ahorro",
+   "principal_nombre": "Ahorro y precio",
+   "reparto": {
+    "ahorro": 0.6918,
+    "novedad": 0.0256,
+    "familia": 0.1451,
+    "entretenimiento": 0.1374
+   },
+   "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado.",
+   "canal_tipico": "sms",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 1755,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.855,
+     "lift_estimado_pct": 6.9,
+     "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 2,
+     "contactos": 3319,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.732,
+     "lift_estimado_pct": 1.2,
+     "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 3,
+     "contactos": 2819,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.794,
+     "lift_estimado_pct": 1.5,
+     "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 4,
+     "contactos": 902,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.722,
+     "lift_estimado_pct": 8.7,
+     "texto": "De forma simple y sin complicaciones, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 5,
+     "contactos": 280,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.385,
+     "lift_estimado_pct": 7.4,
+     "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 6,
+     "contactos": 98,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.459,
+     "lift_estimado_pct": 6.1,
+     "texto": "De forma simple y sin complicaciones, más series y películas: completa tu paquete de streaming."
+    }
+   ]
+  },
+  {
+   "cluster": "P3",
+   "campana": "C-TER",
+   "contactos": 2688,
+   "principal": "ahorro",
+   "principal_nombre": "Ahorro y precio",
+   "reparto": {
+    "ahorro": 0.6308,
+    "novedad": 0.1586,
+    "familia": 0.1479,
+    "entretenimiento": 0.0627
+   },
+   "texto": "De forma simple y sin complicaciones, renueva tu celular con cuotas bajas y sin pagar de más.",
+   "canal_tipico": "whatsapp",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 534,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.85,
+     "lift_estimado_pct": 21.2,
+     "texto": "De forma simple y sin complicaciones, renueva tu celular con cuotas bajas y sin pagar de más."
+    },
+    {
+     "estrato": 2,
+     "contactos": 993,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.878,
+     "lift_estimado_pct": 25.0,
+     "texto": "De forma simple y sin complicaciones, renueva tu celular con cuotas bajas y sin pagar de más."
+    },
+    {
+     "estrato": 3,
+     "contactos": 780,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.43,
+     "lift_estimado_pct": 2.5,
+     "texto": "De forma simple y sin complicaciones, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 4,
+     "contactos": 264,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.649,
+     "lift_estimado_pct": 20.1,
+     "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 5,
+     "contactos": 82,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.351,
+     "lift_estimado_pct": -5.4,
+     "texto": "De forma simple y sin complicaciones, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    },
+    {
+     "estrato": 6,
+     "contactos": 35,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.769,
+     "lift_estimado_pct": 76.2,
+     "texto": "De forma simple y sin complicaciones, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    }
+   ]
+  },
+  {
+   "cluster": "P3",
+   "campana": "C-VCH",
+   "contactos": 2526,
+   "principal": "ahorro",
+   "principal_nombre": "Ahorro y precio",
+   "reparto": {
+    "ahorro": 0.4851,
+    "novedad": 0.0946,
+    "familia": 0.1558,
+    "entretenimiento": 0.2644
+   },
+   "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto.",
+   "canal_tipico": "whatsapp",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 155,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.723,
+     "lift_estimado_pct": 45.0,
+     "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    },
+    {
+     "estrato": 2,
+     "contactos": 652,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.753,
+     "lift_estimado_pct": 21.0,
+     "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    },
+    {
+     "estrato": 3,
+     "contactos": 1017,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.468,
+     "lift_estimado_pct": 10.5,
+     "texto": "De forma simple y sin complicaciones, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    {
+     "estrato": 4,
+     "contactos": 471,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.422,
+     "lift_estimado_pct": 0.6,
+     "texto": "De forma simple y sin complicaciones, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 5,
+     "contactos": 168,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.505,
+     "lift_estimado_pct": 2.7,
+     "texto": "De forma simple y sin complicaciones, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 6,
+     "contactos": 63,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.395,
+     "lift_estimado_pct": 8.6,
+     "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    }
+   ]
+  },
+  {
+   "cluster": "P4",
+   "campana": "C-OTT",
+   "contactos": 5548,
+   "principal": "entretenimiento",
+   "principal_nombre": "Entretenimiento sin límites",
+   "reparto": {
+    "ahorro": 0.2955,
+    "novedad": 0.0946,
+    "familia": 0.2657,
+    "entretenimiento": 0.3441
+   },
+   "texto": "De forma simple y sin complicaciones, más series y películas: completa tu paquete de streaming.",
+   "canal_tipico": "sms",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 872,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.767,
+     "lift_estimado_pct": 25.8,
+     "texto": "De forma simple y sin complicaciones, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 2,
+     "contactos": 1847,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.499,
+     "lift_estimado_pct": 0.6,
+     "texto": "De forma simple y sin complicaciones, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 3,
+     "contactos": 1785,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.448,
+     "lift_estimado_pct": -9.1,
+     "texto": "De forma simple y sin complicaciones, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 4,
+     "contactos": 678,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.734,
+     "lift_estimado_pct": 16.8,
+     "texto": "De forma simple y sin complicaciones, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 5,
+     "contactos": 266,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.301,
+     "lift_estimado_pct": 2.5,
+     "texto": "De forma simple y sin complicaciones, activa Netflix, Amazon Prime o Win en un solo paquete."
+    },
+    {
+     "estrato": 6,
+     "contactos": 100,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.749,
+     "lift_estimado_pct": 42.9,
+     "texto": "De forma simple y sin complicaciones, activa Netflix, Amazon Prime o Win en un solo paquete."
+    }
+   ]
+  },
+  {
+   "cluster": "P4",
+   "campana": "C-TER",
+   "contactos": 2839,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.3498,
+    "novedad": 0.044,
+    "familia": 0.4261,
+    "entretenimiento": 0.18
+   },
+   "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria.",
+   "canal_tipico": "sms",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 416,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.443,
+     "lift_estimado_pct": 2.0,
+     "texto": "De forma simple y sin complicaciones, renueva tu celular con cuotas bajas y sin pagar de más."
+    },
+    {
+     "estrato": 2,
+     "contactos": 957,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.573,
+     "lift_estimado_pct": 22.4,
+     "texto": "De forma simple y sin complicaciones, renueva tu celular con cuotas bajas y sin pagar de más."
+    },
+    {
+     "estrato": 3,
+     "contactos": 903,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.65,
+     "lift_estimado_pct": 11.2,
+     "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 4,
+     "contactos": 359,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.632,
+     "lift_estimado_pct": 8.5,
+     "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 5,
+     "contactos": 157,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.624,
+     "lift_estimado_pct": 31.8,
+     "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 6,
+     "contactos": 47,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.404,
+     "lift_estimado_pct": 12.6,
+     "texto": "De forma simple y sin complicaciones, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    }
+   ]
+  },
+  {
+   "cluster": "P4",
+   "campana": "C-VCH",
+   "contactos": 2497,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.3013,
+    "novedad": 0.1636,
+    "familia": 0.3212,
+    "entretenimiento": 0.214
+   },
+   "texto": "De forma simple y sin complicaciones, Claro Hogar conecta a toda tu familia con internet estable para todos en casa.",
+   "canal_tipico": "sms",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 129,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.728,
+     "lift_estimado_pct": 53.4,
+     "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    },
+    {
+     "estrato": 2,
+     "contactos": 557,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.867,
+     "lift_estimado_pct": 24.1,
+     "texto": "De forma simple y sin complicaciones, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    },
+    {
+     "estrato": 3,
+     "contactos": 927,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.398,
+     "lift_estimado_pct": -0.0,
+     "texto": "De forma simple y sin complicaciones, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 4,
+     "contactos": 535,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.534,
+     "lift_estimado_pct": 24.2,
+     "texto": "De forma simple y sin complicaciones, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 5,
+     "contactos": 244,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.418,
+     "lift_estimado_pct": 9.0,
+     "texto": "De forma simple y sin complicaciones, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 6,
+     "contactos": 105,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.407,
+     "lift_estimado_pct": 13.9,
+     "texto": "De forma simple y sin complicaciones, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    }
+   ]
+  },
+  {
+   "cluster": "P5",
+   "campana": "C-OTT",
+   "contactos": 2066,
+   "principal": "entretenimiento",
+   "principal_nombre": "Entretenimiento sin límites",
+   "reparto": {
+    "ahorro": 0.209,
+    "novedad": 0.0913,
+    "familia": 0.2976,
+    "entretenimiento": 0.4021
+   },
+   "texto": "Como cliente de plan postpago, más series y películas: completa tu paquete de streaming.",
+   "canal_tipico": "sms",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 259,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.86,
+     "lift_estimado_pct": 20.9,
+     "texto": "Como cliente de plan postpago, sube tu plan de streaming y paga menos que suscribiéndote por separado."
+    },
+    {
+     "estrato": 2,
+     "contactos": 641,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.46,
+     "lift_estimado_pct": -4.5,
+     "texto": "Como cliente de plan postpago, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 3,
+     "contactos": 648,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.59,
+     "lift_estimado_pct": 13.8,
+     "texto": "Como cliente de plan postpago, más series y películas: completa tu paquete de streaming."
+    },
+    {
+     "estrato": 4,
+     "contactos": 307,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.643,
+     "lift_estimado_pct": 21.7,
+     "texto": "Como cliente de plan postpago, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 5,
+     "contactos": 124,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.535,
+     "lift_estimado_pct": 14.5,
+     "texto": "Como cliente de plan postpago, un solo plan de streaming para ver con toda la familia."
+    },
+    {
+     "estrato": 6,
+     "contactos": 87,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.404,
+     "lift_estimado_pct": 24.7,
+     "texto": "Como cliente de plan postpago, un solo plan de streaming para ver con toda la familia."
+    }
+   ]
+  },
+  {
+   "cluster": "P5",
+   "campana": "C-TER",
+   "contactos": 955,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.1489,
+    "novedad": 0.3479,
+    "familia": 0.3523,
+    "entretenimiento": 0.1509
+   },
+   "texto": "Como cliente de plan postpago, renueva tu equipo y gana batería y memoria para toda tu vida diaria.",
+   "canal_tipico": "whatsapp",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 121,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.528,
+     "lift_estimado_pct": 22.6,
+     "texto": "Como cliente de plan postpago, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 2,
+     "contactos": 270,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.326,
+     "lift_estimado_pct": -2.9,
+     "texto": "Como cliente de plan postpago, renueva tu equipo y gana batería y memoria para toda tu vida diaria."
+    },
+    {
+     "estrato": 3,
+     "contactos": 302,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.464,
+     "lift_estimado_pct": 21.3,
+     "texto": "Como cliente de plan postpago, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 4,
+     "contactos": 150,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.352,
+     "lift_estimado_pct": 7.3,
+     "texto": "Como cliente de plan postpago, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    },
+    {
+     "estrato": 5,
+     "contactos": 71,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.432,
+     "lift_estimado_pct": 29.6,
+     "texto": "Como cliente de plan postpago, estrena el celular más nuevo: tu equipo ya cumplió su ciclo."
+    },
+    {
+     "estrato": 6,
+     "contactos": 41,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.397,
+     "lift_estimado_pct": 26.4,
+     "texto": "Como cliente de plan postpago, renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    }
+   ]
+  },
+  {
+   "cluster": "P5",
+   "campana": "C-VCH",
+   "contactos": 826,
+   "principal": "familia",
+   "principal_nombre": "Familia y hogar",
+   "reparto": {
+    "ahorro": 0.1546,
+    "novedad": 0.2755,
+    "familia": 0.3373,
+    "entretenimiento": 0.2327
+   },
+   "texto": "Como cliente de plan postpago, Claro Hogar conecta a toda tu familia con internet estable para todos en casa.",
+   "canal_tipico": "whatsapp",
+   "por_estrato": [
+    {
+     "estrato": 1,
+     "contactos": 36,
+     "variante": "ahorro",
+     "nombre": "Ahorro y precio",
+     "p_mejor": 0.566,
+     "lift_estimado_pct": 32.3,
+     "texto": "Como cliente de plan postpago, suma Claro Hogar a tu línea móvil y paga menos por todo junto."
+    },
+    {
+     "estrato": 2,
+     "contactos": 196,
+     "variante": "entretenimiento",
+     "nombre": "Entretenimiento sin límites",
+     "p_mejor": 0.475,
+     "lift_estimado_pct": 22.0,
+     "texto": "Como cliente de plan postpago, con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    {
+     "estrato": 3,
+     "contactos": 297,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.406,
+     "lift_estimado_pct": 13.2,
+     "texto": "Como cliente de plan postpago, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 4,
+     "contactos": 175,
+     "variante": "familia",
+     "nombre": "Familia y hogar",
+     "p_mejor": 0.53,
+     "lift_estimado_pct": 31.0,
+     "texto": "Como cliente de plan postpago, Claro Hogar conecta a toda tu familia con internet estable para todos en casa."
+    },
+    {
+     "estrato": 5,
+     "contactos": 89,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.455,
+     "lift_estimado_pct": 14.7,
+     "texto": "Como cliente de plan postpago, llévate internet de fibra y lo último en TV con Claro Hogar."
+    },
+    {
+     "estrato": 6,
+     "contactos": 33,
+     "variante": "novedad",
+     "nombre": "Novedad y tecnología",
+     "p_mejor": 0.473,
+     "lift_estimado_pct": 28.1,
+     "texto": "Como cliente de plan postpago, llévate internet de fibra y lo último en TV con Claro Hogar."
+    }
+   ]
+  }
+ ],
+ "rendimiento": {
+  "politicas": {
+   "bandido_sector": {
+    "mejora_pct": 7.14,
+    "p5": 5.78,
+    "p95": 8.58
+   },
+   "ganador_global": {
+    "mejora_pct": 3.91,
+    "p5": 2.16,
+    "p95": 5.56
+   },
+   "bandido_global": {
+    "mejora_pct": 2.96,
+    "p5": 1.46,
+    "p95": 4.49
+   },
+   "oraculo": {
+    "mejora_pct": 17.06,
+    "p5": 15.26,
+    "p95": 18.63
+   }
+  },
+  "curvas": {
+   "bandido_sector": [
+    -0.031,
+    1.279,
+    2.125,
+    2.778,
+    3.302,
+    3.714,
+    4.091,
+    4.426,
+    4.72,
+    4.973,
+    5.227,
+    5.434,
+    5.631,
+    5.807,
+    5.987,
+    6.132,
+    6.276,
+    6.414,
+    6.553,
+    6.683,
+    6.808,
+    6.923,
+    7.036,
+    7.141
+   ],
+   "ganador_global": [
+    0.062,
+    0.018,
+    0.01,
+    -0.028,
+    -0.022,
+    -0.011,
+    0.697,
+    1.222,
+    1.651,
+    1.994,
+    2.291,
+    2.517,
+    2.725,
+    2.903,
+    3.067,
+    3.185,
+    3.311,
+    3.421,
+    3.526,
+    3.612,
+    3.697,
+    3.773,
+    3.843,
+    3.907
+   ],
+   "bandido_global": [
+    0.05,
+    0.724,
+    1.107,
+    1.357,
+    1.598,
+    1.742,
+    1.87,
+    1.998,
+    2.12,
+    2.224,
+    2.319,
+    2.382,
+    2.451,
+    2.513,
+    2.579,
+    2.618,
+    2.67,
+    2.722,
+    2.768,
+    2.815,
+    2.856,
+    2.892,
+    2.931,
+    2.963
+   ],
+   "oraculo": [
+    17.077,
+    17.026,
+    17.038,
+    17.025,
+    17.029,
+    17.027,
+    17.029,
+    17.035,
+    17.038,
+    17.044,
+    17.057,
+    17.054,
+    17.055,
+    17.054,
+    17.056,
+    17.042,
+    17.041,
+    17.041,
+    17.044,
+    17.048,
+    17.053,
+    17.054,
+    17.059,
+    17.06
+   ]
+  },
+  "identificacion_pct": 77.1,
+  "repeticiones": 20,
+  "oleadas": 24,
+  "sensibilidad": [
+   {
+    "nombre": "Sin diferencias entre sectores",
+    "sector": 0.6428147562832082,
+    "global": 2.611802798317203
+   },
+   {
+    "nombre": "Diferencias moderadas",
+    "sector": 2.6215364569456057,
+    "global": 3.0820728777849196
+   },
+   {
+    "nombre": "Diferencias del informe (base)",
+    "sector": 7.159860815190239,
+    "global": 3.9713000519698674
+   },
+   {
+    "nombre": "Diferencias fuertes",
+    "sector": 15.933014275066181,
+    "global": 5.730715436233616
+   }
+  ]
+ },
+ "segundos": 29.7
+}

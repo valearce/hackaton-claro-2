@@ -11,7 +11,7 @@ from modelo.experimentos.comportamiento import sondeo
 from modelo.experimentos.exportar_app import publicidad_por_cluster
 from modelo.experimentos.sectores import (UMBRAL_EFECTO, config_perfil, construir_sectores, describir, filtrar_region,
                                           indices_region)
-from modelo.nba import Engine, load_config
+from modelo.experimentos.motor_analisis import Engine, load_config
 
 RAIZ = Path(__file__).resolve().parents[2]
 CONFIG = json.loads((RAIZ / "modelo/experimentos/config.json").read_text(encoding="utf-8-sig"))

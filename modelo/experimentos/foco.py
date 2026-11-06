@@ -20,7 +20,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from ..nba import Bundle, Engine, load_config
+from .motor_analisis import Bundle, Engine, load_config
 from ..rutas import DATOS
 from . import simulador as sim, viabilidad
 from .sectores import config_perfil, construir_sectores, filtrar_region, indices_region

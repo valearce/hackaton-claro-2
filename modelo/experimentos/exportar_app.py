@@ -18,7 +18,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from ..nba import Engine, load_config
+from ..nba import Engine, load_config  # motor oficial (OR-Tools, con certificado)
 from ..rutas import DATOS
 from . import propuestas, simulador as sim
 from .sectores import (RASGOS, config_perfil, construir_sectores, nombrar_perfiles, rasgos_cliente, segmentar)
@@ -65,9 +65,12 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--datos", type=Path, default=DATOS)
     ap.add_argument("--config", type=Path, default=AQUI / "config.json")
-    ap.add_argument("--app", type=Path, required=True, help="carpeta del proyecto de la consola (hackatonv.2)")
+    ap.add_argument("--app", type=Path, help="carpeta de la consola FastAPI estática (hackatonv.2)")
+    ap.add_argument("--web", type=Path, help="raíz del repo con la consola Next.js (escribe web/public/datos/clusters.json y datos/clusters.csv)")
     ap.add_argument("--repeticiones", type=int)
     args = ap.parse_args()
+    if not args.app and not args.web:
+        ap.error("indica --app o --web")
     inicio = time.perf_counter()
     config = json.loads(args.config.read_text(encoding="utf-8-sig"))
     config["region"] = None  # la consola trabaja con los 100.000 clientes
@@ -76,7 +79,8 @@ def main():
     datos = pd.read_csv(args.datos, keep_default_na=False)
 
     print(f"NBA: asignando {len(datos):,} clientes", flush=True)
-    parrilla, _ = Engine(datos, nba, config["fecha"]).optimize()
+    crudo = pd.read_csv(args.datos, dtype=str, keep_default_na=False)  # el motor exacto lee los scores como texto
+    parrilla, _ = Engine(crudo, nba, config["fecha"]).optimize()
     cfg_perfil = config_perfil(config, perfiles)
     tabla, sector_de, z = construir_sectores(datos, cfg_perfil, config["sectores"], config["semilla"])
     perfil_cliente = segmentar(datos, cfg_perfil, config["sectores"]["k_perfiles"], config["sectores"]["componentes_pca"], config["semilla"])
@@ -131,12 +135,13 @@ def main():
             "sensibilidad": sensibilidad},
         "segundos": round(time.perf_counter() - inicio, 1)}
 
-    salida_json = args.app / "app" / "static" / "datos" / "clusters.json"
+    raiz = args.web or args.app
+    salida_json = (raiz / "web" / "public" / "datos" if args.web else raiz / "app" / "static" / "datos") / "clusters.json"
     salida_json.parent.mkdir(parents=True, exist_ok=True)
     salida_json.write_text(json.dumps(resumen, ensure_ascii=False, indent=1, allow_nan=False) + "\n", encoding="utf-8")
     sectores_id = tabla["sector"].to_numpy()[sector_de]
     pd.DataFrame({"id_cliente": datos["id_cliente"], "cluster": [f"P{c + 1}" for c in perfil_cliente], "estrato": estrato,
-                  "sector": sectores_id}).to_csv(args.app / "datos" / "clusters.csv", index=False)
+                  "sector": sectores_id}).to_csv(raiz / "datos" / "clusters.csv", index=False)
     print(f"Escrito {salida_json} y datos/clusters.csv ({resumen['segundos']} s)")
     for c in clusters:
         print(f"  {c['id']} {c['clientes']:>6,} clientes · {c['nombre']}")

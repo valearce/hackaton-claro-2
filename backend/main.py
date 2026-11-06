@@ -88,6 +88,11 @@ def filtered(run_id,q,filter_value):
     return grid
 
 
+@app.get("/api/clusters/{run_id}")
+def clusters(run_id:str):
+    return svc.by_cluster(run_id)
+
+
 @app.get("/api/parrilla/{run_id}/csv")
 @app.get("/api/parrilla/{run_id}.csv")
 def csv(run_id:str,metodo:Literal["optimo"]="optimo"):

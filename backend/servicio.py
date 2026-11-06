@@ -11,6 +11,7 @@ import threading
 import time
 from uuid import uuid4
 
+import numpy as np
 import pandas as pd
 
 from modelo.nba import Engine, load_config, validate_grid
@@ -197,3 +198,58 @@ def version(key):
 def active():
     pointer=STORE.json("activa.json")
     return version(pointer["version"]) if pointer else None
+
+
+# ---- Plus: desglose por cluster (los clusters salen de modelo.experimentos.exportar_app) ----
+CLUSTERS_PATH = SERVICE / "datos/clusters.csv" if (SERVICE / "datos/clusters.csv").is_file() else ROOT / "datos/clusters.csv"
+_CLUSTERS = {}
+
+
+def cluster_codes():
+    if "c" not in _CLUSTERS:
+        if not CLUSTERS_PATH.is_file():
+            raise FileNotFoundError("No hay clusters: falta datos/clusters.csv (python -m modelo.experimentos.exportar_app --web .)")
+        table = pd.read_csv(CLUSTERS_PATH, dtype=str, keep_default_na=False).set_index("id_cliente").reindex(DATA.id_cliente)
+        if table.cluster.eq("").any() or table.cluster.isna().any():
+            raise ValueError("datos/clusters.csv no cubre todos los clientes")
+        names = sorted(table.cluster.unique())
+        _CLUSTERS["c"] = (names, pd.Categorical(table.cluster.to_numpy(), categories=names).codes)
+    return _CLUSTERS["c"]
+
+
+def score(column):
+    if column not in _CLUSTERS:
+        _CLUSTERS[column] = DATA[column].astype(float).to_numpy()
+    return _CLUSTERS[column]
+
+
+def by_cluster(key):
+    """Qué hizo la corrida en cada cluster: valor esperado (score producto x score canal x valor), clientes, ofertas y canales."""
+    record = load_run(key)
+    cached_result = record.get("clusters")
+    if cached_result:
+        return cached_result
+    config = record["config"]
+    names, code = cluster_codes()
+    n = len(names)
+    grid = grid_for(key).set_index("id_cliente").reindex(DATA.id_cliente)
+    channels = list(config["parametros"]["canal"]["capacidad_por_corrida"])
+    channel_index = grid.canal.map({c: i for i, c in enumerate(channels)}).fillna(-1).to_numpy(int)
+    channel_scores = np.column_stack([score(config["parametros"]["canal"]["columnas_score"][c]) for c in channels])
+    assigned = (grid.estado == "asignado").to_numpy()
+    rows = np.arange(len(grid))
+    value = np.zeros(len(grid))
+    offers = {}
+    for campaign in config["campanas"]:
+        picked = ((grid.campana_1 == campaign["id"]) | (grid.campana_2 == campaign["id"])).to_numpy() & assigned & (channel_index >= 0)
+        offers[campaign["id"]] = np.bincount(code, weights=picked.astype(float), minlength=n)
+        value[picked] += score(campaign["columna_score"])[picked] * channel_scores[rows[picked], channel_index[picked]] * campaign["valor_negocio"]
+    per_value = np.bincount(code, weights=value, minlength=n)
+    acting = np.bincount(code, weights=assigned.astype(float), minlength=n)
+    size = np.bincount(code, minlength=n)
+    used = {c: np.bincount(code, weights=(grid.canal == c).to_numpy().astype(float), minlength=n) for c in channels}
+    result = {"clusters": [{"id": names[i], "clientes": int(size[i]), "con_accion": int(acting[i]), "valor": float(per_value[i]),
+                            "ofertas": {k: int(v[i]) for k, v in offers.items()}, "canales": {k: int(v[i]) for k, v in used.items()}}
+                           for i in range(n)],
+              "total": {"valor": float(per_value.sum()), "con_accion": int(acting.sum())}}
+    return result

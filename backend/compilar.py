@@ -16,4 +16,6 @@ for name in ("__init__.py", "rutas.py"):
     shutil.copyfile(root / "modelo" / name, target)
 (service / "datos").mkdir(exist_ok=True)
 shutil.copyfile(root / "datos/clientes.csv", service / "datos/clientes.csv")
+if (root / "datos/clusters.csv").is_file():  # plus opcional: pestaña Clusters
+    shutil.copyfile(root / "datos/clusters.csv", service / "datos/clusters.csv")
 print("Motor compartido y datos preparados para el servicio NBA.")
