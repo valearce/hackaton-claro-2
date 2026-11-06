@@ -1,45 +1,86 @@
 'use client';
-import { useState, type FormEvent } from 'react';
-import { channelName } from '@/lib/api';
-import type { Change, Config, Metadata } from '@/lib/types';
 
-function NumberField({ label, value, change, min = 0, max = 1000000, step = 1 }: { label: string; value: number; change: (n: number) => void; min?: number; max?: number; step?: number }) {
-  return <label className="field">{label}<input type="number" value={value} min={min} max={max} step={step} onChange={e => { const n = Number(e.target.value); if (Number.isFinite(n) && n >= min && n <= max) change(n); }} /></label>;
+import { useState, type ReactNode } from 'react';
+import { channelName, nf, percent, value } from '@/lib/api';
+import type { Change, Config, Metadata, Run } from '@/lib/types';
+
+const capacities: Record<string, number[]> = {
+  asesor: [0, 1250, 2500, 5000, 7500], whatsapp: [5000, 10000, 15000, 20000, 30000],
+  correo: [10000, 20000, 30000, 40000], sms: [10000, 20000, 40000, 60000],
+};
+const decimal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const oneDecimal = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+function Choices({ label, values, current, official, change, format = nf.format, min = 0, max = 1000000, step = 1 }: {
+  label: string; values: number[]; current: number; official: number; change: (n: number) => void;
+  format?: (n: number) => string; min?: number; max?: number; step?: number;
+}) {
+  const [other, setOther] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState('');
+  const options = [...new Set([...values, current])].sort((a, b) => a - b);
+  return <div className="cl-choice">
+    <div className="cl-steps" role="group" aria-label={label}>
+      {options.map(n => <button className="cl-step" type="button" key={n} aria-pressed={n === current} onClick={() => { change(n); setOther(false); }}>{format(n)}{n === official && <span className="reto">reto</span>}</button>)}
+      <button className="cl-step" type="button" aria-expanded={other} onClick={() => { setOther(!other); setDraft(String(current)); setError(''); }}>Seleccionar otro</button>
+    </div>
+    {other && <form className="cl-custom" onSubmit={e => {
+      e.preventDefault(); const n = Number(draft);
+      if (!draft.trim() || !Number.isFinite(n) || n < min || n > max || (step === 1 && !Number.isInteger(n))) { setError(`Escribe un valor válido entre ${min} y ${max}.`); return; }
+      change(n); setOther(false); setError('');
+    }}><label>{label}<input className="cl-input num" type="number" value={draft} min={min} max={max} step={step} onChange={e => setDraft(e.target.value)} autoFocus required /></label><button className="cl-step" type="submit">Usar este valor</button><button className="cl-step" type="button" onClick={() => setOther(false)}>Cancelar</button>{error && <p className="cl-error" role="alert">{error}</p>}</form>}
+  </div>;
 }
 
-export default function Settings({ config, metadata, change, date, setDate }: { config: Config; metadata: Metadata; change: Change; date: string; setDate: (d: string) => void }) {
-  const [ruleName, setRuleName] = useState(''); const [column, setColumn] = useState('edad'); const [op, setOp] = useState('>='); const [ruleValue, setRuleValue] = useState('18'); const [scope, setScope] = useState('global'); const [formError, setFormError] = useState('');
-  const [channel, setChannel] = useState(''); const [channelScore, setChannelScore] = useState('score_canal_sms');
-  const [campaignName, setCampaignName] = useState(''); const [campaignScore, setCampaignScore] = useState('score_venta_cruzada_hogar'); const [campaignProduct, setCampaignProduct] = useState('');
-  const p = config.parametros; const channels = Object.keys(p.canal.capacidad_por_corrida);
-  const numerical = metadata.columnas.filter(c => metadata.tipos_columnas[c] === 'numero');
-  const operators = metadata.tipos_columnas[column] === 'numero' ? ['==', '!=', '<', '<=', '>', '>=', 'en', 'no_en'] : ['==', '!=', 'en', 'no_en', 'contiene'];
-  function weight(key: keyof typeof p.priorizacion.pesos, n: number) {
-    n = Math.round(n * 1000) / 1000;
-    change(d => {
-      const weights = d.parametros.priorizacion.pesos; const others = (Object.keys(weights) as (keyof typeof weights)[]).filter(k => k !== key);
-      const total = weights[others[0]] + weights[others[1]]; const a = Math.round((1 - n) * (total ? weights[others[0]] / total : 0.5) * 1000) / 1000;
-      weights[key] = n; weights[others[0]] = a; weights[others[1]] = Math.round((1 - n - a) * 1000) / 1000;
-    });
-  }
-  function addRule(event: FormEvent) {
-    event.preventDefault(); setFormError('');
-    const parse = (s: string) => metadata.tipos_columnas[column] === 'numero' ? Number(s.trim()) : s.trim();
-    const val = ['en', 'no_en'].includes(op) ? ruleValue.split(',').map(parse) : parse(ruleValue);
-    if (!ruleName.trim() || !ruleValue.trim() || (Array.isArray(val) ? val : [val]).some(v => typeof v === 'number' && !Number.isFinite(v))) { setFormError('Escribe un nombre y valores válidos para la regla.'); return; }
-    const [level, ...parts] = scope.split(':'); const id = `N-${crypto.randomUUID().slice(0, 8)}`;
-    change(d => { d.reglas.push({ id, control: id, nombre: ruleName.trim(), tipo: level === 'canal' ? 'canal' : 'elegibilidad', alcance: { nivel: level, valores: parts.length ? [parts.join(':')] : [] }, condicion: { atributo: column, operador: op, valor: val }, accion: 'excluir', activa: true }); });
-    setRuleName('');
-  }
-  function move(id: string, direction: number) {
-    change(d => { const order = d.parametros.priorizacion.jerarquia; const i = order.indexOf(id); const j = i + direction; if (j >= 0 && j < order.length) [order[i], order[j]] = [order[j], order[i]]; });
-  }
-  return <div className="settings">
-    <section className="card"><span className="eyebrow">Escenario</span><h2>¿Qué fecha quieres simular?</h2><label className="field">Fecha de evaluación<input type="date" value={date} onChange={e => e.target.value && setDate(e.target.value)} /></label><p className="hint">La fecha determina qué campañas están vigentes. Los cambios se calculan automáticamente.</p></section>
-    <section className="card"><span className="eyebrow">Canales y topes</span><h2>¿Cuántos clientes puede atender cada canal?</h2><div className="form-grid">{channels.map(c => <div className="channel-edit" key={c}><NumberField label={`Cupo ${channelName(c)}`} value={p.canal.capacidad_por_corrida[c]} change={n => change(d => { d.parametros.canal.capacidad_por_corrida[c] = n; })} /><NumberField label="Productos por contacto" value={p.politica_contacto.max_productos_por_canal[c]} max={2} change={n => change(d => { d.parametros.politica_contacto.max_productos_por_canal[c] = n; })} /></div>)}</div><details><summary>Agregar un canal</summary><form className="inline-form" onSubmit={e => { e.preventDefault(); const id = channel.trim().toLowerCase(); if (!/^[a-z0-9_-]+$/.test(id) || channels.includes(id)) { setFormError('Usa un identificador de canal nuevo, sin espacios.'); return; } change(d => { d.parametros.canal.capacidad_por_corrida[id] = 1000; d.parametros.canal.columnas_score[id] = channelScore; d.parametros.canal.orden_preferencia.push(id); d.parametros.politica_contacto.max_productos_por_canal[id] = 1; }); setChannel(''); }}><label className="field">Identificador<input value={channel} onChange={e => setChannel(e.target.value)} placeholder="Ej.: push" required /></label><label className="field">Columna de score<select value={channelScore} onChange={e => setChannelScore(e.target.value)}>{numerical.map(c => <option key={c}>{c}</option>)}</select></label><button className="button secondary">Agregar canal</button></form><p className="hint">Después habilita el canal en las campañas y define sus reglas de autorización.</p></details></section>
-    <section className="card"><span className="eyebrow">Umbrales</span><h2>Elegibilidad y frecuencia de contacto</h2><div className="form-grid"><NumberField label="Score mínimo de producto" value={p.priorizacion.umbral_score_producto} max={1} step={0.01} change={n => change(d => { d.parametros.priorizacion.umbral_score_producto = n; })} /><NumberField label="Score mínimo de canal" value={p.canal.umbral_score_canal} max={1} step={0.01} change={n => change(d => { d.parametros.canal.umbral_score_canal = n; })} /><NumberField label="Contactos máximos por semana" value={p.politica_contacto.max_contactos_semana} max={100} change={n => change(d => { d.parametros.politica_contacto.max_contactos_semana = n; })} /></div></section>
-    <section className="card"><span className="eyebrow">Prioridad</span><h2>¿Qué debe maximizar la asignación?</h2><label className="field">Objetivo<select value={p.optimizacion.objetivo} onChange={e => change(d => { d.parametros.optimizacion.objetivo = e.target.value as 'valor_esperado' | 'prioridad'; })}><option value="valor_esperado">Valor esperado comercial</option><option value="prioridad">Prioridad ponderada del negocio</option></select></label><p className="hint">El objetivo ponderado cambia las ofertas usando los pesos. Su valor esperado comercial puede ser menor que el máximo del reto.</p><fieldset disabled={p.optimizacion.objetivo !== 'prioridad'}><legend>Pesos de prioridad · suman 1</legend><div className="form-grid">{([['score_producto', 'Modelo'], ['valor_negocio', 'Valor de negocio'], ['jerarquia', 'Jerarquía']] as const).map(([key, name]) => <NumberField key={key} label={name} value={p.priorizacion.pesos[key]} max={1} step={0.05} change={n => weight(key, n)} />)}</div></fieldset><div className="order">{p.priorizacion.jerarquia.map((id, i) => <div key={id}><b>{i + 1}.</b><span>{config.campanas.find(c => c.id === id)?.nombre || id}</span><button type="button" aria-label={`Subir ${id}`} disabled={i === 0} onClick={() => move(id, -1)}>↑</button><button type="button" aria-label={`Bajar ${id}`} disabled={i === p.priorizacion.jerarquia.length - 1} onClick={() => move(id, 1)}>↓</button></div>)}</div><label className="check"><input type="checkbox" checked={p.priorizacion.modo === 'jerarquia_estricta'} onChange={e => change(d => { d.parametros.priorizacion.modo = e.target.checked ? 'jerarquia_estricta' : 'ponderado'; })} />Exigir que cada oferta incluya el producto elegible de mayor prioridad</label></section>
-    <section className="card"><span className="eyebrow">Campañas</span><h2>Lanzar, pausar y ajustar ofertas</h2><div className="campaigns">{config.campanas.map((c, i) => <article className="campaign" key={c.id}><div className="row"><h3>{c.nombre}</h3><label className="check"><input type="checkbox" checked={c.activa} onChange={e => change(d => { d.campanas[i].activa = e.target.checked; })} />Activa</label></div><span className="hint">{c.id} · {c.producto}</span><div className="form-grid"><NumberField label="Valor de negocio" value={c.valor_negocio} max={1} step={0.05} change={n => change(d => { d.campanas[i].valor_negocio = n; })} /><label className="field">Desde<input type="date" value={c.vigencia_inicio} onChange={e => change(d => { d.campanas[i].vigencia_inicio = e.target.value; })} /></label><label className="field">Hasta<input type="date" value={c.vigencia_fin} onChange={e => change(d => { d.campanas[i].vigencia_fin = e.target.value; })} /></label></div><div className="inline-checks">{channels.map(ch => <label className="check" key={ch}><input type="checkbox" checked={c.canales_permitidos.includes(ch)} onChange={e => change(d => { d.campanas[i].canales_permitidos = e.target.checked ? [...c.canales_permitidos, ch] : c.canales_permitidos.filter(v => v !== ch); })} />{channelName(ch)}</label>)}</div></article>)}</div><details><summary>Crear una campaña</summary><form className="form-grid" onSubmit={e => { e.preventDefault(); const id = `C-${crypto.randomUUID().slice(0, 8)}`; change(d => { d.campanas.push({ id, nombre: campaignName.trim(), producto: campaignProduct.trim().toUpperCase(), objetivo: 'Campaña de negocio', columna_score: campaignScore, valor_negocio: 1, canales_permitidos: [...channels], vigencia_inicio: date, vigencia_fin: `${Number(date.slice(0, 4)) + 1}-12-31`, activa: true }); d.parametros.priorizacion.jerarquia.push(id); }); setCampaignName(''); setCampaignProduct(''); }}><label className="field">Nombre<input value={campaignName} onChange={e => setCampaignName(e.target.value)} required /></label><label className="field">Código de producto<input value={campaignProduct} onChange={e => setCampaignProduct(e.target.value)} required /></label><label className="field">Score del producto<select value={campaignScore} onChange={e => setCampaignScore(e.target.value)}>{numerical.map(c => <option key={c}>{c}</option>)}</select></label><button className="button secondary">Crear campaña</button></form></details></section>
-    <section className="card"><span className="eyebrow">Reglas</span><h2>Exclusiones de negocio</h2>{config.reglas.map((r, i) => <div className="rule" key={r.id}><label className="check"><input type="checkbox" checked={r.activa} onChange={e => change(d => { d.reglas[i].activa = e.target.checked; })} /><b>{r.nombre}</b></label><p className="hint">{r.id} · control {r.control}{r.condicion.atributo ? ` · ${r.condicion.atributo} ${r.condicion.operador}` : ' · condición compuesta'}</p>{r.condicion.atributo && <label className="field">Valor<input value={Array.isArray(r.condicion.valor) ? r.condicion.valor.join(', ') : String(r.condicion.valor)} onChange={e => { const text = e.target.value; change(d => { const type = metadata.tipos_columnas[r.condicion.atributo!]; const parse = (v: string) => type === 'numero' ? Number(v.trim()) : v.trim(); d.reglas[i].condicion.valor = ['en', 'no_en'].includes(r.condicion.operador!) ? text.split(',').map(parse) : parse(text); }); }} /></label>}</div>)}<details><summary>Crear una regla usando una columna de la base</summary><form onSubmit={addRule} className="form-grid"><label className="field">Nombre<input value={ruleName} onChange={e => setRuleName(e.target.value)} required /></label><label className="field">Columna<select value={column} onChange={e => { const c = e.target.value; setColumn(c); setOp('=='); setRuleValue(''); }}>{metadata.columnas.filter(c => c !== 'id_cliente').map(c => <option key={c}>{c}</option>)}</select></label><label className="field">Condición<select value={op} onChange={e => setOp(e.target.value)}>{operators.map(c => <option key={c}>{c}</option>)}</select></label><label className="field">Valor o lista separada por comas<input value={ruleValue} onChange={e => setRuleValue(e.target.value)} required /></label><label className="field">Aplica a<select value={scope} onChange={e => setScope(e.target.value)}><option value="global">Todas las campañas</option>{config.campanas.map(c => <option key={c.id} value={`campana:${c.id}`}>{c.nombre}</option>)}{channels.map(c => <option key={c} value={`canal:${c}`}>Canal {channelName(c)}</option>)}</select></label><button className="button secondary">Agregar regla</button></form></details>{formError && <p className="error" role="alert">{formError}</p>}</section>
-  </div>;
+function Row({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+  return <div className="cl-rowctl"><div className="lab">{title}{description && <span>{description}</span>}</div><div>{children}</div></div>;
+}
+
+function Toggle({ on, label, change }: { on: boolean; label: string; change: () => void }) {
+  return <button type="button" className="cl-toggle" role="switch" aria-checked={on} aria-label={label} onClick={change} />;
+}
+
+export default function Settings({ config, metadata, change, run, initialRun }: { config: Config; metadata: Metadata; change: Change; run: Run | null; initialRun: Run | null }) {
+  const [otherOrder, setOtherOrder] = useState(false);
+  const p = config.parametros; const official = metadata.config_reto.parametros;
+  const channels = Object.keys(p.canal.capacidad_por_corrida);
+  const order = p.priorizacion.jerarquia;
+  const suggested = [official.priorizacion.jerarquia, ['C-OTT', 'C-TER', 'C-VCH'], ['C-TER', 'C-VCH', 'C-OTT'], order]
+    .map(ids => [...ids.filter(id => config.campanas.some(c => c.id === id)), ...order.filter(id => !ids.includes(id))]);
+  const orders = [...new Map(suggested.map(ids => [ids.join('>'), ids])).values()];
+  const short = (id: string) => config.campanas.find(c => c.id === id)?.producto || id;
+  const digital = channels.filter(c => c !== 'asesor');
+  const digitalLimit = digital.length ? p.politica_contacto.max_productos_por_canal[digital[0]] : 2;
+  const result = run?.metodos.optimo;
+  const initialValue = initialRun?.metodos.optimo.valor_esperado;
+  const improvement = initialValue !== undefined && metadata.meta > 0 ? initialValue / metadata.meta - 1 : null;
+  return <>
+    <section className="cl-card"><span className="cl-eyebrow">Paso 1</span><h2>¿Cómo decidimos a quién contactar?</h2>
+      <div className="cl-opts" style={{ gridTemplateColumns: '1fr' }}><button type="button" className="cl-opt" aria-pressed="true"><span className="t">Optimizador del equipo</span><span className="d">Reparte los cupos entre todos los clientes para sacar el mayor valor posible.</span></button></div>
+      <p className="cl-q">Con la configuración inicial, la referencia del reto es <strong>{oneDecimal.format(metadata.meta)}</strong>{initialValue !== undefined ? <> y nuestro optimizador obtiene <strong>{oneDecimal.format(initialValue)}</strong> de valor esperado{improvement !== null && improvement !== 0 ? <>: <strong>{percent.format(Math.abs(improvement))} {improvement > 0 ? 'más' : 'menos'}</strong></> : null}.</> : <>. Calculando el resultado de nuestro optimizador…</>}</p>
+    </section>
+
+    <section className="cl-card"><span className="cl-eyebrow">Paso 2</span><h2>¿Cuántos clientes puede atender cada canal?</h2><p className="cl-q">Selecciona el cupo por corrida. Puedes combinar los cambios de todos los canales antes de enviarlos.</p>
+      <div className="cl-chan">{channels.map(c => { const limit = p.politica_contacto.max_productos_por_canal[c]; const used = result?.canales.find(x => x.canal === c); return <div className="cl-chan-card" key={c}><div className="n">{channelName(c)}<span className="u">{limit === 1 ? '1 producto por contacto' : `hasta ${limit} productos`}</span></div><div className="v">{nf.format(p.canal.capacidad_por_corrida[c])}</div><div className="u">{used ? `${nf.format(used.uso)} asignados · ${used.cupo ? percent.format(used.uso / used.cupo) : '—'} del cupo en la última corrida` : 'Pendiente de enviar parámetros'}</div>
+        <Choices label={`Cupo ${channelName(c)}`} values={capacities[c] || [0, 1000, 5000, 10000]} current={p.canal.capacidad_por_corrida[c]} official={official.canal.capacidad_por_corrida[c] ?? 0} change={n => change(d => { d.parametros.canal.capacidad_por_corrida[c] = n; })} />
+      </div>; })}</div>
+    </section>
+
+    <section className="cl-card"><span className="cl-eyebrow">Paso 3</span><h2>¿A quién le ofrecemos y cuánto lo contactamos?</h2><div>
+      <Row title="Probabilidad mínima de compra" description="Score de producto desde el que una campaña compite"><Choices label="Probabilidad mínima de compra" values={[.25, .30, .35, .40, .45, .50]} current={p.priorizacion.umbral_score_producto} official={official.priorizacion.umbral_score_producto} max={1} step={.01} format={decimal.format} change={n => change(d => { d.parametros.priorizacion.umbral_score_producto = n; })} /></Row>
+      <Row title="Probabilidad mínima de respuesta" description="Score de canal desde el que un canal es opción"><Choices label="Probabilidad mínima de respuesta" values={[.15, .20, .25, .30, .35]} current={p.canal.umbral_score_canal} official={official.canal.umbral_score_canal} max={1} step={.01} format={decimal.format} change={n => change(d => { d.parametros.canal.umbral_score_canal = n; })} /></Row>
+      <Row title="Contactos por semana" description="Máximo por cliente, contando los ya recibidos"><Choices label="Contactos por semana" values={[1, 2, 3, 4]} current={p.politica_contacto.max_contactos_semana} official={official.politica_contacto.max_contactos_semana} max={100} change={n => change(d => { d.parametros.politica_contacto.max_contactos_semana = n; })} /></Row>
+      {digital.length > 0 && <Row title="Productos por mensaje digital" description={digital.map(channelName).join(', ')}><Choices label="Productos por mensaje digital" values={[1, 2]} current={digitalLimit} official={2} max={2} format={n => `${n} ${n === 1 ? 'producto' : 'productos'}`} change={n => change(d => { for (const c of digital) d.parametros.politica_contacto.max_productos_por_canal[c] = n; })} />{digital.some(c => p.politica_contacto.max_productos_por_canal[c] !== digitalLimit) && <p className="cl-q">Hay límites distintos por canal en opciones avanzadas.</p>}</Row>}
+      {channels.includes('asesor') && <Row title="Productos por llamada de asesor"><Choices label="Productos por llamada de asesor" values={[1, 2]} current={p.politica_contacto.max_productos_por_canal.asesor} official={official.politica_contacto.max_productos_por_canal.asesor} max={2} format={n => `${n} ${n === 1 ? 'producto' : 'productos'}`} change={n => change(d => { d.parametros.politica_contacto.max_productos_por_canal.asesor = n; })} /></Row>}
+    </div></section>
+
+    <section className="cl-card"><span className="cl-eyebrow">Paso 4</span><h2>Campañas y prioridad</h2><p className="cl-q">Pausa una campaña o cambia qué producto va primero cuando un cliente califica para varios.</p>
+      <div className="cl-switches">{config.campanas.map((c, i) => <div className="cl-sw" key={c.id}><div className="meta"><b>{c.nombre}</b><small>{c.producto} · valor de negocio {value.format(c.valor_negocio)}</small></div><Toggle on={c.activa} label={`${c.activa ? 'Pausar' : 'Activar'} ${c.nombre}`} change={() => change(d => { d.campanas[i].activa = !c.activa; })} /></div>)}</div>
+      <Row title="Orden de prioridad" description="Jerarquía entre productos"><div className="cl-steps" role="group" aria-label="Orden de prioridad">{orders.map(ids => <button type="button" className="cl-step" key={ids.join('>')} aria-pressed={ids.join('>') === order.join('>')} onClick={() => change(d => { d.parametros.priorizacion.jerarquia = ids; })}>{ids.map(short).join(' › ')}</button>)}<button type="button" className="cl-step" aria-expanded={otherOrder} onClick={() => setOtherOrder(!otherOrder)}>Seleccionar otro</button></div>{otherOrder && <div className="cl-orden">{order.map((id, i) => <div className="cl-orden-item" key={id}><span className="pos">{i + 1}</span><span className="nom">{config.campanas.find(c => c.id === id)?.nombre}</span>{[-1, 1].map(direction => <button className="cl-mini" type="button" key={direction} disabled={i + direction < 0 || i + direction >= order.length} aria-label={`${direction < 0 ? 'Subir' : 'Bajar'} ${short(id)}`} onClick={() => change(d => { const list = d.parametros.priorizacion.jerarquia; [list[i], list[i + direction]] = [list[i + direction], list[i]]; })}>{direction < 0 ? '↑' : '↓'}</button>)}</div>)}</div>}</Row>
+      <Row title="Exigir el orden de prioridad" description="El producto elegible preferido siempre va en la oferta"><div className="cl-steps">{([['ponderado', 'No'], ['jerarquia_estricta', 'Sí']] as const).map(([mode, title]) => <button type="button" className="cl-step" key={mode} aria-pressed={p.priorizacion.modo === mode} onClick={() => change(d => { d.parametros.priorizacion.modo = mode; })}>{title}</button>)}</div></Row>
+      <Row title="Qué maximiza el optimizador"><div className="cl-steps">{([['valor_esperado', 'Valor esperado'], ['prioridad', 'Puntaje ponderado']] as const).map(([objective, title]) => <button type="button" className="cl-step" key={objective} aria-pressed={p.optimizacion.objetivo === objective} onClick={() => change(d => { d.parametros.optimizacion.objetivo = objective; })}>{title}</button>)}</div></Row>
+    </section>
+
+    <section className="cl-card"><span className="cl-eyebrow">Paso 5</span><h2>Reglas del negocio</h2><p className="cl-q">Activa o apaga las reglas del escenario. El resultado se audita también contra las restricciones originales del reto.</p><div className="cl-switches">{config.reglas.map((r, i) => <div className="cl-sw" key={r.id}><div className="meta"><b>{r.nombre}</b><small>{r.id} · control {r.control}</small></div>{!r.activa && metadata.config_reto.reglas.some(x => x.id === r.id && x.activa) && <span className="cl-badge bad">Regla del reto apagada</span>}<Toggle on={r.activa} label={`${r.activa ? 'Apagar' : 'Activar'} ${r.nombre}`} change={() => change(d => { d.reglas[i].activa = !r.activa; })} /></div>)}</div></section>
+  </>;
 }

@@ -17,12 +17,20 @@ from typing import Literal
 
 try:
     from . import servicio as svc
+    from . import cercania
     from .esquemas import Configuracion, Pedido, Guardar, diccionario
 except ImportError:
     import servicio as svc
+    import cercania
     from esquemas import Configuracion, Pedido, Guardar, diccionario
 
 app=FastAPI(title="Consola NBA Claro",version="1.0.0")
+app.include_router(cercania.router)
+
+
+@app.post("/api/cercania/evaluar")
+def evaluate_proximity(p:cercania.PedidoCercania):
+    return cercania.evaluar(p)
 
 
 @app.exception_handler(RequestValidationError)
@@ -106,17 +114,8 @@ def csv(run_id:str,metodo:Literal["optimo"]="optimo"):
         headers={"Content-Disposition":f'attachment; filename="parrilla_{run_id}.csv"',"Cache-Control":"private, no-store"})
 
 
-@app.get("/api/parrilla/{run_id}/certificado")
-def certificate(run_id:str):
-    svc.load_run(run_id)
-    raw=svc.STORE.read(f"corridas/{run_id}/certificado.json.gz")
-    if raw is None: raise FileNotFoundError("El certificado no existe")
-    return StreamingResponse(iter([raw]),media_type="application/gzip",
-        headers={"Content-Disposition":f'attachment; filename="certificado_{run_id}.json.gz"'})
-
-
 @app.get("/api/parrilla/{run_id}")
-def grid(run_id:str,metodo:Literal["optimo"]="optimo",pagina:int=Query(1,ge=1),por_pagina:int=Query(30,ge=1,le=500),q:str=Query("",max_length=120),filtro:str="todos"):
+def grid(run_id:str,metodo:Literal["optimo"]="optimo",pagina:int=Query(1,ge=1),por_pagina:int=Query(10,ge=1,le=500),q:str=Query("",max_length=120),filtro:str="todos"):
     data=filtered(run_id,q,filtro);count=len(data);pages=max(1,(count+por_pagina-1)//por_pagina);pagina=min(pagina,pages)
     return {"total":count,"pagina":pagina,"paginas":pages,"filas":data.iloc[(pagina-1)*por_pagina:pagina*por_pagina].to_dict("records")}
 

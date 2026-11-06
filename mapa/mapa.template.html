@@ -6,7 +6,14 @@
   <meta name="theme-color" content="#c64032">
   <meta name="description" content="Estratificación por manzana de Bogotá y clientes del CSV agrupados por estrato.">
   <title>Bogotá · Estratos y clientes</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css" crossorigin="anonymous">
+  <script>
+    (() => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = (location.protocol === 'file:' ? '../web/public/mapa-assets/' : '/mapa-assets/') + 'maplibre-gl.css';
+      document.head.append(link);
+    })();
+  </script>
   <style>
     :root{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#23332e;background:#f5f4ef;font-synthesis:none;--line:#e1e5df;--accent:#c64032;--muted:#68756d}
     *{box-sizing:border-box}body{margin:0}button,input{font:inherit}button,a,input{touch-action:manipulation}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}a{color:#a63025;text-underline-offset:3px}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #176c91;outline-offset:3px}button{color:inherit}[hidden]{display:none!important}
@@ -14,31 +21,12 @@
     .brand{display:flex;align-items:center;gap:13px;min-width:0}.brand-icon{width:46px;height:46px;flex-shrink:0;border-radius:50%;object-fit:contain}.brand h1{font-size:20px;letter-spacing:-.6px;margin:0 0 3px;font-weight:700;line-height:1.2}.brand p{font-size:12px;color:var(--muted);margin:0}.top-link{font-size:13px;font-weight:600;text-decoration:none;padding:11px 14px;border:1px solid #e8d9d4;border-radius:9px;white-space:nowrap;background:#fff;flex-shrink:0}
     .app{display:grid;grid-template-columns:348px minmax(0,1fr);height:calc(100dvh - 82px);min-height:590px}.sidebar{padding:25px 23px;overflow:auto;border-right:1px solid var(--line);background:#fafbf7}.eyebrow{margin:0 0 7px;color:#7a8075;letter-spacing:1.3px;text-transform:uppercase;font-size:10px;font-weight:700}.sidebar h2{font-size:23px;letter-spacing:-.7px;margin:0 0 10px;line-height:1.2}.intro{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 21px}
     .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:23px 0 11px}.section-title h3{font-size:13px;margin:0}.text-button{border:0;background:none;padding:5px 0;color:#ad392d;font-size:12px}.strata{display:grid;gap:6px}.stratum{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);background:white;padding:11px 12px;border-radius:9px;text-align:left;min-height:43px;transition:opacity .15s,border-color .15s}.stratum[aria-pressed="false"]{opacity:.43;background:#f2f3ee}.stratum[aria-pressed="true"]{border-color:#cbd2c7}.swatch{width:11px;height:11px;border-radius:3px;background:var(--swatch)}.stratum-label{font-size:12px;font-weight:600}.stratum-count{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}.tiny{font-size:11px;color:var(--muted);line-height:1.6}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px 11px}.stat:first-child{grid-column:1/-1}.stat span{font-size:11px;color:var(--muted);display:block;margin-bottom:7px}.stat strong{font-size:22px;font-weight:650;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.stat:first-child strong{font-size:30px}.stat small{font-size:10px;color:var(--muted);display:block;margin-top:5px}.stat.wide{grid-column:1/-1}.stat.wide strong{font-size:20px}
-    .detail{margin-top:21px;border:1px solid #d9dfd3;border-left:3px solid #758d65;border-radius:9px;background:#fff;padding:15px}.detail h3{font-size:13px;margin:0 0 9px}.detail p{font-size:12px;line-height:1.65;margin:5px 0;color:var(--muted)}.detail strong{color:#293c30}.detail .detail-label{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);color:#42533f;font-size:11px;font-weight:650}.detail button{margin-top:10px}
     .layer-controls{border:1px solid var(--line);border-radius:10px;background:white;padding:13px;margin-bottom:19px}.layer-controls h3{margin:0 0 12px;font-size:13px}.layer-toggle{display:flex;gap:9px;align-items:flex-start;font-size:12px;margin:11px 0;line-height:1.5}.layer-toggle input{accent-color:var(--accent);margin:3px 0 0}.layer-toggle span{display:block}.layer-toggle small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.layer-field{display:block;font-size:11px;margin-top:14px;color:#42533f}.layer-field select{display:block;width:100%;font:inherit;font-size:12px;background:#fafbf8;border:1px solid var(--line);border-radius:7px;padding:9px;margin-top:7px;color:inherit}.layer-field input[type=range]{width:100%;accent-color:var(--accent);margin-top:10px}.coverage-legend{padding-top:11px;margin-top:11px;border-top:1px solid var(--line)}.coverage-legend img{max-width:100%;height:auto;display:block;margin-bottom:7px}.layer-note{font-size:10px;color:var(--muted);line-height:1.6;margin:10px 0 0}
     details{margin-top:23px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.8}summary{cursor:pointer;color:#344637;font-size:12px;font-weight:600}details p{margin:9px 0}details a{color:#4e6452}
     .workspace{position:relative;min-width:0;display:flex;flex-direction:column;background:#e9eee4}.toolbar{height:68px;flex-shrink:0;padding:12px 21px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:13px}.view-tabs{display:flex;background:#f1f3ed;border:1px solid var(--line);padding:3px;border-radius:9px}.view-tabs button{border:0;background:none;padding:8px 13px;border-radius:6px;font-size:12px;font-weight:600}.view-tabs button[aria-selected="true"]{background:#fff;box-shadow:0 1px 4px #263e2314}.search{max-width:330px;width:47%;position:relative}.search input{width:100%;padding:10px 13px 10px 34px;border:1px solid var(--line);border-radius:8px;background:#fafbf8;font-size:12px}.search svg{position:absolute;top:11px;left:11px;color:#7d8a7b}.canvas-area{flex:1;min-height:420px;position:relative}#map{position:absolute;inset:0}.map-actions{position:absolute;z-index:2;top:18px;left:18px;display:flex;gap:7px;flex-wrap:wrap}.map-actions button{border:1px solid #d7ddd3;background:#fff;padding:10px 12px;border-radius:8px;font-size:11px;box-shadow:0 2px 8px #283a2514}.map-note{position:absolute;z-index:2;bottom:43px;left:18px;max-width:280px;padding:10px 12px;border-radius:8px;background:#fffffff2;font-size:11px;line-height:1.5;box-shadow:0 2px 8px #283a2510;color:#52634e;pointer-events:none}.map-loading{position:absolute;inset:0;display:grid;place-items:center;z-index:1;background:#e9eee4;color:#65775d;font-size:13px}.map-loading p{max-width:290px;text-align:center;line-height:1.7}.statusbar{min-height:35px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:8px 20px;gap:10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line)}.statusbar strong{font-weight:500;color:#3e6144}.notice{padding:11px 20px;background:#fff3da;color:#73571b;font-size:12px;line-height:1.6;border-bottom:1px solid #eed9a8}.notice button{margin-left:9px;background:transparent;border:0;text-decoration:underline;color:inherit;font-size:12px}.list-panel{height:100%;overflow:auto;background:#f8faf5;padding:24px}.list-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:17px}.list-heading h2{font-size:18px;margin:0;letter-spacing:-.4px}.list-heading p{font-size:11px;color:var(--muted);margin:5px 0 0}.blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}.block-card{background:white;border:1px solid var(--line);border-radius:10px;text-align:left;padding:15px;min-height:89px;display:flex;gap:11px;align-items:flex-start}.block-card:hover{border-color:#9aa992}.block-card .swatch{margin-top:3px;flex-shrink:0}.block-card strong{font-size:12px;display:block;margin-bottom:7px}.block-card small{font-size:11px;color:var(--muted)}.pager{display:flex;align-items:center;justify-content:center;gap:17px;margin:22px 0 7px}.pager button{border:1px solid var(--line);border-radius:7px;background:white;padding:9px 13px;font-size:12px}.pager span{font-size:11px;color:var(--muted)}.empty{padding:35px;text-align:center;color:var(--muted);font-size:13px}.maplibregl-popup-content{padding:16px;border-radius:10px;font-family:inherit;min-width:180px;box-shadow:0 5px 20px #2635232a}.maplibregl-popup-content h3{margin:0 0 7px;font-size:14px}.maplibregl-popup-content p{margin:5px 0;font-size:12px;line-height:1.6}.maplibregl-ctrl-attrib{font-size:10px!important}.maplibregl-ctrl-attrib a{color:#324e3c}.maplibregl-ctrl-group button{min-width:33px;min-height:33px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     @media(max-width:800px){.topbar{padding:0 17px;height:73px}.brand h1{font-size:17px}.brand p{font-size:10px}.brand-icon{width:35px;height:35px}.top-link{font-size:11px;padding:9px}.app{height:auto;min-height:0;display:flex;flex-direction:column}.sidebar{order:2;border-right:0;padding:22px 19px;overflow:visible}.workspace{order:1;height:64dvh;min-height:490px}.toolbar{height:60px;padding:9px 12px;gap:9px}.view-tabs button{padding:8px 11px}.search{width:60%}.search input{font-size:12px}.canvas-area{min-height:0}.map-note{font-size:10px;bottom:45px;max-width:230px;left:12px}.map-actions{left:12px;top:12px}.statusbar{padding:8px 12px;line-height:1.5}.strata{grid-template-columns:1fr 1fr}.stratum{padding:10px;gap:7px}.sidebar h2{font-size:22px}.stats{grid-template-columns:1fr 1fr}.stat:first-child{grid-column:auto}.stat:first-child strong{font-size:25px}.stat.wide{grid-column:auto}.stat.wide strong{font-size:19px}.blocks{grid-template-columns:1fr 1fr}.list-panel{padding:15px}.block-card{padding:12px;min-height:81px}}
-    .sector-head{font-size:12px;line-height:1.6;margin:0 0 11px;padding:11px 12px;border:1px solid #ecd2cc;border-left:3px solid var(--accent);border-radius:9px;background:#fff7f5;color:#53423e}.sector-head strong{font-size:18px;letter-spacing:-.4px;color:#a63025}.sector-group{margin:0 0 7px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0;font-size:12px;line-height:1.5}.sector-group summary{padding:11px 12px;list-style:none;display:flex;justify-content:space-between;gap:9px;font-weight:600;color:#2f3d34}.sector-group summary::-webkit-details-marker{display:none}.sector-group summary small{font-weight:400;color:var(--muted);white-space:nowrap}.sector-body{padding:2px 12px 12px}.rec{padding:10px 0;border-top:1px solid var(--line)}.rec-title{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}.rec-title b{font-size:12px}.rec-main{font-size:12px}.rec-main b{color:#a63025}.rec-bar{height:6px;border-radius:99px;background:#eceee8;margin:6px 0;overflow:hidden}.rec-bar i{display:block;height:100%;background:var(--accent);border-radius:99px}.rec blockquote{margin:8px 0 0;padding:8px 10px;border-left:3px solid #d8ddd3;background:#f8f9f5;border-radius:0 7px 7px 0;font-size:11px;line-height:1.55;color:#41513f}
-    .paint-legend{display:flex;flex-wrap:wrap;gap:5px 11px;margin:10px 0 2px}.paint-chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#42533f}.paint-chip i{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0}.paint-legend .tiny{flex-basis:100%}
-    .calor-barra{flex:1;min-width:70px;height:9px;border-radius:99px;background:linear-gradient(90deg,rgba(212,39,27,.12),rgba(212,39,27,.96));border:1px solid #e2d3cf}.calor-rank{flex-basis:100%;display:grid;gap:5px;margin:6px 0 4px}.calor-fila{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:11px;color:#42533f}.calor-fila i{border-radius:3px}.calor-fila b{font-variant-numeric:tabular-nums;color:#a63025}
-    .cl-lista{display:grid;gap:5px;margin:8px 0}.cl-fila{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:3px 8px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;text-align:left;font-size:11px}.cl-fila.sel{border-color:var(--accent);box-shadow:0 0 0 2px #f1c5bf}.cl-n{color:var(--muted);font-variant-numeric:tabular-nums}.cl-nombre{font-weight:600;color:#2f3d34;line-height:1.35}.cl-nombre small{display:block;font-weight:400;color:var(--muted);font-size:10px}.cl-val{font-variant-numeric:tabular-nums;font-weight:700;color:#a63025}.cl-barra{grid-column:1/-1;height:5px;border-radius:99px;background:#eceee8;overflow:hidden}.cl-barra i{display:block;height:100%;background:var(--accent)}
-    table.cl-grid{border-collapse:separate;border-spacing:3px;width:100%;margin-top:8px}.cl-grid th{font-weight:600;color:#42533f;font-size:10px;padding:2px}.cl-grid td{padding:0}.cl-grid button{width:100%;border:1px solid #ecd9d5;border-radius:6px;padding:8px 0;font-size:10px;font-variant-numeric:tabular-nums;background:#fff;color:#2b2420}.cl-grid button.sel{outline:2px solid #203d30}.cl-grid button.perfil{background:#f1f3ed;border-color:var(--line);font-weight:700;padding:8px 6px}.cl-leyenda{font-size:10px;color:var(--muted);line-height:1.65;margin:6px 0 14px}.cl-ficha{display:grid;gap:3px;font-size:11px;border:1px solid #ecd2cc;border-left:3px solid var(--accent);background:#fff7f5;border-radius:8px;padding:9px 11px;flex-basis:100%;color:#53423e;line-height:1.5}.cl-mas{margin:2px 0 6px;border:0;background:none;color:#ad392d;font-size:11px;padding:3px 0}
-    table.sondeo{width:100%;border-collapse:collapse;font-size:12px}.sondeo th{position:sticky;top:0;background:#f6f7f2;text-align:right;font-size:10px;color:#42533f;padding:8px;border-bottom:1px solid var(--line)}.sondeo th:first-child,.sondeo td:first-child{text-align:left}.sondeo td{padding:7px 8px;border-bottom:1px solid #eef0ea;text-align:right;font-variant-numeric:tabular-nums}.sondeo td.prom{color:var(--muted);background:#fafbf7}.sondeo-frases{margin:12px 0}.sondeo-frases p{font-size:12px;line-height:1.6;margin:5px 0;color:#41513f}details>.heat-wrap{margin-top:9px}
-    .foco-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px 16px;margin:0 0 12px}.foco-card h4{margin:0 0 3px;font-size:13px}.foco-card .tiny{margin:0 0 9px}table.foco{width:100%;border-collapse:collapse;font-size:12px}.foco th{text-align:right;font-size:10px;color:#42533f;padding:6px 8px;border-bottom:1px solid var(--line)}.foco th:first-child,.foco td:first-child{text-align:left}.foco td{padding:7px 8px;border-bottom:1px solid #eef0ea;text-align:right;font-variant-numeric:tabular-nums}.foco .sube{color:#2c7a44;font-weight:600}.foco .baja{color:#a63025}
-    #viab-view{background:#f8faf5}.viab-intro{font-size:12px;line-height:1.65;color:var(--muted);max-width:760px;margin:6px 0 14px}.viab-sec{margin-top:26px}.viab-sec h3{font-size:15px;margin:0 0 4px;letter-spacing:-.2px}.viab-sec>p{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 12px;max-width:760px}
-    .viab-alerta{border:1px solid #eed9a8;border-left:4px solid var(--accent);background:#fff8e8;border-radius:9px;padding:13px 15px;margin:0 0 15px;font-size:12px;line-height:1.6;color:#5a4a1d;max-width:900px}.viab-alerta strong{display:block;font-size:13px;margin-bottom:3px;color:#7a2d22}.viab-alerta p{margin:3px 0}
-    .heat-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff;max-height:560px}table.heat{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}.heat th{position:sticky;top:0;z-index:2;background:#f6f7f2;text-align:left;padding:10px 9px;font-size:11px;color:#42533f;border-bottom:1px solid var(--line)}.heat td{padding:6px 8px;border-bottom:1px solid #eef0ea;vertical-align:middle}
-    .estrato-fila{background:#f1f3ed;font-weight:700;font-size:11px;color:#344637}.sector-nombre{min-width:210px;font-weight:600;color:#2f3d34}.sector-nombre small{display:block;font-weight:400;color:var(--muted);font-size:10px}
-    .heat td.celda{cursor:pointer;text-align:center;min-width:132px;border-left:1px solid #fff}.celda b{display:block;font-size:13px;color:#22312a}.celda small{display:block;font-size:10px;color:#4a5a4d}
-    .celda.bloq{background:repeating-linear-gradient(135deg,#f1d3ce 0 6px,#f9ebe8 6px 12px)!important}.celda.bloq b{color:#8a2b20}.celda.bloq small{color:#8a2b20;font-size:9.5px;line-height:1.25;margin-top:2px}.celda.sel{outline:3px solid #203d30;outline-offset:-3px}.celda.parcial b::after{content:' ◐';font-weight:400;color:#7a5a1b}.mejor{white-space:nowrap}
-    .viab-detalle{margin-top:16px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:18px 20px}.viab-detalle h3{font-size:15px;margin:0 0 12px}.viab-stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.viab-stats div{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:#fafbf7}.viab-stats span{display:block;font-size:10px;color:var(--muted)}.viab-stats strong{font-size:16px;font-variant-numeric:tabular-nums}
-    .caja-bloqueo{border:1px solid #e9bdb6;border-left:4px solid var(--accent);background:#fdf0ee;border-radius:9px;padding:11px 14px;margin:0 0 14px;font-size:12px;line-height:1.6;color:#6f2a21}.caja-bloqueo p{margin:3px 0}
-    .emb-fila{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;margin:9px 0;font-size:12px}.emb-n{font-variant-numeric:tabular-nums;color:var(--muted)}.emb-barra{grid-column:1/-1;height:7px;background:#eceee8;border-radius:99px;overflow:hidden}.emb-barra i{display:block;height:100%}.emb-barra i.base{background:#9aa592}.emb-barra i.quita{background:var(--accent)}.emb-barra i.ok{background:#3e8a54}
-    .rec-viab{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;line-height:1.6}.rec-viab blockquote{margin:8px 0 0;padding:9px 11px;border-left:3px solid #d8ddd3;background:#f8f9f5;border-radius:0 7px 7px 0;font-size:12px;color:#41513f}
-    table.reglas{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.reglas th{text-align:left;background:#f6f7f2;font-size:11px;color:#42533f;padding:9px;border-bottom:1px solid var(--line)}.reglas td{padding:9px;border-bottom:1px solid #eef0ea;vertical-align:top}.reglas tr.nueva td{background:#fff4e3}.chip-r{display:inline-block;font-size:10px;border:1px solid var(--line);border-radius:99px;padding:2px 8px;margin:0 4px 4px 0;background:#fafbf7;font-variant-numeric:tabular-nums}.etiqueta-nueva{display:inline-block;margin-left:6px;font-size:10px;background:var(--accent);color:#fff;border-radius:99px;padding:1px 8px}
-    .mix-fila{display:grid;grid-template-columns:78px minmax(0,1fr);gap:10px;align-items:center;margin:8px 0;font-size:12px}.mix{display:flex;height:28px;border-radius:7px;overflow:hidden;background:#eceee8}.mix span{display:grid;place-items:center;color:#fff;font-size:10px;font-weight:600;min-width:0;overflow:hidden}
-    .chart svg{width:100%;max-width:700px;height:auto;display:block}.chart text{font-family:inherit;font-size:11px;fill:#52634e}table.mini{border-collapse:collapse;font-size:12px;margin-top:10px;background:#fff;border:1px solid var(--line)}.mini th,.mini td{padding:7px 12px;text-align:right;border-bottom:1px solid #eef0ea}.mini th:first-child,.mini td:first-child{text-align:left}.mini th{background:#f6f7f2;font-size:11px;color:#42533f}
+    .toolbar{height:auto;min-height:68px;flex-wrap:wrap}.view-tabs{flex-shrink:0;max-width:100%;overflow-x:auto}.search{flex:1;min-width:180px}.viab-alerta{max-width:100%}
+    @media(max-width:800px){.toolbar{min-height:60px}.toolbar .view-tabs{width:100%;display:grid;grid-template-columns:1fr}.toolbar .view-tabs button{padding:8px 4px}.toolbar .search{width:100%;max-width:none}.cl-grid button{min-height:36px}.foco-card{overflow-x:auto}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
@@ -53,18 +41,12 @@
       <p class="intro">Explora las manzanas oficiales y consulta los clientes del CSV por estrato.</p>
       <section class="layer-controls" aria-label="Capas del mapa">
         <h3>Capas del mapa</h3>
+        <label class="layer-toggle"><input id="toggle-basemap" type="checkbox"><span>Calles y etiquetas en línea<small id="basemap-status">Fondo local listo; esta capa adicional requiere Internet.</small></span></label>
         <label class="layer-toggle"><input id="toggle-strata" type="checkbox" checked><span>Estratos oficiales<small>Manzanas · Secretaría de Planeación</small></span></label>
         <label class="layer-toggle"><input id="toggle-antennas" type="checkbox" checked><span>Antenas de Claro<small id="antenna-source">Sitios móviles reportados · CRC</small></span></label>
         <label class="layer-field" for="coverage-select">Cobertura móvil Claro<select id="coverage-select"><option value="none">Ocultar cobertura</option><option value="4g">Mostrar cobertura 4G</option><option value="5g">Mostrar cobertura 5G</option></select></label>
         <label class="layer-field" for="coverage-opacity">Opacidad de cobertura <output id="coverage-opacity-value">50 %</output><input id="coverage-opacity" type="range" min="10" max="90" value="50" step="5"></label>
         <div class="coverage-legend" id="coverage-legend" hidden><img id="coverage-legend-image" alt="Leyenda oficial de intensidad de cobertura Claro"><span class="tiny" id="coverage-source"></span></div>
-        <div id="viab-controls" hidden>
-          <label class="layer-field" for="paint-select">Colorear manzanas por<select id="paint-select"></select></label>
-          <label class="layer-field" for="metrica-select">Medir viabilidad con<select id="metrica-select"></select></label>
-          <div class="paint-legend" id="paint-legend"></div>
-          <label class="layer-field" for="restriccion-select">Restricción de negocio a probar<select id="restriccion-select"></select></label>
-          <p class="layer-note" id="restriccion-resumen"></p>
-        </div>
         <p class="layer-note">Antenas: histórico reportado en Bogotá y alrededores, sin certificación de operación actual. Cobertura móvil estimada; no certifica disponibilidad de Hogar.</p>
       </section>
       <div class="section-title"><h3>Estratos visibles</h3><button class="text-button" id="all-strata">Mostrar todos</button></div>
@@ -77,22 +59,11 @@
         <div class="stat"><span>Consumo de datos medio</span><strong id="clients-usage">—</strong><small>Del plan mensual</small></div>
         <div class="stat wide"><span>ARPU móvil medio</span><strong id="clients-arpu">—</strong><small>COP por cliente y mes</small></div>
       </div>
-      <p class="tiny">Los clientes son sintéticos y no tienen coordenadas. Las cifras corresponden a todo Bogotá por estrato, sin asignación a manzanas.</p>
-      <section id="sectores" aria-label="Propuestas por sector" hidden>
-        <div class="section-title"><h3>Clusters más probables</h3><button class="text-button" id="clusters-limpiar" type="button" hidden>Quitar selección</button></div>
-        <p class="tiny">Un cluster es un perfil de consumo y vive en todos los estratos. Toca uno para verlo en el mapa. Valor esperado por 1.000 clientes.</p>
-        <div id="clusters-contenedor"></div>
-        <div class="section-title"><h3>Propuestas por sector</h3><span class="tiny">Estratos seleccionados</span></div>
-        <p class="sector-head" id="sectores-resumen"></p>
-        <div id="sectores-lista"></div>
-        <p class="tiny" id="sectores-nota"></p>
-      </section>
-      <section class="detail" id="detail" aria-live="polite"><h3>Consulta una manzana</h3><p>Selecciona un polígono del mapa o una manzana de la lista para ver su detalle.</p></section>
       <details><summary>Fuentes y alcance</summary><p>Manzanas: <a href="https://sinu.sdp.gov.co/serverp/rest/services/ESTRATO/Estratificacion/FeatureServer/2" target="_blank" rel="noopener noreferrer">Secretaría Distrital de Planeación</a>.</p><p id="snapshot-date"></p><p id="csv-source"></p><p>Antenas: recorte del <a href="https://www.postdata.gov.co/mapa/sitios-de-infraestructura-movil" target="_blank" rel="noopener noreferrer">mapa público de sitios móviles de la CRC</a>, filtrado por Claro/COMCEL en Bogotá y alrededores. Incluye varios periodos publicados, sin un corte único actual. Es una capa cartográfica, sin inventario individual descargado.</p><p>Cobertura: recorte de teselas 4G/5G del visor oficial de Claro, con leyenda original. Las capas de red son instantáneas incluidas en este HTML.</p><p>La consulta cartográfica es informativa. El estrato específico de un inmueble puede requerir certificación oficial.</p></details>
     </aside>
-    <section class="workspace" aria-label="Mapa y lista de manzanas">
+    <section class="workspace" aria-label="Mapa de manzanas">
       <div class="toolbar">
-        <div class="view-tabs" role="tablist" aria-label="Vista de manzanas"><button id="map-tab" role="tab" aria-controls="map-view" aria-selected="true">Mapa</button><button id="list-tab" role="tab" aria-controls="list-view" aria-selected="false">Lista</button><button id="viab-tab" role="tab" aria-controls="viab-view" aria-selected="false" hidden>Viabilidad</button></div>
+        <div class="view-tabs" role="tablist" aria-label="Vista del mapa"><button id="map-tab" role="tab" aria-controls="map-view" aria-selected="true">Mapa</button></div>
         <label class="search"><span class="sr-only">Buscar código de manzana</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="search" type="search" placeholder="Buscar código de manzana" maxlength="32" autocomplete="off"></label>
       </div>
       <div class="notice" id="notice" role="status" hidden><span id="notice-text"></span><button id="retry-map">Reintentar mapa</button></div>
@@ -103,12 +74,6 @@
           <div class="map-actions"><button id="reset-map" disabled>Ver toda Bogotá</button><button id="locate" disabled>Mi ubicación</button></div>
           <div class="map-note" id="map-hint">Selecciona una manzana para consultar su estrato. Los colores representan la capa oficial.</div>
         </section>
-        <section id="list-view" class="list-panel" role="tabpanel" aria-labelledby="list-tab" hidden>
-          <div class="list-heading"><div><h2>Manzanas de Bogotá</h2><p id="list-count">Preparando la lista…</p></div></div>
-          <div class="blocks" id="blocks"></div><p class="empty" id="empty-list" hidden>No hay manzanas para estos filtros.</p>
-          <div class="pager"><button id="previous-page" disabled>Anterior</button><span id="page-label">—</span><button id="next-page" disabled>Siguiente</button></div>
-        </section>
-        <section id="viab-view" class="list-panel" role="tabpanel" aria-labelledby="viab-tab" hidden></section>
       </div>
       <footer class="statusbar"><span id="data-status" role="status" aria-live="polite">Preparando datos…</span><span>SDP · CSV del reto</span></footer>
     </section>
@@ -117,17 +82,18 @@
   <script id="metadata" type="application/json">__META_JSON__</script>
   <script id="basemap-style" type="application/json">__STYLE_JSON__</script>
   <script id="network-layers" type="application/json">__NETWORK_JSON__</script>
-  <script id="sectores-json" type="application/json">__SECTORES_JSON__</script>
   <script id="geometry-gzip" type="application/octet-stream">__GEO_GZIP_BASE64__</script>
   <script>
   (() => {
     'use strict';
     // Optional public Protomaps v4 PMTiles archive, with Range and CORS support.
     // Empty uses the OpenFreeMap source from the GrouPay reference style.
-    const SETTINGS = Object.freeze({ pmtilesUrl: '', pageSize: 36 });
+    const SETTINGS = Object.freeze({ pmtilesUrl: '' });
+    // Font assets from the upstream repository, pinned to a verified revision.
+    // Street labels are optional; the local geometry never waits for them.
+    const GLYPHS_URL = 'https://cdn.jsdelivr.net/gh/protomaps/basemaps-assets@028c18f713baecad011301ff7a69acc39bcc2ae7/fonts/{fontstack}/{range}.pbf';
     const META = JSON.parse(document.getElementById('metadata').textContent);
     const NETWORK = JSON.parse(document.getElementById('network-layers').textContent);
-    const SECT = JSON.parse(document.getElementById('sectores-json').textContent);
     const COLORS = {0:'#a9b0a4',1:'#e6ba56',2:'#e78c60',3:'#d66065',4:'#b75e87',5:'#886dba',6:'#5b69aa'};
     const NAMES = {0:'Sin estrato',1:'Bajo-bajo',2:'Bajo',3:'Medio-bajo',4:'Medio',5:'Medio-alto',6:'Alto'};
     const selected = new Set([1,2,3,4,5,6,0]);
@@ -135,8 +101,9 @@
     const money = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
     const decimal = new Intl.NumberFormat('es-CO',{maximumFractionDigits:1});
     const $ = id => document.getElementById(id);
-    let geojson = null, byId = new Map(), filtered = [], search = '', page = 0;
+    let geojson = null, byId = new Map(), filtered = [], search = '';
     let map = null, maplibre = null, mapReady = false, mapLoading = false, mapGeneration = 0;
+    let basemapGeneration = 0, basemapFailed = false;
     let chosenId = null, currentPopup = null, currentView = 'map';
 
     function node(tag, text, className) {
@@ -150,407 +117,11 @@
       $('notice-text').textContent = text; $('notice').hidden = false; $('retry-map').hidden = !retry;
     }
 
-    function setView(view) {
-      currentView = view;
-      for (const name of ['map','list','viab']) {
-        $(name + '-tab').setAttribute('aria-selected', String(view === name));
-        $(name + '-view').hidden = view !== name;
-      }
-      if (view === 'map' && map) requestAnimationFrame(() => map.resize());
-      if (view === 'viab') renderViab();
-    }
-
-    // ---- Viabilidad por sector y restricciones lógicas (modelo/experimentos/viabilidad.py).
-    // Todo sale del motor NBA con los clientes de Bogotá; no hay coordenadas, así que el mapa se colorea por estrato.
-    const VIA = SECT && SECT.viabilidad ? SECT.viabilidad : null;
-    const vstate = {escenario:'base',metrica:'valor_por_cliente',paint:'estrato',celda:null,cluster:null,todosClusters:false};
-    const PALETA = ['#2b7a9b','#d99a00','#7b4fa3','#2f8f5b','#b5456b','#5d6b66'];
-    const ROJO = '#d4271b';
-    const rgba = (hex, a) => {const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';};
-    const METRICAS = {
-      valor_por_cliente:{nombre:'Valor esperado por 1.000 clientes',fmt:v => decimal.format(v * 1000),get:c => c.valor_por_cliente},
-      elegibles_pct:{nombre:'% de clientes elegibles',fmt:v => decimal.format(v) + ' %',get:c => c.clientes ? 100 * c.elegibles / c.clientes : 0},
-      conversion_pct:{nombre:'Conversión esperada del contacto',fmt:v => decimal.format(v) + ' %',get:c => c.conversion_pct}
-    };
-    const h = (tag, cls, ...kids) => {const e = node(tag, undefined, cls); for (const k of kids) if (k !== null && k !== undefined) e.append(k.nodeType ? k : document.createTextNode(String(k))); return e;};
-    const sgn = value => (value > 0 ? '+' : value < 0 ? '−' : '') + decimal.format(Math.abs(value));
-    const pct2 = value => (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(2).replace('.', ',');
-    const escActual = () => VIA.escenarios.find(e => e.id === vstate.escenario) || VIA.escenarios[0];
-    const campIds = () => Object.keys(VIA.campanas);
-    const colorCamp = id => PALETA[campIds().indexOf(id) % PALETA.length];
-    const nombreCamp = id => VIA.campanas[id]?.nombre || id;
-    function mezcla(hex, t) {
-      const n = parseInt(hex.slice(1), 16);
-      return 'rgb(' + [n >> 16 & 255, n >> 8 & 255, n & 255].map(x => Math.round(255 + (x - 255) * t)).join(',') + ')';
-    }
-    const punto = color => {const i = node('i'); i.style.background = color; return i;};
-    const chipColor = (color, texto) => h('span','paint-chip', punto(color), texto);
-
-    function mejorCampana(estrato) {
-      const m = METRICAS[vstate.metrica]; let best = null;
-      for (const e of escActual().estratos) if (e.estrato === estrato && e.contactos > 0) {const v = m.get(e); if (!best || v > best.v) best = {campana:e.campana,v};}
-      return best;
-    }
-
-    // ---- Clusters más probables. Sector = estrato x perfil; el perfil (cluster) no tiene ubicación propia:
-    // vive en todos los estratos, así que en el mapa solo se puede resaltar el estrato de su sector.
-    const esResidual = id => id.endsWith('otros');
-    function valorSectores(esc) {
-      const mapa = new Map(SECT.sectores.filter(s => !esResidual(s.sector)).map(s => [s.sector, {...s, perfil: s.sector.split('-')[1], etiqueta: s.nombre.replace(/^Estrato \d · /, ''), vpc: 0, mejor: null}]));
-      for (const c of esc.celdas) {
-        const s = mapa.get(c.sector); if (!s) continue;
-        s.vpc += c.valor_por_cliente;
-        if (!c.bloqueada && c.contactos > 0 && (!s.mejor || c.valor_por_cliente > s.mejor.v)) s.mejor = {id:c.campana,v:c.valor_por_cliente};
-      }
-      return mapa;
-    }
-    const rankingClusters = esc => [...valorSectores(esc).values()].sort((a, b) => b.vpc - a.vpc);
-    function elegirCluster(sel) {
-      vstate.cluster = vstate.cluster && JSON.stringify(vstate.cluster) === JSON.stringify(sel) ? null : sel;
-      renderPaint(); if (currentView === 'viab') renderViab();
-    }
-    function construirClusters(esc, todos) {
-      const caja = h('div','clusters'), mapa = valorSectores(esc), rank = rankingClusters(esc), sel = vstate.cluster;
-      const max = Math.max(1e-9, ...rank.map(r => r.vpc)), min = Math.min(...rank.map(r => r.vpc));
-      const lista = h('div','cl-lista');
-      rank.slice(0, todos || vstate.todosClusters ? rank.length : 8).forEach((r, i) => {
-        const fila = h('button','cl-fila' + (sel && sel.tipo === 'sector' && sel.sector === r.sector ? ' sel' : '')); fila.type = 'button';
-        const barra = h('span','cl-barra'), b = node('i'); b.style.width = (100 * r.vpc / max) + '%'; barra.append(b);
-        fila.append(h('span','cl-n', i + 1), h('span','cl-nombre', r.etiqueta, h('small', null, 'Estrato ' + r.estrato + ' · ' + nf.format(r.clientes) + ' clientes' + (r.mejor ? ' · mejor: ' + nombreCamp(r.mejor.id) : ' · sin campaña viable'))), h('span','cl-val', decimal.format(r.vpc * 1000)), barra);
-        fila.addEventListener('click', () => elegirCluster({tipo:'sector',sector:r.sector}));
-        lista.append(fila);
-      });
-      caja.append(lista);
-      if (!todos) {
-        const mas = h('button','cl-mas', vstate.todosClusters ? 'Ver solo los 8 primeros' : 'Ver los ' + rank.length + ' clusters'); mas.type = 'button';
-        mas.addEventListener('click', () => {vstate.todosClusters = !vstate.todosClusters; renderClusters();});
-        caja.append(mas);
-      }
-      const perfiles = [...new Set(rank.map(r => r.perfil))].sort(), tabla = h('table','cl-grid');
-      tabla.append(h('thead', null, h('tr', null, h('th'), ...[1,2,3,4,5,6].map(e => h('th', null, 'E' + e)))));
-      const cuerpo = h('tbody');
-      for (const p of perfiles) {
-        const etiqueta = rank.find(r => r.perfil === p).etiqueta;
-        const bp = h('button','perfil' + (sel && sel.tipo === 'perfil' && sel.perfil === p ? ' sel' : ''), p); bp.type = 'button'; bp.title = etiqueta + ' (ver este perfil en todos los estratos)';
-        bp.addEventListener('click', () => elegirCluster({tipo:'perfil',perfil:p}));
-        const fila = h('tr', null, h('th', null, bp));
-        for (const e of [1,2,3,4,5,6]) {
-          const s = mapa.get('E' + e + '-' + p), td = h('td');
-          if (s) {
-            const bt = h('button', sel && sel.tipo === 'sector' && sel.sector === s.sector ? 'sel' : null, Math.round(s.vpc * 1000)); bt.type = 'button';
-            bt.style.background = rgba(ROJO, 0.08 + 0.85 * (max > min ? (s.vpc - min) / (max - min) : 1)); bt.title = s.nombre + ': ' + decimal.format(s.vpc * 1000) + ' por 1.000 clientes';
-            bt.addEventListener('click', () => elegirCluster({tipo:'sector',sector:s.sector})); td.append(bt);
-          }
-          fila.append(td);
-        }
-        cuerpo.append(fila);
-      }
-      tabla.append(cuerpo); caja.append(tabla);
-      caja.append(h('div','cl-leyenda', ...perfiles.flatMap(p => [h('b', null, p + ' '), rank.find(r => r.perfil === p).etiqueta, h('br')]), 'Más rojo = más probable. No incluye el sector residual de perfiles pequeños.'));
-      return caja;
-    }
-    function renderClusters() {
-      const box = $('clusters-contenedor'); if (!box || !VIA) return;
-      box.replaceChildren(construirClusters(escActual(), false));
-      $('clusters-limpiar').hidden = !vstate.cluster;
-    }
-    function clusterPaint(colores, opac, leyenda, esc) {
-      const val = valorSectores(esc), sel = vstate.cluster;
-      colores[0] = COLORS[0]; opac[0] = 0.12;
-      if (sel.tipo === 'sector') {
-        const s = val.get(sel.sector);
-        for (const e of [1,2,3,4,5,6]) {colores[e] = e === s.estrato ? ROJO : '#cfd3cb'; opac[e] = e === s.estrato ? 0.9 : 0.1;}
-        leyenda.append(h('div','cl-ficha', h('b', null, s.etiqueta), h('span', null, 'Estrato ' + s.estrato + ' · ' + nf.format(s.clientes) + ' clientes'), h('span', null, 'Valor esperado: ' + decimal.format(s.vpc * 1000) + ' por 1.000 clientes' + (s.mejor ? ' · campaña más viable: ' + nombreCamp(s.mejor.id) : ' · sin campaña viable')), h('span','tiny','Un cluster no tiene ubicación propia: se resalta el estrato donde vive, y todas sus manzanas se pintan igual.')));
-      } else {
-        const vals = {}; let etiqueta = '';
-        for (const e of [1,2,3,4,5,6]) {const s = val.get('E' + e + '-' + sel.perfil); vals[e] = s ? s.vpc : 0; if (s) etiqueta = s.etiqueta;}
-        const pos = Object.values(vals).filter(v => v > 0), max = Math.max(1e-9, ...pos), min = pos.length ? Math.min(...pos) : 0;
-        for (const e of [1,2,3,4,5,6]) {colores[e] = ROJO; opac[e] = vals[e] > 0 ? 0.14 + 0.82 * (max > min ? (vals[e] - min) / (max - min) : 1) : 0.1;}
-        leyenda.append(h('div','cl-ficha', h('b', null, sel.perfil + ' · ' + etiqueta), h('span','tiny','Este cluster en cada estrato: más rojo = más probable. Escala ampliada entre su mejor y su peor estrato; valores reales por 1.000 clientes:')));
-        const rank = h('div','calor-rank');
-        for (const e of Object.keys(vals).map(Number).sort((a, b) => vals[b] - vals[a])) {const sw = punto(rgba(ROJO, opac[e])); sw.style.border = '1px solid #c9cfc4'; rank.append(h('div','calor-fila', sw, h('span', null, 'Estrato ' + e), h('b', null, vals[e] > 0 ? decimal.format(vals[e] * 1000) : 'sin sector')));}
-        leyenda.append(rank);
-      }
-    }
-
-    function renderPaint() {
-      if (!VIA) return;
-      const m = METRICAS[vstate.metrica], esc = escActual(), colores = {}, opac = {}, leyenda = $('paint-legend');
-      leyenda.replaceChildren();
-      if (vstate.cluster) {
-        clusterPaint(colores, opac, leyenda, esc);
-      } else if (vstate.paint === 'estrato') {
-        for (const s of [0,1,2,3,4,5,6]) colores[s] = COLORS[s];
-      } else if (vstate.paint === 'mejor') {
-        colores[0] = COLORS[0];
-        for (const s of [1,2,3,4,5,6]) {const b = mejorCampana(s); colores[s] = b ? colorCamp(b.campana) : COLORS[0];}
-        for (const id of campIds()) leyenda.append(chipColor(colorCamp(id), nombreCamp(id)));
-        leyenda.append(chipColor(COLORS[0],'Sin campaña viable'), h('span','tiny','Mejor según: ' + m.nombre.toLowerCase() + '.'));
-      } else {
-        // calor: rojo más intenso y opaco = más viable; transparente = poco viable o bloqueada (relativo a la mejor zona)
-        const id = vstate.paint.slice(6), vals = {}, gana = {};
-        for (const s of [1,2,3,4,5,6]) {
-          if (id === 'mejor') {const b = mejorCampana(s); vals[s] = b ? b.v : 0; gana[s] = b ? b.campana : null;}
-          else {const e = esc.estratos.find(x => x.estrato === s && x.campana === id); vals[s] = e && e.contactos > 0 ? m.get(e) : 0;}
-        }
-        // escala ampliada entre el estrato menos y el más viable, para que el contraste se note; el ranking trae los valores reales
-        const pos = Object.values(vals).filter(v => v > 0), max = Math.max(1e-9, ...pos), min = pos.length ? Math.min(...pos) : 0;
-        colores[0] = COLORS[0]; opac[0] = 0.15;
-        for (const s of [1,2,3,4,5,6]) {colores[s] = vals[s] > 0 ? ROJO : '#cfd3cb'; opac[s] = vals[s] > 0 ? 0.14 + 0.82 * (max > min ? (vals[s] - min) / (max - min) : 1) : 0.2;}
-        leyenda.append(h('span','tiny','Menos viable'), h('span','calor-barra'), h('span','tiny','Más viable'));
-        const rank = h('div','calor-rank');
-        for (const s of Object.keys(vals).map(Number).sort((a, b) => vals[b] - vals[a])) {
-          const sw = punto(rgba(ROJO, vals[s] > 0 ? opac[s] : 0.2)); sw.style.border = '1px solid #c9cfc4';
-          rank.append(h('div','calor-fila', sw, h('span', null, 'Estrato ' + s + (gana[s] ? ' · ' + nombreCamp(gana[s]) : '')), h('b', null, vals[s] > 0 ? m.fmt(vals[s]) : 'bloqueada o sin contactos')));
-        }
-        leyenda.append(rank, h('span','tiny','Se mide con: ' + m.nombre.toLowerCase() + '. Escala ampliada: el estrato menos viable queda casi transparente y el más viable en rojo pleno, aunque la diferencia real sea pequeña (mira los valores).'));
-      }
-      const conCalor = Object.keys(opac).length > 0;
-      document.querySelectorAll('#strata .stratum').forEach(b => {
-        const s = Number(b.dataset.stratum), c = colores[s] || COLORS[0];
-        b.style.setProperty('--swatch', conCalor && c.startsWith('#') ? rgba(c, opac[s]) : c);
-      });
-      if (mapReady && map.getLayer('strata-fill')) {
-        map.setPaintProperty('strata-fill','fill-color',['match',['get','estrato'],1,colores[1],2,colores[2],3,colores[3],4,colores[4],5,colores[5],6,colores[6],COLORS[0]]);
-        map.setPaintProperty('strata-fill','fill-opacity',conCalor ? ['match',['get','estrato'],1,opac[1],2,opac[2],3,opac[3],4,opac[4],5,opac[5],6,opac[6],opac[0]] : 0.72);
-      }
-      $('map-hint').textContent = hintEstratos();
-      renderClusters();
-    }
-
-    function hintEstratos() {
-      if (VIA && vstate.cluster) return 'Cluster resaltado en el mapa. Los clientes no tienen manzana: se pinta el estrato completo, sin ubicación más fina.';
-      if (!VIA || vstate.paint === 'estrato') return 'Selecciona una manzana para consultar su estrato. Los colores representan la capa oficial.';
-      return vstate.paint.startsWith('calor:') ? 'Más rojo y más opaco = más viable. Los clientes no tienen manzana: todas las manzanas de un estrato comparten intensidad.' : 'Los clientes no tienen manzana: todas las manzanas de un estrato comparten el mismo color.';
-    }
-
-    function renderRestriccion() {
-      const esc = escActual(), box = $('restriccion-resumen');
-      box.textContent = esc.id === 'base'
-        ? 'Reglas vigentes del motor NBA. Elige una restricción para ver cuánto valor cuesta y qué sectores bloquea.'
-        : 'Regla nueva: se excluye a quien ' + esc.regla.condicion + ' (' + esc.regla.alcance + '). Costo: ' + sgn(esc.delta_valor_total) + ' de valor esperado en todo el país (' + sgn(esc.delta_valor_total_pct) + ' %) y ' + sgn(esc.delta_valor_region) + ' en Bogotá. Se volvió a correr el motor: los cupos liberados pasan a otros clientes.';
-    }
-
-    function vDetalle(celdas) {
-      const box = h('section','viab-detalle'); box.id = 'viab-detalle';
-      const c = vstate.celda && celdas.get(vstate.celda.sector + '|' + vstate.celda.campana);
-      if (!c) {box.append(h('p','tiny','Toca una celda de la tabla para ver por qué reglas pasa o se cae esa campaña en ese sector, y la propuesta de mensaje recomendada.')); return box;}
-      const sector = SECT.sectores.find(s => s.sector === c.sector);
-      box.append(h('h3', null, sector.nombre + ' · ' + nombreCamp(c.campana)));
-      const stat = (t, v) => h('div', null, h('span', null, t), h('strong', null, v));
-      box.append(h('div','viab-stats', stat('Clientes del sector', nf.format(c.clientes)), stat('Elegibles', nf.format(c.elegibles) + ' (' + decimal.format(c.clientes ? 100 * c.elegibles / c.clientes : 0) + ' %)'), stat('Con canal habilitado', nf.format(c.viables)), stat('Reciben la campaña', nf.format(c.contactos)), stat('Conversión esperada', decimal.format(c.conversion_pct) + ' %')));
-      if (c.bloqueada) box.append(h('div','caja-bloqueo', h('b', null, '🔒 Esta campaña no se puede ofrecer aquí.'), h('p', null, 'Regla responsable: ' + c.bloqueo + (c.bloqueo_pct ? ' (por sí sola deja fuera al ' + decimal.format(c.bloqueo_pct) + ' % del sector).' : '.')), c.bloqueo_tambien.length ? h('p','tiny','También actúan: ' + c.bloqueo_tambien.join(' · ')) : null));
-      const fila = (texto, n, cls) => {
-        const barra = h('div','emb-barra'), i = node('i'); i.className = cls; i.style.width = (c.clientes ? 100 * n / c.clientes : 0) + '%'; barra.append(i);
-        return h('div','emb-fila', h('span', null, texto), h('span','emb-n', nf.format(n)), barra);
-      };
-      box.append(h('p','detail-label','Qué deja fuera cada regla por sí sola (un mismo cliente puede quedar fuera por varias a la vez)'), fila('Clientes del sector', c.clientes, 'base'));
-      for (const p of [...c.pasos].sort((a, b) => b.solo - a.solo)) box.append(fila('🚫 ' + p.nombre, p.solo, 'quita'));
-      box.append(h('p','detail-label','Resultado después de aplicarlas todas'), fila('Elegibles', c.elegibles, 'ok'), fila('Viables: elegibles y con canal habilitado', c.viables, 'ok'), fila('Reciben la campaña en la parrilla (hay cupos limitados)', c.contactos, 'ok'));
-      const rec = SECT.recomendaciones.find(r => r.sector === c.sector && r.campana === c.campana);
-      if (rec && !c.bloqueada) box.append(h('div','rec-viab', h('b', null, 'Propuesta recomendada: ' + rec.recomendada_nombre), ' · ' + decimal.format(rec.p_mejor * 100) + ' % de probabilidad de ser la mejor (simulado)', h('blockquote', null, rec.texto)));
-      return box;
-    }
-
-    function vSondeo() {
-      const C = SECT.comportamiento, caja = h('div'), estratos = [1,2,3,4,5,6];
-      const valor = (v, x) => v.unidad === '%' ? decimal.format(x) + ' %' : v.unidad === 'COP' ? money.format(x) : x.toLocaleString('es-CO', {maximumFractionDigits: x < 5 ? 2 : 1});
-      const fila = v => {
-        const tr = h('tr', null, h('td', null, v.nombre));
-        for (const e of estratos) {
-          const ef = v.efecto[String(e)], td = h('td', null, valor(v, v.valores[String(e)]));
-          if (Math.abs(ef) >= 0.1) td.style.background = rgba(ef > 0 ? ROJO : '#2b7a9b', Math.min(Math.abs(ef) / 0.5, 1) * 0.6);
-          td.title = 'Frente al promedio de Bogotá: ' + (ef > 0 ? '+' : '−') + Math.abs(ef).toFixed(2).replace('.', ',') + ' desviaciones';
-          tr.append(td);
-        }
-        tr.append(h('td','prom', valor(v, v.bogota)));
-        return tr;
-      };
-      const tabla = (vars, titulo) => h('table','sondeo', h('thead', null, h('tr', null, h('th', null, titulo), ...estratos.map(e => h('th', null, 'Estrato ' + e)), h('th', null, 'Bogotá'))), h('tbody', null, ...vars.map(fila)));
-      const quienes = C.variables.filter(v => v.distingue), planas = C.variables.filter(v => !v.distingue);
-      caja.append(h('p','tiny', 'Rojo = por encima del promedio de Bogotá; azul = por debajo. Solo ' + quienes.length + ' de ' + C.variables.length + ' variables cambian de verdad con el estrato (diferencia entre el estrato más alto y el más bajo de al menos ' + decimal.format(C.umbral_distingue) + ' desviaciones).'));
-      caja.append(h('div','heat-wrap', tabla(quienes, 'Lo que cambia con el estrato')));
-      const det = h('details', null, h('summary', null, 'Lo que NO cambia con el estrato (' + planas.length + ' variables)'), h('div','heat-wrap', tabla(planas, 'Plano entre estratos')));
-      caja.append(det);
-      const lista = h('div','sondeo-frases');
-      for (const e of estratos) {
-        const s = C.estratos[String(e)], nombres = xs => xs.map(x => x.nombre[0].toLowerCase() + x.nombre.slice(1)).join(', ');
-        lista.append(h('p', null, h('b', null, 'Estrato ' + e + ' · ' + nf.format(s.clientes) + ' clientes: '), s.destaca.length ? 'destaca en ' + nombres(s.destaca) : 'sin rasgos por encima del promedio', s.menos.length ? '; por debajo del promedio en ' + nombres(s.menos) + '.' : '.'));
-      }
-      caja.append(lista, h('p','tiny', C.nota));
-      return caja;
-    }
-
-    function vFoco() {
-      const F = SECT.foco, caja = h('div'), cambio = (v, nota) => h('td', v > 0.0005 ? 'sube' : v < -0.0005 ? 'baja' : null, nota);
-      for (const f of F.focos) {
-        const nombres = f.sectores.slice(0, 3).map(s => s.nombre.replace(/^Estrato (\d) · /, 'E$1 · ')).join(' | ') + (f.sectores.length > 3 ? ' | … y ' + (f.sectores.length - 3) + ' más' : '');
-        const filas = [h('tr', null, h('td', null, 'Hoy: óptimo global'), h('td', null, decimal.format(f.base.valor_foco)), h('td', null, '—'), h('td', null, '—'), h('td', null, '—'))];
-        for (const p of f.prioridad) filas.push(h('tr', null, h('td', null, 'Prioridad ×' + p.peso + ' (mismo cupo total)'), h('td', null, decimal.format(p.valor_foco)), cambio(p.delta_foco, sgn(p.delta_foco_pct) + ' %'), cambio(p.delta_resto_region, sgn(p.delta_resto_region)), cambio(p.delta_total, sgn(p.delta_total) + ' (' + pct2(p.delta_total_pct) + ' %)')));
-        filas.push(h('tr', null, h('td', null, 'Todo el cupo para este cluster (techo)'), h('td', null, decimal.format(f.aislado.valor_foco)), cambio(f.aislado.delta_foco, sgn(f.aislado.delta_foco_pct) + ' %'), h('td', null, 'sin cupo'), h('td', null, 'no alcanzable')));
-        filas.push(h('tr', null, h('td', null, 'Hoy + propuestas recomendadas (simulado)'), h('td', null, decimal.format(f.base.valor_foco_con_propuestas)), cambio(f.mejora_propuestas_pct, sgn(f.mejora_propuestas_pct) + ' % (' + sgn(f.mejora_propuestas_p5) + ' a ' + sgn(f.mejora_propuestas_p95) + ')'), h('td', null, '—'), h('td', null, '—')));
-        caja.append(h('div','foco-card', h('h4', null, f.nombre + ' · ' + nf.format(f.clientes) + ' clientes'), h('p','tiny', nombres), h('table','foco', h('thead', null, h('tr', null, h('th', null, 'Lectura'), h('th', null, 'Valor del foco'), h('th', null, 'Cambio en el foco'), h('th', null, 'Resto de Bogotá'), h('th', null, 'Total país'))), h('tbody', null, ...filas))));
-      }
-      caja.append(h('p','tiny', F.advertencia));
-      return caja;
-    }
-
-    function vReglas(esc) {
-      const base = VIA.escenarios[0];
-      const reglas = [...(esc.id !== 'base' ? esc.reglas.map(r => ({...r,nueva:true})) : []), ...base.reglas];
-      const cuerpo = h('tbody');
-      for (const r of reglas) {
-        const chips = h('td');
-        for (const [k, n] of Object.entries(r.bloqueados)) {const chip = h('span','chip-r', k + ': ' + nf.format(n)); chip.title = (VIA.campanas[k] ? nombreCamp(k) : 'Canal ' + k) + ': ' + nf.format(n) + ' clientes de Bogotá'; chips.append(chip);}
-        const fila = h('tr', r.nueva ? 'nueva' : null, h('td', null, r.nombre, r.nueva ? h('span','etiqueta-nueva','nueva') : null), h('td', null, r.alcance), h('td', null, 'Se excluye a quien ' + r.condicion), chips);
-        cuerpo.append(fila);
-      }
-      return h('table','reglas', h('thead', null, h('tr', null, h('th', null, 'Regla'), h('th', null, 'Aplica a'), h('th', null, 'Condición'), h('th', null, 'Clientes de Bogotá que deja fuera'))), cuerpo);
-    }
-
-    function vMix(esc) {
-      const box = h('div');
-      for (const estrato of [1,2,3,4,5,6]) {
-        const filas = esc.estratos.filter(e => e.estrato === estrato), total = filas.reduce((a, e) => a + e.contactos, 0);
-        if (!total) continue;
-        const barra = h('div','mix');
-        for (const id of campIds()) {
-          const e = filas.find(x => x.campana === id), n = e ? e.contactos : 0, p = 100 * n / total;
-          if (!n) continue;
-          const seg = h('span', null, p >= 11 ? Math.round(p) + ' %' : ''); seg.style.width = p + '%'; seg.style.background = colorCamp(id); seg.title = nombreCamp(id) + ': ' + nf.format(n) + ' contactos (' + decimal.format(p) + ' %)'; barra.append(seg);
-        }
-        box.append(h('div','mix-fila', h('span', null, 'Estrato ' + estrato), barra));
-      }
-      box.append(h('div','paint-legend', ...campIds().map(id => chipColor(colorCamp(id), nombreCamp(id)))));
-      return box;
-    }
-
-    function vRendimiento() {
-      const caja = h('div','chart');
-      const orden = [['oraculo','Techo (conoce la verdad)','#2f8f5b'],['bandido_sector','Bandido por sector','#c64032'],['ganador_global','A/B con ganador único','#555555'],['bandido_global','Bandido global','#9aa592']];
-      const W = 640, H = 270, L = 42, R = 160, T = 14, B = 34, n = SECT.curvas.bandido_sector.length;
-      const max = Math.max(...SECT.curvas.oraculo, 1), X = i => L + (W - L - R) * i / (n - 1), Y = v => H - B - (H - T - B) * v / (max * 1.05);
-      let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Mejora acumulada del valor esperado por oleada de contactos">';
-      const paso = max > 12 ? 5 : max > 5 ? 2 : 1;
-      for (let v = 0; v <= max * 1.05; v += paso) {svg +='<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e3e6df"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + decimal.format(v) + ' %</text>';}
-      for (const [k, nombre, color] of orden) {
-        const pts = SECT.curvas[k].map((v, i) => X(i) + ',' + Y(v)).join(' ');
-        svg += '<polyline fill="none" stroke="' + color + '" stroke-width="' + (k === 'bandido_sector' ? 3 : 1.8) + '" points="' + pts + '"/><text x="' + (W - R + 8) + '" y="' + (Y(SECT.curvas[k][n - 1]) + 4) + '" style="fill:' + color + ';font-weight:600">' + nombre + '</text>';
-      }
-      svg += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 6) + '" text-anchor="middle">Oleada de contactos</text></svg>';
-      caja.innerHTML = svg;
-      const p = SECT.rendimiento, fila = (k, nombre) => h('tr', null, h('td', null, nombre), h('td', null, sgn(p[k].mejora_pct) + ' %'), h('td', null, sgn(p[k].p5) + ' a ' + sgn(p[k].p95)));
-      caja.append(h('table','mini', h('thead', null, h('tr', null, h('th', null, 'Política'), h('th', null, 'Mejora media'), h('th', null, 'Rango 5–95 %'))), h('tbody', null, fila('bandido_sector','Bandido por sector'), fila('ganador_global','A/B con ganador único'), fila('bandido_global','Bandido global'), fila('oraculo','Techo (no alcanzable)'))));
-      caja.append(h('p','tiny','Mejora del valor esperado frente a repartir las propuestas por igual. Si los sectores no se diferencian entre sí, sectorizar deja de pagar:'));
-      caja.append(h('table','mini', h('thead', null, h('tr', null, h('th', null, 'Diferencias entre sectores'), h('th', null, 'Bandido por sector'), h('th', null, 'A/B ganador único'))), h('tbody', null, ...SECT.sensibilidad.map(s => h('tr', null, h('td', null, s.nombre), h('td', null, sgn(s.sector) + ' %'), h('td', null, sgn(s.global) + ' %'))))));
-      return caja;
-    }
-
-    function renderViab() {
-      const root = $('viab-view'); if (!VIA) return;
-      const top = root.scrollTop; root.replaceChildren();
-      const esc = escActual(), m = METRICAS[vstate.metrica], celdas = new Map(esc.celdas.map(c => [c.sector + '|' + c.campana, c]));
-      const sel = document.createElement('select');
-      for (const [k, v] of Object.entries(METRICAS)) sel.append(new Option(v.nombre, k));
-      sel.value = vstate.metrica;
-      sel.addEventListener('change', () => {vstate.metrica = sel.value; renderPaint(); renderViab();});
-      root.append(h('div','list-heading', h('div', null, h('h2', null, 'Qué campaña conviene a cada sector'), h('p','viab-intro','Cada celda sale del motor NBA con los ' + nf.format(META.csv.bogota) + ' clientes de Bogotá: cuántos son elegibles tras las reglas, cuántos tienen un canal habilitado y cuánto valor esperado les asigna la parrilla (con cupos limitados). Un candado significa que las reglas bloquean esa campaña en ese sector; ◐ que más de la mitad del sector queda fuera.'))));
-      root.append(h('label','layer-field','Medir con ', sel));
-      if (esc.id !== 'base') root.append(h('div','viab-alerta', h('strong', null, 'Restricción probada: ' + esc.nombre), h('p', null, 'Regla: se excluye a quien ' + esc.regla.condicion + ' · ' + esc.regla.alcance + '.'), h('p', null, 'Con el motor vuelto a correr: ' + sgn(esc.delta_valor_total) + ' de valor esperado en todo el país (' + sgn(esc.delta_valor_total_pct) + ' %), ' + sgn(esc.delta_valor_region) + ' en Bogotá. ' + esc.celdas.filter(c => c.bloqueada).length + ' celdas sector × campaña quedan bloqueadas (antes ' + VIA.escenarios[0].celdas.filter(c => c.bloqueada).length + ').')));
-      const max = Math.max(1e-9, ...esc.celdas.filter(c => !c.bloqueada).map(c => m.get(c)));
-      const head = h('tr', null, h('th', null, 'Sector'), ...campIds().map(id => {const th = h('th', null, nombreCamp(id)); th.style.borderBottom = '3px solid ' + colorCamp(id); return th;}), h('th', null, 'Mejor opción'));
-      const cuerpo = h('tbody'); let estrato = null;
-      for (const s of SECT.sectores) {
-        if (s.estrato !== estrato) {
-          estrato = s.estrato;
-          const total = SECT.sectores.filter(x => x.estrato === estrato).reduce((a, x) => a + x.clientes, 0), td = h('td','estrato-fila','Estrato ' + estrato + ' · ' + nf.format(total) + ' clientes');
-          td.colSpan = campIds().length + 2; cuerpo.append(h('tr', null, td));
-        }
-        const fila = h('tr', null, h('td','sector-nombre', s.nombre.replace(/^Estrato \d · /, ''), h('small', null, nf.format(s.clientes) + ' clientes')));
-        let mejor = null;
-        for (const id of campIds()) {
-          const c = celdas.get(s.sector + '|' + id), td = h('td','celda');
-          if (!c) {td.append('—'); fila.append(td); continue;}
-          if (c.bloqueada) {
-            td.classList.add('bloq'); td.append(h('b', null, '🔒 Bloqueada'), h('small', null, c.bloqueo));
-            td.title = 'Bloqueada por: ' + c.bloqueo + (c.bloqueo_pct ? ' (' + decimal.format(c.bloqueo_pct) + ' % del sector)' : '');
-          } else {
-            const v = m.get(c); td.style.background = mezcla(colorCamp(id), 0.1 + 0.75 * v / max);
-            td.append(h('b', null, m.fmt(v)), h('small', null, nf.format(c.contactos) + ' contactos'));
-            if (c.elegibles < c.clientes * 0.5) td.classList.add('parcial');
-            if (!mejor || v > mejor.v) mejor = {id,v};
-          }
-          if (vstate.celda && vstate.celda.sector === s.sector && vstate.celda.campana === id) td.classList.add('sel');
-          td.addEventListener('click', () => {vstate.celda = {sector:s.sector,campana:id}; renderViab(); $('viab-detalle')?.scrollIntoView({block:'nearest'});});
-          fila.append(td);
-        }
-        fila.append(h('td','mejor', mejor ? chipColor(colorCamp(mejor.id), nombreCamp(mejor.id)) : h('small','tiny','Sin campaña viable')));
-        cuerpo.append(fila);
-      }
-      root.append(h('div','heat-wrap', h('table','heat', h('thead', null, head), cuerpo)), vDetalle(celdas));
-      if (SECT.comportamiento) root.append(h('section','viab-sec', h('h3', null, 'Sondeo de comportamiento por estrato'), h('p', null, 'Qué consume y cómo se comporta cada estrato con los ' + nf.format(META.csv.bogota) + ' clientes de Bogotá. Es el punto de partida de los clusters: se agrupan por comportamiento (consumo de datos, streaming, uso digital y Hogar), no por tipo de línea ni gama de equipo.'), vSondeo()));
-      root.append(h('section','viab-sec', h('h3', null, 'Clusters más probables'), h('p', null, 'Un cluster es un perfil de consumo (P1 a P5) y no tiene ubicación propia: vive en todos los estratos. La grilla cruza cada perfil con cada estrato (un sector); cada celda es el valor esperado por 1.000 clientes con ' + esc.nombre.toLowerCase() + '. Toca un cluster para verlo en el mapa.'), construirClusters(esc, true)));
-      if (SECT.foco) root.append(h('section','viab-sec', h('h3', null, 'Si se corre el modelo enfocado en los clusters más probables'), h('p', null, 'Tres lecturas de «enfocar» el motor NBA, con los mismos cupos de canal salvo en el techo. Lo que sube en el foco no es ganancia neta: el óptimo global ya atiende primero a estos clusters.'), vFoco()));
-      root.append(h('section','viab-sec', h('h3', null, 'Restricciones lógicas vigentes'), h('p', null, 'Cada regla es un dato de configuración (modelo/config/reglas.json): atributo, operador, valor y alcance. Una restricción nueva —como no ofrecer streaming a estrato 1— se agrega ahí, sin tocar código, y se prueba con el selector «Restricción de negocio a probar» del panel izquierdo.'), vReglas(esc)));
-      root.append(h('section','viab-sec', h('h3', null, 'Mezcla de campañas por estrato'), h('p', null, 'Qué campañas recibirían los clientes de cada estrato en la parrilla, con ' + esc.nombre.toLowerCase() + '.'), vMix(esc)));
-      root.append(h('section','viab-sec', h('h3', null, 'Reparto de propuestas de mensaje: rendimiento'), h('p', null, 'Simulación con supuestos declarados (el CSV no trae respuestas reales): qué tan rápido aprende cada política cuál propuesta funciona mejor. Detalle y límites en modelo/experimentos/README.md.'), vRendimiento()));
-      root.scrollTop = top;
-    }
-
-    function initViab() {
-      if (!VIA) return;
-      $('viab-controls').hidden = false; $('viab-tab').hidden = false;
-      const ps = $('paint-select');
-      ps.append(new Option('Dónde conviene más: la mejor campaña (más rojo = más viable)','calor:mejor'));
-      for (const id of campIds()) ps.append(new Option('Dónde conviene más: ' + nombreCamp(id),'calor:' + id));
-      ps.append(new Option('Campaña más viable (un color por campaña)','mejor'), new Option('Estratos oficiales','estrato'));
-      vstate.paint = 'calor:mejor'; ps.value = vstate.paint;
-      ps.addEventListener('change', () => {vstate.paint = ps.value; renderPaint();});
-      const ms = $('metrica-select');
-      for (const [k, v] of Object.entries(METRICAS)) ms.append(new Option(v.nombre, k));
-      ms.value = vstate.metrica;
-      ms.addEventListener('change', () => {vstate.metrica = ms.value; renderPaint(); if (currentView === 'viab') renderViab();});
-      const rs = $('restriccion-select');
-      for (const e of VIA.escenarios) rs.append(new Option(e.id === 'base' ? 'Ninguna (reglas actuales)' : e.nombre, e.id));
-      rs.addEventListener('change', () => {vstate.escenario = rs.value; vstate.celda = null; renderRestriccion(); renderPaint(); if (currentView === 'viab') renderViab();});
-      $('viab-tab').addEventListener('click', () => setView('viab'));
-      $('clusters-limpiar').addEventListener('click', () => {vstate.cluster = null; renderPaint(); if (currentView === 'viab') renderViab();});
-      renderRestriccion(); renderPaint();
-    }
-
-    // Propuestas por sector (modelo/experimentos): estrato x perfil. Sin coordenadas: se agrupa por estrato.
-    function renderSectores() {
-      const box = $('sectores');
-      if (!SECT) { box.hidden = true; return; }
-      box.hidden = false;
-      const pct = value => decimal.format(value) + ' %', signed = value => (value > 0 ? '+' : value < 0 ? '−' : '') + decimal.format(Math.abs(value)) + ' %';
-      const best = SECT.rendimiento.bandido_sector, ab = SECT.rendimiento.ganador_global;
-      const head = $('sectores-resumen');
-      head.replaceChildren(node('strong', signed(best.mejora_pct)), document.createTextNode(' de valor esperado frente a repartir las propuestas por igual (' + signed(ab.mejora_pct) + ' con un A/B de ganador único). Rango 5–95 %: ' + signed(best.p5) + ' a ' + signed(best.p95) + '. Simulado.'));
-      const list = $('sectores-lista'); list.replaceChildren();
-      const bySector = new Map();
-      for (const rec of SECT.recomendaciones) { if (!bySector.has(rec.sector)) bySector.set(rec.sector, []); bySector.get(rec.sector).push(rec); }
-      let shown = 0;
-      for (const sector of SECT.sectores) {
-        if (!selected.has(sector.estrato)) continue;
-        const group = node('details', undefined, 'sector-group');
-        if (shown++ === 0) group.open = true;
-        const summary = node('summary'); summary.append(node('span', sector.nombre), node('small', nf.format(sector.clientes) + ' clientes'));
-        const body = node('div', undefined, 'sector-body');
-        for (const rec of bySector.get(sector.sector) || []) {
-          const item = node('div', undefined, 'rec');
-          const title = node('div', undefined, 'rec-title'); title.append(node('b', SECT.campanas[rec.campana] || rec.campana), node('span', nf.format(rec.contactos) + ' contactos · ' + rec.canal_tipico, 'tiny'));
-          const main = node('div', undefined, 'rec-main'); main.append(document.createTextNode('Propuesta: '), node('b', rec.recomendada_nombre), document.createTextNode(' · ' + pct(rec.p_mejor * 100) + ' de probabilidad de ser la mejor'));
-          const bar = node('div', undefined, 'rec-bar'); const fill = node('i'); fill.style.width = Math.round(rec.p_mejor * 100) + '%'; bar.append(fill);
-          const others = node('div', 'Otras: ' + rec.alternativas.map(a => a.nombre + ' ' + Math.round(a.p_mejor * 100) + ' %').join(' · '), 'tiny');
-          const gain = node('div', 'Mejora estimada ' + signed(rec.lift_estimado_pct) + ' (IC 90 %: ' + signed(rec.lift_ic90_pct[0]) + ' a ' + signed(rec.lift_ic90_pct[1]) + '). Conversión esperada ' + pct(rec.tasa_esperada_pct) + '.', 'tiny');
-          item.append(title, main, bar, others, gain, node('blockquote', rec.texto));
-          body.append(item);
-        }
-        group.append(summary, body); list.append(group);
-      }
-      if (!shown) list.append(node('p', 'No hay sectores para los estratos seleccionados.', 'tiny'));
-      $('sectores-nota').textContent = SECT.advertencia;
+    function setView() {
+      currentView = 'map';
+      $('map-view').hidden = false;
+      window.history.replaceState(null, '', '#map');
+      if (map) requestAnimationFrame(() => map.resize());
     }
 
     function updateStats() {
@@ -565,7 +136,6 @@
       $('clients-usage').textContent = totals.clientes ? decimal.format(totals.consumo_total / totals.clientes) + ' %' : '—';
       $('clients-arpu').textContent = totals.clientes ? money.format(totals.arpu_total / totals.clientes) : '—';
       $('clients-scope').textContent = 'De ' + nf.format(META.csv.bogota) + ' clientes de Bogotá';
-      renderSectores();
     }
 
     function paintFilters() {
@@ -579,7 +149,7 @@
         button.addEventListener('click', () => {
           selected.has(stratum) ? selected.delete(stratum) : selected.add(stratum);
           button.setAttribute('aria-pressed',String(selected.has(stratum)));
-          page = 0; updateStats(); filterFeatures();
+           updateStats(); filterFeatures();
         });
         fragment.append(button);
       }
@@ -595,7 +165,6 @@
     function filterFeatures() {
       if (!geojson) return;
       filtered = geojson.features.filter(f => selected.has(f.properties.estrato) && f.properties.manzana.toLowerCase().includes(search));
-      renderList();
       if (mapReady) {
         map.setFilter('strata-fill',featureFilter()); map.setFilter('strata-outline',featureFilter());
         if (chosenId !== null && !filtered.some(f => f.id === chosenId)) clearSelection();
@@ -603,28 +172,9 @@
       $('data-status').textContent = nf.format(filtered.length) + ' manzanas coinciden · ' + nf.format(META.csv.bogota) + ' clientes de Bogotá en el CSV';
     }
 
-    function renderList() {
-      const pages = Math.max(1,Math.ceil(filtered.length / SETTINGS.pageSize));
-      page = Math.min(page,pages - 1);
-      const fragment = document.createDocumentFragment();
-      for (const f of filtered.slice(page * SETTINGS.pageSize,(page + 1) * SETTINGS.pageSize)) {
-        const button = node('button',undefined,'block-card');
-        button.type = 'button'; button.style.setProperty('--swatch',COLORS[f.properties.estrato]);
-        const text = node('span'); text.append(node('strong','Manzana ' + f.properties.manzana),node('small',f.properties.estrato ? 'Estrato ' + f.properties.estrato + ' · ' + NAMES[f.properties.estrato] : 'Sin estrato'));
-        button.append(node('span','','swatch'),text);
-        button.addEventListener('click',() => selectFeature(f,mapReady)); fragment.append(button);
-      }
-      $('blocks').replaceChildren(fragment);
-      $('list-count').textContent = nf.format(filtered.length) + ' coincidencias en la capa oficial';
-      $('empty-list').hidden = filtered.length > 0;
-      $('page-label').textContent = 'Página ' + nf.format(page + 1) + ' de ' + nf.format(pages);
-      $('previous-page').disabled = page === 0; $('next-page').disabled = page >= pages - 1;
-    }
-
     function clearSelection() {
       chosenId = null; currentPopup?.remove(); currentPopup = null;
       if (mapReady) map.setFilter('selected-block',['==',['id'],-1]);
-      $('detail').replaceChildren(node('h3','Consulta una manzana'),node('p','Selecciona un polígono del mapa o una manzana de la lista para ver su detalle.'));
     }
 
     function geometryBounds(feature) {
@@ -639,24 +189,16 @@
 
     function selectFeature(feature, focus = false, position = null) {
       chosenId = feature.id;
-      const p = feature.properties, bucket = META.csv.byStratum[String(p.estrato)];
-      const detail = $('detail');
-      detail.replaceChildren(node('h3','Manzana ' + p.manzana),node('p',p.estrato ? 'Estrato '+p.estrato+' · '+NAMES[p.estrato] : 'Sin estrato asignado en la capa'));
-      if (p.NORMATIVA) detail.append(node('p','Referencia normativa: '+p.NORMATIVA));
-      detail.append(node('p','Clientes del mismo estrato en todo Bogotá','detail-label'),node('p',bucket ? nf.format(bucket.clientes) + ' clientes · ' + nf.format(bucket.sin_hogar) + ' sin Hogar' : 'El CSV no contiene clientes sin estrato.'),node('p','Estas cifras no corresponden exclusivamente a la manzana seleccionada.'));
-      if (VIA && p.estrato) {
-        const best = mejorCampana(p.estrato), m = METRICAS[vstate.metrica];
-        detail.append(node('p','Campaña más viable en este estrato','detail-label'),node('p',best ? nombreCamp(best.campana) + ' · ' + m.nombre.toLowerCase() + ': ' + m.fmt(best.v) : 'Ninguna: las reglas bloquean todas las campañas en este estrato.'));
-      }
+      const p = feature.properties;
       if (mapReady) {
         map.setFilter('selected-block',['==',['id'],feature.id]);
         const bounds = geometryBounds(feature);
-        if (focus && bounds) {setView('map'); map.fitBounds(bounds,{padding:95,maxZoom:17,duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650});}
+        if (focus && bounds) {setView(); map.fitBounds(bounds,{padding:95,maxZoom:17,duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 650});}
         const content = node('div');content.append(node('h3',p.estrato ? 'Estrato '+p.estrato : 'Sin estrato'),node('p','Manzana '+p.manzana));
         const center = position || (bounds ? [(bounds[0][0]+bounds[1][0])/2,(bounds[0][1]+bounds[1][1])/2] : null);
         currentPopup?.remove();
         if (center) currentPopup = new maplibre.Popup({closeButton:true,closeOnClick:false,maxWidth:'240px'}).setLngLat(center).setDOMContent(content).addTo(map);
-      } else if (window.innerWidth <= 800) detail.scrollIntoView({block:'center',behavior:'smooth'});
+      }
     }
 
     async function decodeGeometry() {
@@ -672,7 +214,9 @@
     }
 
     function addStrataLayers() {
-      if (!geojson || !map || !map.isStyleLoaded() || map.getSource('strata')) return;
+      // isStyleLoaded also waits for optional remote tiles. Only the local
+      // style's load event is required to attach the included geometry.
+      if (!geojson || !map || !mapReady || map.getSource('strata')) return;
       map.addSource('strata',{type:'geojson',data:geojson});
       const colors = ['match',['get','estrato'],1,COLORS[1],2,COLORS[2],3,COLORS[3],4,COLORS[4],5,COLORS[5],6,COLORS[6],COLORS[0]];
       const labels = map.getLayer('claro-4g') ? 'claro-4g' : map.getStyle().layers.find(l => l.type === 'symbol')?.id;
@@ -683,7 +227,6 @@
       map.on('mouseenter','strata-fill',() => {map.getCanvas().style.cursor = 'pointer';});
       map.on('mouseleave','strata-fill',() => {map.getCanvas().style.cursor = '';});
       updateNetworkVisibility();
-      renderPaint();
     }
 
     function updateNetworkVisibility() {
@@ -695,7 +238,7 @@
         $('coverage-legend-image').src = NETWORK.coverage[technology].legend;
         $('coverage-source').textContent = 'Claro ' + technology.toUpperCase() + ' · corte 27 de octubre de 2026 · recorte de Bogotá';
       }
-      $('map-hint').textContent = technology !== 'none' ? 'Cobertura móvil Claro ' + technology.toUpperCase() + '. Consulta la leyenda y ajusta la opacidad en el panel de capas.' : $('toggle-strata').checked ? hintEstratos() : $('toggle-antennas').checked ? 'Sitios móviles de Claro reportados a la CRC. Recorte histórico, sin certificación de operación actual.' : 'Activa una capa en el panel para explorar la información territorial.';
+      $('map-hint').textContent = technology !== 'none' ? 'Cobertura móvil Claro ' + technology.toUpperCase() + '. Consulta la leyenda y ajusta la opacidad en el panel de capas.' : $('toggle-strata').checked ? 'Selecciona una manzana para consultar su estrato. Los colores representan la capa oficial.' : $('toggle-antennas').checked ? 'Sitios móviles de Claro reportados a la CRC. Recorte histórico, sin certificación de operación actual.' : 'Activa una capa en el panel para explorar la información territorial.';
       if (!mapReady) return;
       const strataVisible = $('toggle-strata').checked ? 'visible' : 'none';
       for (const id of ['strata-fill','strata-outline','selected-block']) if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',strataVisible);
@@ -720,6 +263,58 @@
       updateNetworkVisibility();
     }
 
+    function numericStyleValues(value) {
+      if (!Array.isArray(value)) return value;
+      if (value[0] === 'get' && ['rank','min_zoom','sort_key'].includes(value[1])) return ['to-number',value,0];
+      return value.map(numericStyleValues);
+    }
+
+    function removeOnlineBasemap() {
+      if (!map || !mapReady) return;
+      for (const layer of [...map.getStyle().layers].reverse()) if (layer.id.startsWith('base-')) map.removeLayer(layer.id);
+      for (const name of Object.keys(map.getStyle().sources)) if (name.startsWith('base-')) map.removeSource(name);
+      $('basemap-status').textContent = 'Fondo local: las manzanas y las capas incluidas siguen disponibles.';
+    }
+
+    async function updateOnlineBasemap() {
+      const attempt = ++basemapGeneration;
+      if (!mapReady) return;
+      removeOnlineBasemap();
+      if (!$('toggle-basemap').checked) return;
+      basemapFailed = false;
+      $('basemap-status').textContent = 'Cargando calles y etiquetas adicionales…';
+      const generation = mapGeneration;
+      try {
+        let style = JSON.parse($('basemap-style').textContent);
+        if (SETTINGS.pmtilesUrl) {
+          const [{Protocol},{layers,namedFlavor}] = await Promise.all([import('https://cdn.jsdelivr.net/npm/pmtiles@4.5.0/+esm'),import('https://cdn.jsdelivr.net/npm/@protomaps/basemaps@5.7.2/+esm')]);
+          if (!window.__bogotaPmtilesProtocol) {window.__bogotaPmtilesProtocol = new Protocol();maplibre.addProtocol('pmtiles',window.__bogotaPmtilesProtocol.tile);}
+          style = {sources:{protomaps:{type:'vector',url:'pmtiles://'+SETTINGS.pmtilesUrl,attribution:'<a href="https://protomaps.com">Protomaps</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}},layers:layers('protomaps',namedFlavor('light'),{lang:'es'})};
+        }
+        if (attempt !== basemapGeneration || generation !== mapGeneration || !$('toggle-basemap').checked) return;
+        for (const [name,source] of Object.entries(style.sources)) map.addSource('base-'+name,source);
+        const before = map.getLayer('strata-fill') ? 'strata-fill' : map.getLayer('claro-4g') ? 'claro-4g' : undefined;
+        for (const original of style.layers) {
+          if (original.type === 'background') continue;
+          const layer = structuredClone(original);
+          layer.id = 'base-'+layer.id;
+          if (layer.source) layer.source = 'base-'+layer.source;
+          if (layer.layout) {
+            for (const key of Object.keys(layer.layout)) if (key.startsWith('icon-')) delete layer.layout[key];
+            for (const key of Object.keys(layer.layout)) layer.layout[key] = numericStyleValues(layer.layout[key]);
+          }
+          if (layer.type === 'symbol' && !layer.layout?.['text-field']) continue;
+          map.addLayer(layer,layer.type === 'symbol' ? undefined : before);
+        }
+        $('basemap-status').textContent = 'Calles en línea activadas; las capas locales funcionan de forma independiente.';
+      } catch (error) {
+        if (attempt !== basemapGeneration || generation !== mapGeneration) return;
+        basemapFailed = true; removeOnlineBasemap(); $('toggle-basemap').checked = false;
+        showNotice('El fondo de calles no pudo cargarse. El mapa de estratos, las antenas y la cobertura siguen disponibles.',false);
+        console.warn('[Bogota fondo opcional]',error);
+      }
+    }
+
     function loadMapLibrary() {
       if (window.maplibregl) return Promise.resolve(window.maplibregl);
       // This distribution includes a classic worker, supported by file:// pages.
@@ -727,8 +322,7 @@
       return new Promise((resolve,reject) => {
         const script = document.createElement('script');
         const timer = setTimeout(() => {script.remove();reject(new Error('La biblioteca del mapa tardo demasiado en cargar.'));},15000);
-        script.src = 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js';
-        script.crossOrigin = 'anonymous';
+        script.src = (location.protocol === 'file:' ? '../web/public/mapa-assets/' : '/mapa-assets/') + 'maplibre-gl.js';
         script.onload = () => {clearTimeout(timer);window.maplibregl ? resolve(window.maplibregl) : reject(new Error('La biblioteca del mapa no esta disponible.'));};
         script.onerror = () => {clearTimeout(timer);script.remove();reject(new Error('No se pudo descargar la biblioteca del mapa.'));};
         document.head.append(script);
@@ -745,59 +339,57 @@
       try {
         maplibre = await loadMapLibrary();
         if (generation !== mapGeneration) return;
-        let style = JSON.parse($('basemap-style').textContent);
-        if (SETTINGS.pmtilesUrl) {
-          const [{Protocol},{layers,namedFlavor}] = await Promise.all([import('https://cdn.jsdelivr.net/npm/pmtiles@4.5.0/+esm'),import('https://cdn.jsdelivr.net/npm/@protomaps/basemaps@5.7.2/+esm')]);
-          if (!window.__bogotaPmtilesProtocol) {window.__bogotaPmtilesProtocol = new Protocol();maplibre.addProtocol('pmtiles',window.__bogotaPmtilesProtocol.tile);}
-          style = {version:8,glyphs:'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',sprite:'https://protomaps.github.io/basemaps-assets/sprites/v4/light',sources:{protomaps:{type:'vector',url:'pmtiles://'+SETTINGS.pmtilesUrl,attribution:'<a href="https://protomaps.com">Protomaps</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}},layers:layers('protomaps',namedFlavor('light'),{lang:'es'})};
-        }
+        // Start with an embedded background only: remote fonts, icons and tiles
+        // must never prevent the official local geometry from becoming usable.
+        const style = {version:8,glyphs:GLYPHS_URL,sources:{},layers:[{id:'local-background',type:'background',paint:{'background-color':'#e9eee4'}}]};
         map = new maplibre.Map({container:'map',style,center:[-74.10,4.66],zoom:11.2,minZoom:9,maxZoom:19,maxBounds:[[-74.7,4.25],[-73.7,5.1]],attributionControl:false,pixelRatio:Math.min(window.devicePixelRatio || 1,2)});
         map.addControl(new maplibre.NavigationControl({showCompass:false}),'top-right');
         map.addControl(new maplibre.AttributionControl({compact:true,customAttribution:'Estratos: <a href="'+META.source+'" target="_blank" rel="noopener">SDP Bogotá</a> · Antenas: <a href="https://www.postdata.gov.co/mapa/sitios-de-infraestructura-movil" target="_blank" rel="noopener">CRC</a> · Cobertura: <a href="https://www.claro.com.co/personas/servicios/servicios-moviles/cobertura/" target="_blank" rel="noopener">Claro</a>'}),'bottom-right');
         map.addControl(new maplibre.ScaleControl({unit:'metric'}),'bottom-left');
-        const watchdog = setTimeout(() => {if (generation === mapGeneration && !mapReady) failMap('La cartografía está tardando en cargar. Puedes consultar la lista de manzanas.');},22000);
+        const watchdog = setTimeout(() => {if (generation === mapGeneration && !mapReady) failMap('La cartografía está tardando en cargar. Pulsa Reintentar mapa.');},22000);
         map.on('load',() => {
           if (generation !== mapGeneration) return;
           clearTimeout(watchdog);mapReady = true;mapLoading = false;
           addStrataLayers();addNetworkLayers();$('map-loading').hidden = true;
+          $('map').dataset.ready = 'true';
           $('reset-map').disabled = false; $('locate').disabled = false;
           if (currentView === 'map') map.resize();
+          if ($('toggle-basemap').checked) void updateOnlineBasemap();
         });
         let tilesFailed = false;
         map.on('error',event => {
           if (generation !== mapGeneration) return;
+          if (mapReady && $('toggle-basemap').checked) {
+            if (!basemapFailed) {
+              basemapFailed = true; removeOnlineBasemap(); $('toggle-basemap').checked = false;
+              showNotice('El fondo de calles no está disponible. Puedes seguir explorando los estratos y las capas incluidas.',false);
+              console.warn('[Bogota fondo opcional]',event.error || event);
+            }
+            return;
+          }
           console.error('[Bogota mapa]',event.error || event);
           if (!mapReady && /worker|webgl|gpu initialization/i.test(event.error?.message || '')) {clearTimeout(watchdog);failMap('No pudimos iniciar el motor del mapa. La lista y las estadísticas siguen disponibles.');}
           else if (!tilesFailed) {tilesFailed = true; showNotice('Algunas partes de la cartografía no cargaron. Puedes consultar las manzanas en la lista.');}
         });
         map.getCanvas().addEventListener('webglcontextlost',() => failMap('Se perdió el contexto del mapa. Puedes seguir consultando la lista.'));
-      } catch (error) {console.error('[Bogota inicio]',error);if (generation === mapGeneration) failMap('No pudimos abrir el mapa. Puedes consultar las manzanas y los datos del CSV en la lista.');}
+      } catch (error) {console.error('[Bogota inicio]',error);if (generation === mapGeneration) failMap('No pudimos abrir el mapa. Pulsa Reintentar mapa para volver a cargarlo.');}
     }
 
     function failMap(message) {
       mapLoading = false;mapReady = false;$('map-loading').hidden = true;
-      $('reset-map').disabled = true;$('locate').disabled = true;showNotice(message);setView('list');
+      $('map').dataset.ready = 'false';
+      $('reset-map').disabled = true;$('locate').disabled = true;showNotice(message);
     }
 
-    $('map-tab').addEventListener('click',() => setView('map'));
-    $('list-tab').addEventListener('click',() => setView('list'));
-    document.querySelector('.view-tabs').addEventListener('keydown',event => {
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        event.preventDefault();
-        const views = VIA ? ['map','list','viab'] : ['map','list'], step = event.key === 'ArrowRight' ? 1 : -1;
-        const next = views[(views.indexOf(currentView) + step + views.length) % views.length];
-        setView(next);$(next+'-tab').focus();
-      }
-    });
-    $('all-strata').addEventListener('click',() => {for (const s of [0,1,2,3,4,5,6]) selected.add(s);page = 0;paintFilters();updateStats();filterFeatures();});
+    $('map-tab').addEventListener('click',() => setView());
+    $('all-strata').addEventListener('click',() => {for (const s of [0,1,2,3,4,5,6]) selected.add(s);paintFilters();updateStats();filterFeatures();});
     for (const id of ['toggle-strata','toggle-antennas','coverage-select']) $(id).addEventListener('change',updateNetworkVisibility);
+    $('toggle-basemap').addEventListener('change',() => {void updateOnlineBasemap();});
     $('coverage-opacity').addEventListener('input',updateNetworkVisibility);
     let searchTimer;
-    $('search').addEventListener('input',event => {clearTimeout(searchTimer);searchTimer = setTimeout(() => {search = event.target.value.trim().toLowerCase();page = 0;filterFeatures();if (search) setView('list');},180);});
-    $('previous-page').addEventListener('click',() => {page--;renderList();$('list-view').scrollTop = 0;});
-    $('next-page').addEventListener('click',() => {page++;renderList();$('list-view').scrollTop = 0;});
+    $('search').addEventListener('input',event => {clearTimeout(searchTimer);searchTimer = setTimeout(() => {search = event.target.value.trim().toLowerCase();filterFeatures();if (search && filtered.length === 1) selectFeature(filtered[0], true);},180);});
     $('reset-map').addEventListener('click',() => {if (mapReady) map.fitBounds([[-74.235,4.47],[-73.995,4.85]],{padding:32,duration:650});});
-    $('retry-map').addEventListener('click',() => {setView('map');loadMap();});
+    $('retry-map').addEventListener('click',() => {setView();loadMap();});
     $('locate').addEventListener('click',() => {
       if (!navigator.geolocation || !mapReady) {showNotice('No hay ubicación disponible en este navegador.',false);return;}
       $('locate').disabled = true;
@@ -811,7 +403,9 @@
     $('snapshot-date').textContent = 'Geometrías descargadas: ' + new Intl.DateTimeFormat('es-CO',{dateStyle:'long',timeZone:'America/Bogota'}).format(new Date(META.downloadedAt)) + '. ' + nf.format(META.blocks) + ' registros oficiales.';
     $('csv-source').textContent = META.csv.file + ': ' + nf.format(META.csv.total) + ' clientes en total; ' + nf.format(META.csv.bogota) + ' de Bogotá.';
     $('antenna-source').textContent = 'Sitios móviles reportados · CRC · ' + NETWORK.antennas.period.replace('-','-T');
-    paintFilters();updateStats();initViab();
+    paintFilters();updateStats();
+    const syncView = () => setView();
+    window.addEventListener('hashchange', syncView); syncView();
     const geometryReady = decodeGeometry().then(() => addStrataLayers()).catch(() => {$('data-status').textContent = 'No pudimos leer las geometrías incluidas.';showNotice('Las geometrías no pudieron abrirse. Las estadísticas del CSV siguen disponibles.',false);});
     loadMap();
   })();

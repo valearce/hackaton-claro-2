@@ -10,8 +10,7 @@ export type Config = {
     optimizacion: { backend: 'flujo_ortools'; objetivo: 'valor_esperado' | 'prioridad' };
   };
 };
-export type Proof = { brecha_exacta: string; valor_objetivo_exacto: string; valor_esperado_exacto: string; objetivo: string; optimo_exacto: boolean };
-export type Result = { valor_esperado: number; clientes: number; total_clientes: number; productos: number; jerarquia: number | null; violaciones: number; violaciones_reto: number; exceso_cupos_reto: Record<string, number>; controles_reto: { control: string; nombre: string; violaciones: number }[]; canales: { canal: string; cupo: number; uso: number }[]; campanas: { id: string; ofertas: number }[]; segundos: number; segundos_motor: number; certificado: Proof; objetivo: string };
+export type Result = { valor_esperado: number; clientes: number; total_clientes: number; productos: number; jerarquia: number | null; violaciones: number; violaciones_reto: number; exceso_cupos_reto: Record<string, number>; controles_reto: { control: string; nombre: string; violaciones: number }[]; canales: { canal: string; cupo: number; uso: number }[]; campanas: { id: string; ofertas: number }[]; segundos: number; segundos_motor: number; objetivo: string };
 export type Reference = { valor_esperado: number; clientes_con_accion: number; productos_asignados: number };
 export type Run = { id: string; creado: string; fecha: string; metodos: { optimo: Result }; referencia: Reference; datos_sha256: string; motor_sha256: string };
 export type Version = { version: string; nombre: string; creado: string; fecha: string; corrida: string; resultado: Result; config?: Config };

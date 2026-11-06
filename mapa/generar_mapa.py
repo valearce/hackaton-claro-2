@@ -159,7 +159,8 @@ def load_comportamiento(path):
 def load_sectores(path, foco_path=None, comportamiento_path=None):
     """Compact view of modelo/evaluacion/experimentos.json for the sidebar; None if the model was not run."""
     if not path.exists():
-        return None
+        snapshot = ROOT / "analisis-clusters.json"
+        return json.loads(snapshot.read_text(encoding="utf-8")) if snapshot.exists() else None
     data = json.loads(path.read_text(encoding="utf-8"))
     perf = data["rendimiento"]["politicas"]
     politicas = ("bandido_sector", "ganador_global", "bandido_global", "oraculo")

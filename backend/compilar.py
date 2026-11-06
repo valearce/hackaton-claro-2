@@ -14,10 +14,6 @@ for name in ("__init__.py", "rutas.py"):
     target = service / "modelo" / name
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(root / "modelo" / name, target)
-for name in ("__init__.py", "motor_analisis.py"):  # regla simple por cluster (pestaña Clusters)
-    target = service / "modelo/experimentos" / name
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(root / "modelo/experimentos" / name, target)
 (service / "datos").mkdir(exist_ok=True)
 shutil.copyfile(root / "datos/clientes.csv", service / "datos/clientes.csv")
 if (root / "datos/clusters.csv").is_file():  # plus opcional: pestaña Clusters

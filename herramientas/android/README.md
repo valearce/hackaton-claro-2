@@ -1,8 +1,7 @@
 # Android: grabaciones y avisos de prueba
 
 Herramientas del proyecto para grabar la pantalla de un Android y publicar una
-notificación local durante la grabación. También permiten inspeccionar Chrome
-por CDP. Requieren Node.js 22 o superior y Android Platform Tools (ADB), sin
+notificación local durante la grabación. También permiten inspeccionar Chrome por CDP. Requieren Node.js 22 o superior y Android Platform Tools (ADB), sin
 dependencias npm adicionales. Los procesos auxiliares usan `windowsHide: true`.
 
 ## Preparación
@@ -149,59 +148,3 @@ verificar que la descarga local existe y tiene contenido. Si falla la grabación
 o transferencia, el archivo remoto se conserva para su recuperación. Un cierre
 abrupto del proceso también puede dejar el archivo en el teléfono; `screenrecord`
 conserva su límite de tiempo.
-
-## Chrome Android por CDP
-
-Abre el sitio en Chrome en el teléfono y crea el túnel:
-
-```powershell
-node herramientas/android/android.mjs connect --port 9223
-node herramientas/android/phone.mjs tabs
-node herramientas/android/phone.mjs inspect --origin https://tu-sitio.example
-node herramientas/android/phone.mjs screenshot --target ID --output .local/android/pantalla.png
-node herramientas/android/phone.mjs observe --target ID --seconds 15
-node herramientas/android/phone.mjs evaluate --target ID --script fragmento.js
-```
-
-`--origin` compara el origen exacto. Si hay varias pestañas del mismo sitio,
-elige `--target ID` del resultado de `tabs`. Para evaluar en un service worker,
-añade `--worker`. `evaluate` ejecuta el archivo con los permisos y la sesión del
-navegador: revisar su contenido antes de usarlo. La observación de red guarda
-método, ruta sin parámetros y estado de peticiones del mismo origen; no exporta
-cabeceras, cookies ni cuerpos. El túnel no reemplaza uno que ya esté ocupado.
-
-Para ADB directo: `node herramientas/android/run-adb.mjs devices -l`.
-Las rutas de archivos pasadas por el usuario se resuelven desde su directorio
-actual. Los comandos de ejemplo se ejecutan desde la raíz del repositorio.
-
-## Referencias originales y verificación
-
-`referencias-qnexus/` conserva los 20 archivos copiados del proyecto QNexus,
-incluido su README original, sin cambios de contenido. Sus rutas y comandos
-pertenecen a aquel proyecto. No son los puntos de entrada de esta adaptación:
-hay selectores, dominios y eventos propios de QNexus; `qnx-reproduce.mjs` cambia
-la conectividad y `qnx-attendance-correction.js` modifica una asistencia concreta
-en producción. Se conservan para consulta y no se ejecutan automáticamente.
-
-```powershell
-node --test herramientas/android/tests/android.test.mjs
-```
-
-Las pruebas usan ADB y CDP simulados: selección del teléfono, escapado de texto,
-secuencia de grabación y aviso, conservación del video ante fallos y desconexión
-de CDP. Una prueba con teléfono real es necesaria para verificar la visualización
-del aviso y la codificación de video de ese dispositivo.
-
-Validación física del 2026-11-05: ZTE 8050 reconocido y autorizado en ADB.
-El comando `demo` de 8 segundos terminó correctamente, publicó el aviso local,
-abrió el panel y descargó un MP4 de 936.008 bytes en `.local/android/grabaciones`.
-Se añadió después el canal de importancia alta, confirmado por Android con
-importancia 4, y se abrió la ventana de scrcpy para presentar desde el PC.
-El video, las herramientas descargadas y la configuración local quedan
-excluidos de Git mediante `.gitignore`.
-
-Fuentes consultadas al adaptar la conversación guardada en el PDF:
-
-- [ADB: grabación de pantalla](https://developer.android.com/tools/adb#screenrecord)
-- [AOSP: NotificationShellCmd](https://android.googlesource.com/platform/frameworks/base/+/android16-qpr2-release/services/core/java/com/android/server/notification/NotificationShellCmd.java)
-- [Android: SMS en emulador](https://developer.android.com/studio/run/emulator-console#sms)

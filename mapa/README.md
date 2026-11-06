@@ -1,14 +1,17 @@
 # Mapa de estratos de Bogotá
 
-Abre `mapa-estratos-bogota.html` en un navegador moderno. Es un único HTML: incluye las geometrías oficiales y los agregados del CSV. La cartografía base y MapLibre requieren Internet; la lista de manzanas y las estadísticas no dependen del servicio geográfico durante su uso.
+La consola Next.js sirve el mapa en `/mapa`. También puedes abrir `mapa-estratos-bogota.html` dentro del repositorio: las geometrías oficiales, los agregados del CSV y las imágenes de cobertura están incluidas en el HTML. MapLibre y sus estilos se sirven desde `web/public/mapa-assets/`, con su licencia e integridad del paquete npm oficial en `manifest.json`. Conserva esa carpeta al copiar el mapa.
+
+El fondo geométrico local muestra las manzanas y las capas incluidas sin esperar a servicios cartográficos externos. «Calles y etiquetas en línea» añade el fondo OpenFreeMap de forma opcional. Si ese proveedor falla, el mapa local, sus filtros y las coberturas permanecen disponibles. Las fuentes de texto adicionales usan un espejo del repositorio original con revisión fijada; no se desactiva la verificación TLS.
 
 - MapLibre y estilo de referencia de GrouPay, sobre OpenFreeMap/OpenMapTiles. Se usa la distribución 5.6.0 con worker clásico para que el HTML funcione al abrirlo con doble clic; los workers de módulo de la versión 6 fallan en Chrome con origen `file://`.
 - Filtros por estrato, búsqueda local de códigos de manzana, selección y detalle.
 - Capas activables: estratos, sitios móviles de Claro reportados en el WMS público de la CRC y cobertura móvil Claro 4G/5G con leyenda y opacidad.
 - Los clientes proceden de [`../datos/clientes.csv`](../datos/clientes.csv), exclusivamente de la región Bogotá. Se muestran agregados por estrato. No se inventan coordenadas ni se distribuyen clientes entre manzanas.
-- Sección **Propuestas por sector**: para los estratos visibles muestra cada sector (estrato × perfil), la propuesta de mensaje recomendada por campaña con su probabilidad de ser la mejor, el *lift* estimado con su intervalo y el texto adaptado. Sale de [`../modelo/experimentos`](../modelo/experimentos/README.md) y es una **simulación con supuestos declarados**, no respuestas reales; la advertencia aparece en la propia sección. Como los clientes no tienen coordenadas, la relación con el mapa es por estrato, no por manzana.
-- Pestaña **Viabilidad** y coloreado por campaña: matriz sector × campaña (con candados donde las reglas bloquean la campaña), embudo de reglas por celda, reglas vigentes, mezcla de campañas por estrato y rendimiento del reparto de propuestas. El selector «Colorear manzanas por» muestra por defecto un mapa de calor (rojo más intenso y opaco = más viable) de la mejor campaña de cada estrato o de una campaña concreta, con un ranking de estratos y su valor en la leyenda; también pinta cada estrato con su campaña más viable (un color por campaña) y «Restricción de negocio a probar» muestra el efecto de una regla nueva con el motor vuelto a correr. La pestaña también trae el **sondeo de comportamiento por estrato**, los **clusters más probables** (ranking y grilla cluster × estrato; al elegir uno se resalta el estrato donde vive) y el resultado de **correr el motor enfocado en esos clusters**. Los datos salen del motor NBA y de [`../modelo/experimentos`](../modelo/experimentos/README.md); sin coordenadas, el color es por estrato y no por manzana, y un cluster no tiene ubicación propia.
-- La lista permite consultar las mismas manzanas cuando WebGL o la cartografía no están disponibles.
+- El visor mantiene una sola vista **Mapa**, con filtros, búsqueda por código, capas y agregados del CSV. Seleccionar una manzana abre su información en una ventana sobre el mapa.
+- Los perfiles y las propuestas de Vale están en la pestaña **Clusters** de la consola. Su desglose usa la parrilla del último escenario enviado, sin ejecutar otro motor; las propuestas publicitarias siguen siendo una referencia precalculada.
+
+La copia histórica del análisis territorial se conserva en [analisis-clusters.json](analisis-clusters.json), extraída de `origin/main-clusters`, revisión `9e652e3b1f0a993733d3f5814e74d9ae60bad03f`. Su procedencia y la huella del CSV figuran en `origen`; el visor ya no incluye los bloques analíticos.
 - La ubicación se solicita únicamente al pulsar «Mi ubicación» y se usa para centrar el mapa. No se registra presencia ni se envía al visor de Claro.
 - El visor completo de Claro se abre con un enlace externo porque restringe la incrustación. Sus imágenes de cobertura publicadas se recortan para Bogotá y se incluyen en el HTML con su leyenda y fecha de corte (27 de octubre de 2026). La cobertura móvil no certifica disponibilidad de Hogar.
 - La capa de antenas es un recorte cartográfico histórico del WMS público CRC, filtrado por Claro/COMCEL (800153993), en Bogotá y alrededores. Incluye varios periodos: no certifica sitios activos hoy, no es un conteo de antenas únicas y no tiene consulta individual por antena. El servicio de descarga WFS exige autenticación y no se utiliza. No se eluden sus restricciones ni las de incrustación.
@@ -36,7 +39,7 @@ python mapa/generar_mapa.py --actualizar-red
 python mapa/generar_mapa.py --reutilizar-html mapa/mapa-estratos-bogota.html
 ```
 
-`--reutilizar-html` reconstruye el HTML con la plantilla y el CSV actuales reutilizando las manzanas y las capas de red ya incluidas en un HTML generado antes, sin descargar nada. La sección de propuestas se lee de `modelo/evaluacion/experimentos.json` (se genera con `python -m modelo.experimentos`); si el archivo no existe, la sección queda oculta.
+`--reutilizar-html` reconstruye el HTML con la plantilla y el CSV actuales reutilizando las manzanas y las capas de red incluidas, sin descargar nada. El generador lee `modelo/evaluacion/experimentos.json` si se aporta; en su ausencia conserva el análisis de referencia de `analisis-clusters.json`.
 
 `mapa.template.html` contiene la interfaz editable. `estilo-base.json` conserva el estilo cartográfico de la referencia y su atribución. El logo compartido está en [`../recursos/imagenes/claro-logo.jpg`](../recursos/imagenes/claro-logo.jpg). `.cache/` guarda la última descarga y está excluida de Git.
 
@@ -48,5 +51,5 @@ El HTML admite PMTiles editando `SETTINGS.pmtilesUrl` en la plantilla y regener�
 
 Se verificaron las 44.260 geometrías, sus 415.923 coordenadas, los 100.000 registros del CSV y los agregados de los 28.190 clientes de Bogotá. El logo está incluido sin modificar el archivo proporcionado.
 
-Se comprobó en Chrome abriendo el HTML con `file://`: carga del mapa, filtros, búsqueda, selección, ventanas de detalle, controles de las tres capas de red, leyendas, opacidad y preservación de las cifras del CSV. También se verificaron el diseño a 390 px de ancho y la lista alternativa al simular indisponibilidad de WebGL.
+Se comprobó en Chrome la carga del mapa, sus filtros, búsqueda, ventanas de detalle, controles de las tres capas de red, leyendas, opacidad y preservación de las cifras del CSV. El visor requiere WebGL y muestra una opción de reintento si falla la cartografía.
 

@@ -129,7 +129,7 @@ def summary(grid, config, date, info, seconds):
         "canales": [{"canal": c,"cupo": v,"uso": own["uso_canales"][c]} for c,v in config["parametros"]["canal"]["capacidad_por_corrida"].items()],
         "campanas": [{"id": c["id"],"ofertas": int(counts.get(c["id"],0))} for c in config["campanas"]],
         "segundos_motor": info["segundos"], "segundos": round(seconds,3),
-        "certificado": info["certificado"], "objetivo": info["objetivo"]}
+        "objetivo": info["objetivo"]}
 
 
 def simulate(config, date):
@@ -146,9 +146,7 @@ def simulate(config, date):
         grid,info=engine.optimize()
         result=summary(grid,config,date,info,time.perf_counter()-started)
         csv=gzip.compress(grid.to_csv(index=False).encode(),mtime=0)
-        proof=gzip.compress(json.dumps(engine.certificate,separators=(",", ":")).encode(),mtime=0)
         STORE.write(f"corridas/{key}/parrilla.csv.gz",csv,"application/gzip")
-        STORE.write(f"corridas/{key}/certificado.json.gz",proof,"application/gzip")
         result["segundos"]=round(time.perf_counter()-started,3)
         record={"id":key,"creado":now(),"fecha":date,"config":config,"datos_sha256":DATA_HASH,"motor_sha256":REVISION,
                 "commit":os.environ.get("VERCEL_GIT_COMMIT_SHA"),"metodos":{"optimo":result},"referencia":REFERENCE}
@@ -158,8 +156,14 @@ def simulate(config, date):
         LOCK.release()
 
 
+def public_result(result):
+    # Las corridas históricas pueden conservar este campo en su manifiesto.
+    return {key: value for key, value in result.items() if key != "certificado"}
+
+
 def public(record):
-    return {key: value for key,value in record.items() if key != "config"}
+    return {**{key: value for key,value in record.items() if key != "config"},
+            "metodos": {name: public_result(result) for name, result in record["metodos"].items()}}
 
 
 def grid_for(key):
@@ -179,20 +183,21 @@ def save_version(config,date,name):
     record=simulate(config,date)
     key=datetime.now(timezone.utc).strftime("v%Y%m%dT%H%M%S")+"-"+uuid4().hex[:12]
     version={"version":key,"nombre":name,"creado":now(),"fecha":date,"config":config,"corrida":record["id"],
-             "datos_sha256":DATA_HASH,"motor_sha256":REVISION,"resultado":record["metodos"]["optimo"]}
+             "datos_sha256":DATA_HASH,"motor_sha256":REVISION,"resultado":public_result(record["metodos"]["optimo"])}
     STORE.write_json(f"versiones/{key}.json",version)
     return version
 
 
 def versions():
     paths=sorted(STORE.keys("versiones/"),reverse=True)[:50]
-    return [item for path in paths if (item:=STORE.json(path)) is not None]
+    return [{**item, "resultado": public_result(item["resultado"])}
+            for path in paths if (item:=STORE.json(path)) is not None]
 
 
 def version(key):
     item=STORE.json(f"versiones/{key}.json")
     if item is None: raise FileNotFoundError("La versión no existe")
-    return item
+    return {**item, "resultado": public_result(item["resultado"])}
 
 
 def active():
@@ -249,20 +254,12 @@ def breakdown(grid, config):
             "total": {"valor": float(per_value.sum()), "con_accion": int(acting.sum())}}
 
 
-def simple_rule_grid(config, date):
-    """Parrilla de la regla simple (línea base) con el motor de análisis; solo para comparar por cluster."""
-    from modelo.experimentos.motor_analisis import Engine as AnalysisEngine
-    numeric = pd.read_csv(DATA_PATH, keep_default_na=False)
-    return AnalysisEngine(numeric, config, date).baseline()[0]
-
-
 def by_cluster(key):
-    """Qué hizo la corrida en cada cluster, con el optimizador y con la regla simple."""
+    """Desglosa la parrilla seleccionada; no ejecuta motores ni líneas base."""
     record = load_run(key)
     if "clusters" in record:
         return record["clusters"]
     config = record["config"]
-    result = {"metodos": {"optimo": breakdown(grid_for(key), config),
-                          "baseline": breakdown(simple_rule_grid(config, record["fecha"]), config)}}
+    result = {"metodos": {"optimo": breakdown(grid_for(key), config)}}
     record["clusters"] = result
     return result
