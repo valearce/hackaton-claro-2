@@ -120,37 +120,121 @@ def safe_json(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 
 
+def payloads_from_html(path):
+    """Geometry, network layers and snapshot metadata already embedded in a generated HTML (no download)."""
+    import re
+    text = path.read_text(encoding="utf-8")
+
+    def block(script_id):
+        found = re.search(r'<script id="%s" type="[^"]+">(.*?)</script>' % script_id, text, re.S)
+        if not found:
+            raise ValueError(f"{path.name} no contiene el bloque {script_id}")
+        return found.group(1)
+    return {"meta": json.loads(block("metadata")), "network": json.loads(block("network-layers")), "geo": block("geometry-gzip")}
+
+
+def load_foco(path):
+    """Compact view of modelo/evaluacion/foco.json (run: python -m modelo.experimentos.foco); None if absent."""
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {"advertencia": data["advertencia"], "focos": [
+        {"nombre": f["nombre"], "clientes": f["clientes"], "sectores": f["sectores"],
+         "base": {"valor_foco": f["base"]["valor_foco"], "valor_foco_con_propuestas": f["base"]["valor_foco_con_propuestas"]},
+         "aislado": {k: f["aislado"][k] for k in ("valor_foco", "delta_foco", "delta_foco_pct")},
+         "prioridad": [{k: p[k] for k in ("peso", "valor_foco", "delta_foco", "delta_foco_pct", "delta_resto_region", "delta_total", "delta_total_pct")}
+                       for p in f["prioridad"]],
+         "mejora_propuestas_pct": f["mejora_propuestas_pct"], "mejora_propuestas_p5": f["mejora_propuestas_p5"],
+         "mejora_propuestas_p95": f["mejora_propuestas_p95"]} for f in data["focos"]]}
+
+
+def load_comportamiento(path):
+    """modelo/evaluacion/comportamiento.json (python -m modelo.experimentos.comportamiento); None if absent."""
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {k: data[k] for k in ("nota", "umbral_distingue", "variables", "estratos")}
+
+
+def load_sectores(path, foco_path=None, comportamiento_path=None):
+    """Compact view of modelo/evaluacion/experimentos.json for the sidebar; None if the model was not run."""
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    perf = data["rendimiento"]["politicas"]
+    politicas = ("bandido_sector", "ganador_global", "bandido_global", "oraculo")
+    salida = {
+        "advertencia": data["advertencia"], "region": data["region"], "campanas": data["campanas"],
+        "rendimiento": {k: {"mejora_pct": perf[k]["mejora_pct_media"], "p5": perf[k]["mejora_pct_p5"], "p95": perf[k]["mejora_pct_p95"]}
+                        for k in politicas},
+        "curvas": {k: [round(v, 3) for v in data["rendimiento"]["curva_acumulada_pct"][k]] for k in politicas},
+        "sensibilidad": [{"nombre": e["nombre"], "sector": e["politicas"]["bandido_sector"]["mejora_pct_media"],
+                          "global": e["politicas"]["ganador_global"]["mejora_pct_media"]} for e in data["escenarios"]],
+        "sectores": [{k: s[k] for k in ("sector", "estrato", "nombre", "clientes")} for s in data["sectores"]],
+        "recomendaciones": [{k: r[k] for k in ("sector", "campana", "contactos", "canal_tipico", "recomendada_nombre", "p_mejor",
+                                              "lift_estimado_pct", "lift_ic90_pct", "tasa_esperada_pct", "texto", "alternativas")}
+                            | {"alternativas": [{"nombre": a["nombre"], "p_mejor": a["p_mejor"]} for a in r["alternativas"]]}
+                            for r in data["recomendaciones"]],
+    }
+    via = data.get("viabilidad")
+    if via:
+        def compacto(e):
+            nueva = e["regla"]["id"] if e.get("regla") else None
+            return {**{k: e[k] for k in ("id", "nombre", "regla", "valor_total", "valor_region", "delta_valor_total",
+                                         "delta_valor_total_pct", "delta_valor_region", "estratos")},
+                    "celdas": [{**{k: c[k] for k in ("sector", "campana", "clientes", "elegibles", "viables", "contactos",
+                                                    "valor_por_cliente", "conversion_pct", "bloqueada", "bloqueo", "bloqueo_pct", "bloqueo_tambien")},
+                                "pasos": [{"nombre": p["nombre"], "eliminados": p["eliminados"], "solo": p["solo"]} for p in c["pasos"]]}
+                               for c in e["celdas"]],
+                    "reglas": e["reglas"] if nueva is None else [r for r in e["reglas"] if r["id"] == nueva]}
+        salida["viabilidad"] = {"campanas": via["campanas"], "escenarios": [compacto(e) for e in via["escenarios"]]}
+    if foco_path is not None:
+        salida["foco"] = load_foco(foco_path)
+    if comportamiento_path is not None:
+        salida["comportamiento"] = load_comportamiento(comportamiento_path)
+    return salida
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--actualizar", action="store_true", help="Volver a descargar las manzanas oficiales")
     parser.add_argument("--actualizar-red", action="store_true", help="Actualizar recortes publicos de cobertura Claro y sitios CRC")
     parser.add_argument("--csv", type=Path, default=ROOT.parent / "datos" / "clientes.csv")
+    parser.add_argument("--reutilizar-html", type=Path, help="Reutiliza geometria y capas de red de un HTML ya generado, sin descargar")
+    parser.add_argument("--sectores", type=Path, default=ROOT.parent / "modelo" / "evaluacion" / "experimentos.json",
+                        help="Resultados de modelo.experimentos para la seccion Propuestas por sector")
     args = parser.parse_args()
-    if args.actualizar or not CACHE.exists():
-        snapshot = download_geometry()
-    else:
-        with gzip.open(CACHE, "rt", encoding="utf-8") as stream:
-            snapshot = json.load(stream)
-    features = snapshot["geojson"]["features"]
-    if len({f["id"] for f in features}) != len(features):
-        raise ValueError("Hay identificadores geograficos duplicados.")
     clients = aggregate_csv(args.csv.resolve())
-    from capas_red import load_layers
-    network = load_layers(refresh=args.actualizar_red)
-    metadata = {
-        "downloadedAt": snapshot["downloadedAt"], "source": SERVICE,
-        "blocks": len(features), "blocksByStratum": dict(Counter(str(f["properties"]["estrato"]) for f in features)),
-        "csv": clients,
-    }
-    raw = safe_json(snapshot["geojson"]).encode("utf-8")
-    encoded = base64.b64encode(gzip.compress(raw, mtime=0)).decode("ascii")
+    if args.reutilizar_html:
+        reused = payloads_from_html(args.reutilizar_html.resolve())
+        metadata = {**{k: reused["meta"][k] for k in ("downloadedAt", "source", "blocks", "blocksByStratum")}, "csv": clients}
+        network, encoded, blocks = reused["network"], reused["geo"], metadata["blocks"]
+    else:
+        if args.actualizar or not CACHE.exists():
+            snapshot = download_geometry()
+        else:
+            with gzip.open(CACHE, "rt", encoding="utf-8") as stream:
+                snapshot = json.load(stream)
+        features = snapshot["geojson"]["features"]
+        if len({f["id"] for f in features}) != len(features):
+            raise ValueError("Hay identificadores geograficos duplicados.")
+        from capas_red import load_layers
+        network = load_layers(refresh=args.actualizar_red)
+        metadata = {
+            "downloadedAt": snapshot["downloadedAt"], "source": SERVICE,
+            "blocks": len(features), "blocksByStratum": dict(Counter(str(f["properties"]["estrato"]) for f in features)),
+            "csv": clients,
+        }
+        raw = safe_json(snapshot["geojson"]).encode("utf-8")
+        encoded = base64.b64encode(gzip.compress(raw, mtime=0)).decode("ascii")
+        blocks = len(features)
     style = json.loads((ROOT / "estilo-base.json").read_text(encoding="utf-8-sig"))
     template = (ROOT / "mapa.template.html").read_text(encoding="utf-8")
     logo = "data:image/jpeg;base64," + base64.b64encode((ROOT.parent / "recursos/imagenes/claro-logo.jpg").read_bytes()).decode("ascii")
-    html = template.replace("__META_JSON__", safe_json(metadata)).replace("__STYLE_JSON__", safe_json(style)).replace("__GEO_GZIP_BASE64__", encoded).replace("__CLARO_LOGO_DATA_URL__", logo).replace("__NETWORK_JSON__", safe_json(network))
+    html = template.replace("__META_JSON__", safe_json(metadata)).replace("__STYLE_JSON__", safe_json(style)).replace("__GEO_GZIP_BASE64__", encoded).replace("__CLARO_LOGO_DATA_URL__", logo).replace("__NETWORK_JSON__", safe_json(network)).replace("__SECTORES_JSON__", safe_json(load_sectores(args.sectores, args.sectores.parent / "foco.json", args.sectores.parent / "comportamiento.json")))
     output = ROOT / "mapa-estratos-bogota.html"
     output.write_text(html, encoding="utf-8")
-    print(json.dumps({"html": str(output), "bytes": output.stat().st_size, "manzanas": len(features), "csv_total": clients["total"], "csv_bogota": clients["bogota"], "clientes_por_estrato": {k: b["clientes"] for k, b in clients["byStratum"].items()}}, ensure_ascii=False), flush=True)
+    print(json.dumps({"html": str(output), "bytes": output.stat().st_size, "manzanas": blocks, "csv_total": clients["total"], "csv_bogota": clients["bogota"], "clientes_por_estrato": {k: b["clientes"] for k, b in clients["byStratum"].items()}}, ensure_ascii=False), flush=True)
 
 
 if __name__ == "__main__":

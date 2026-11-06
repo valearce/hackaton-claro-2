@@ -77,6 +77,15 @@ Protocolo y alcance:
 
 Los segmentos son exploratorios. Los datos no tienen compras observadas, respuesta a campañas, emociones ni horas de respuesta. Estas pruebas no demuestran mejora de conversión y no cambian los scores oficiales ni las asignaciones del motor NBA.
 
+## Propuestas por sector
+
+[`experimentos/`](experimentos/README.md) agrupa a los clientes de Bogotá por comportamiento (consumo, streaming, uso digital, Hogar) y por estrato, hace un sondeo de qué consume cada estrato, genera varias propuestas de mensaje por campaña adaptadas a cada sector y las reparte por probabilidades con un bandido bayesiano, al estilo de las pruebas A/B de miniaturas. Se apoya en la parrilla del motor NBA y no cambia sus scores ni sus asignaciones. Su rendimiento se mide en un simulador con supuestos declarados, porque el CSV no trae respuestas reales: ver sus límites en el README del módulo. Los resultados se muestran en una sección nueva del [mapa](../mapa/README.md).
+
+```powershell
+python -m unittest modelo.tests.test_experimentos -v
+python -m modelo.experimentos
+```
+
 ## HNSW
 
 [HNSW](https://arxiv.org/abs/1603.09320) es un índice de vecinos aproximados organizado como grafo por capas. Puede usarse sobre los perfiles originales o sus representaciones para recuperar clientes similares. Como propuesta de arquitectura, podría acelerar la etapa de vecinos de Isomap; no elimina el cálculo posterior de distancias geodésicas ni su proyección. La implementación [hnswlib](https://github.com/nmslib/hnswlib) expone `M`, `ef_construction` y `ef` para ajustar memoria y el compromiso entre velocidad y recall.

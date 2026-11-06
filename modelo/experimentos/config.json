@@ -1,0 +1,119 @@
+{
+  "semilla": 42,
+  "region": "Bogota",
+  "fecha": "2026-11-05",
+  "sectores": {
+    "perfil": "comportamiento",
+    "k_perfiles": 5, "componentes_pca": 5, "min_clientes": 150,
+    "variables_comportamiento": {
+      "numericas": ["consumo_datos_pct", "plan_datos_gb"],
+      "binarias": ["tiene_hogar", "tiene_netflix", "tiene_amazon_prime", "tiene_win", "usa_redes_sociales", "usa_banca_digital", "compras_digitales"],
+      "categoricas": [], "log1p": []
+    }
+  },
+  "experimento": {
+    "oleadas": 24,
+    "repeticiones": 20,
+    "repeticiones_sensibilidad": 8,
+    "fuerza_prior": 5.0,
+    "piso_exploracion": 0.05,
+    "muestras_probabilidad": 1000,
+    "fraccion_exploracion_global": 0.25
+  },
+  "verdad_simulada": {
+    "nota": "Supuestos del simulador, no hallazgos: el CSV no trae respuestas ni compras. Cada propuesta mejora o empeora el score del reto segun la afinidad entre su enfoque y los rasgos del sector.",
+    "amplitud_sector": 0.2,
+    "ruido_campana_variante": 0.04,
+    "ruido_sector": 0.05,
+    "escenarios": [
+      {"nombre": "Sin diferencias entre sectores", "amplitud_sector": 0.0, "ruido_sector": 0.0},
+      {"nombre": "Diferencias moderadas", "amplitud_sector": 0.1, "ruido_sector": 0.03},
+      {"nombre": "Diferencias del informe (base)", "amplitud_sector": 0.2, "ruido_sector": 0.05},
+      {"nombre": "Diferencias fuertes", "amplitud_sector": 0.35, "ruido_sector": 0.08}
+    ]
+  },
+  "foco": {
+    "criterio": "valor_por_cliente",
+    "focos": [
+      {"nombre": "El cluster más probable", "n": 1, "pesos": [3, 10]},
+      {"nombre": "Los 5 clusters más probables", "n": 5, "pesos": [1.5, 3, 10]},
+      {"nombre": "Los 10 clusters más probables", "n": 10, "pesos": [3]}
+    ]
+  },
+  "restricciones_hipoteticas": [
+    {
+      "id": "H1", "nombre": "No ofrecer streaming (Upgrade OTT) a estrato 1",
+      "regla": {"id": "H1", "control": "H1", "nombre": "No ofrecer streaming a estrato 1", "tipo": "elegibilidad",
+                "alcance": {"nivel": "campana", "valores": ["C-OTT"]},
+                "condicion": {"atributo": "estrato", "operador": "==", "valor": 1}, "accion": "excluir", "activa": true}
+    },
+    {
+      "id": "H2", "nombre": "No ofrecer terminales a clientes prepago",
+      "regla": {"id": "H2", "control": "H2", "nombre": "No ofrecer terminales a prepago", "tipo": "elegibilidad",
+                "alcance": {"nivel": "campana", "valores": ["C-TER"]},
+                "condicion": {"atributo": "tipo_linea", "operador": "==", "valor": "Prepago"}, "accion": "excluir", "activa": true}
+    },
+    {
+      "id": "H3", "nombre": "No ofrecer Hogar a estratos 1 y 2",
+      "regla": {"id": "H3", "control": "H3", "nombre": "No ofrecer Hogar a estratos 1 y 2", "tipo": "elegibilidad",
+                "alcance": {"nivel": "campana", "valores": ["C-VCH"]},
+                "condicion": {"atributo": "estrato", "operador": "en", "valor": [1, 2]}, "accion": "excluir", "activa": true}
+    }
+  ],
+  "variantes": {
+    "ahorro": {"nombre": "Ahorro y precio", "afinidad": {"postpago": -0.8, "arpu": -1.0, "estrato": -0.6}},
+    "novedad": {"nombre": "Novedad y tecnología", "afinidad": {"gama_alta": 0.5, "postpago": 0.3, "edad": -0.5, "digital": 0.5, "banca": 0.6, "compras": 0.6}},
+    "familia": {"nombre": "Familia y hogar", "afinidad": {"hogar": 0.8, "antiguedad": 0.6, "ott": 0.4}},
+    "entretenimiento": {"nombre": "Entretenimiento sin límites", "afinidad": {"ott": 0.8, "consumo": 0.7, "netflix": 0.5, "amazon": 0.5, "hogar": 0.3}}
+  },
+  "ganchos": {
+    "postpago+": "Como cliente de plan postpago,",
+    "postpago-": "Con tu línea prepago,",
+    "hogar+": "Ya tienes Claro en casa y",
+    "hogar-": "Si aún no tienes Claro en casa,",
+    "gama_alta+": "Con un equipo de gama alta,",
+    "arpu+": "Por ser un cliente con un plan completo,",
+    "arpu-": "Para que tu plan rinda más,",
+    "banca+": "Como haces tus trámites desde el celular,",
+    "netflix+": "Si ya disfrutas Netflix,",
+    "ott+": "Si ya disfrutas el streaming,",
+    "ott-": "Si aún no tienes streaming,",
+    "antiguedad+": "Por ser cliente de siempre,",
+    "antiguedad-": "Para darte la bienvenida,",
+    "consumo+": "Como usas bastante tu plan de datos,",
+    "consumo-": "Para que le saques más provecho a tu plan,",
+    "edad-": "Para quienes viven conectados,",
+    "edad+": "Pensando en tu tranquilidad,",
+    "digital+": "Sabemos que haces mucho desde el celular,",
+    "digital-": "De forma simple y sin complicaciones,"
+  },
+  "plantillas": {
+    "C-VCH": {
+      "ahorro": "{gancho} suma Claro Hogar a tu línea móvil y paga menos por todo junto.",
+      "novedad": "{gancho} llévate internet de fibra y lo último en TV con Claro Hogar.",
+      "familia": "{gancho} Claro Hogar conecta a toda tu familia con internet estable para todos en casa.",
+      "entretenimiento": "{gancho} con Claro Hogar tienes internet rápido para series, juegos y música sin cortes."
+    },
+    "C-TER": {
+      "ahorro": "{gancho} renueva tu celular con cuotas bajas y sin pagar de más.",
+      "novedad": "{gancho} estrena el celular más nuevo: tu equipo ya cumplió su ciclo.",
+      "familia": "{gancho} renueva tu equipo y gana batería y memoria para toda tu vida diaria.",
+      "entretenimiento": "{gancho} renueva tu celular y disfruta más pantalla, más cámara y más juegos."
+    },
+    "C-OTT": {
+      "ahorro": "{gancho} sube tu plan de streaming y paga menos que suscribiéndote por separado.",
+      "novedad": "{gancho} activa Netflix, Amazon Prime o Win en un solo paquete.",
+      "familia": "{gancho} un solo plan de streaming para ver con toda la familia.",
+      "entretenimiento": "{gancho} más series y películas: completa tu paquete de streaming."
+    }
+  },
+  "genericas": {
+    "plantilla": "{gancho} {campana}: {beneficio}.",
+    "beneficios": {
+      "ahorro": "ahorra con una oferta pensada para tu bolsillo",
+      "novedad": "descubre la novedad que tenemos para ti",
+      "familia": "una oferta para disfrutar en familia",
+      "entretenimiento": "más entretenimiento en tu día a día"
+    }
+  }
+}

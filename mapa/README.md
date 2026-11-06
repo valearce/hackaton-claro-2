@@ -6,6 +6,8 @@ Abre `mapa-estratos-bogota.html` en un navegador moderno. Es un único HTML: inc
 - Filtros por estrato, búsqueda local de códigos de manzana, selección y detalle.
 - Capas activables: estratos, sitios móviles de Claro reportados en el WMS público de la CRC y cobertura móvil Claro 4G/5G con leyenda y opacidad.
 - Los clientes proceden de [`../datos/clientes.csv`](../datos/clientes.csv), exclusivamente de la región Bogotá. Se muestran agregados por estrato. No se inventan coordenadas ni se distribuyen clientes entre manzanas.
+- Sección **Propuestas por sector**: para los estratos visibles muestra cada sector (estrato × perfil), la propuesta de mensaje recomendada por campaña con su probabilidad de ser la mejor, el *lift* estimado con su intervalo y el texto adaptado. Sale de [`../modelo/experimentos`](../modelo/experimentos/README.md) y es una **simulación con supuestos declarados**, no respuestas reales; la advertencia aparece en la propia sección. Como los clientes no tienen coordenadas, la relación con el mapa es por estrato, no por manzana.
+- Pestaña **Viabilidad** y coloreado por campaña: matriz sector × campaña (con candados donde las reglas bloquean la campaña), embudo de reglas por celda, reglas vigentes, mezcla de campañas por estrato y rendimiento del reparto de propuestas. El selector «Colorear manzanas por» muestra por defecto un mapa de calor (rojo más intenso y opaco = más viable) de la mejor campaña de cada estrato o de una campaña concreta, con un ranking de estratos y su valor en la leyenda; también pinta cada estrato con su campaña más viable (un color por campaña) y «Restricción de negocio a probar» muestra el efecto de una regla nueva con el motor vuelto a correr. La pestaña también trae el **sondeo de comportamiento por estrato**, los **clusters más probables** (ranking y grilla cluster × estrato; al elegir uno se resalta el estrato donde vive) y el resultado de **correr el motor enfocado en esos clusters**. Los datos salen del motor NBA y de [`../modelo/experimentos`](../modelo/experimentos/README.md); sin coordenadas, el color es por estrato y no por manzana, y un cluster no tiene ubicación propia.
 - La lista permite consultar las mismas manzanas cuando WebGL o la cartografía no están disponibles.
 - La ubicación se solicita únicamente al pulsar «Mi ubicación» y se usa para centrar el mapa. No se registra presencia ni se envía al visor de Claro.
 - El visor completo de Claro se abre con un enlace externo porque restringe la incrustación. Sus imágenes de cobertura publicadas se recortan para Bogotá y se incluyen en el HTML con su leyenda y fecha de corte (27 de octubre de 2026). La cobertura móvil no certifica disponibilidad de Hogar.
@@ -31,7 +33,10 @@ python -m pip install Pillow
 python mapa/generar_mapa.py
 python mapa/generar_mapa.py --actualizar
 python mapa/generar_mapa.py --actualizar-red
+python mapa/generar_mapa.py --reutilizar-html mapa/mapa-estratos-bogota.html
 ```
+
+`--reutilizar-html` reconstruye el HTML con la plantilla y el CSV actuales reutilizando las manzanas y las capas de red ya incluidas en un HTML generado antes, sin descargar nada. La sección de propuestas se lee de `modelo/evaluacion/experimentos.json` (se genera con `python -m modelo.experimentos`); si el archivo no existe, la sección queda oculta.
 
 `mapa.template.html` contiene la interfaz editable. `estilo-base.json` conserva el estilo cartográfico de la referencia y su atribución. El logo compartido está en [`../recursos/imagenes/claro-logo.jpg`](../recursos/imagenes/claro-logo.jpg). `.cache/` guarda la última descarga y está excluida de Git.
 
