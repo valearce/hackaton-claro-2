@@ -5,8 +5,8 @@ import io
 import json
 import re
 import zipfile
+from .rutas import KIT_OFICIAL
 
-ROOT = Path(__file__).resolve().parents[1]
 MODEL = Path(__file__).resolve().parent
 
 
@@ -25,7 +25,7 @@ def main():
     config = MODEL / "config"
     original.mkdir(exist_ok=True)
     config.mkdir(exist_ok=True)
-    with zipfile.ZipFile(ROOT / "Hackatón Orquestador NBA.zip") as archive:
+    with zipfile.ZipFile(KIT_OFICIAL) as archive:
         for item in archive.infolist():
             if item.filename.endswith(".csv"):
                 target = original / PurePosixPath(item.filename).name

@@ -124,7 +124,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--actualizar", action="store_true", help="Volver a descargar las manzanas oficiales")
     parser.add_argument("--actualizar-red", action="store_true", help="Actualizar recortes publicos de cobertura Claro y sitios CRC")
-    parser.add_argument("--csv", type=Path, default=ROOT.parent / "clientes 1.csv")
+    parser.add_argument("--csv", type=Path, default=ROOT.parent / "datos" / "clientes.csv")
     args = parser.parse_args()
     if args.actualizar or not CACHE.exists():
         snapshot = download_geometry()
@@ -146,7 +146,7 @@ def main():
     encoded = base64.b64encode(gzip.compress(raw, mtime=0)).decode("ascii")
     style = json.loads((ROOT / "estilo-base.json").read_text(encoding="utf-8-sig"))
     template = (ROOT / "mapa.template.html").read_text(encoding="utf-8")
-    logo = "data:image/jpeg;base64," + base64.b64encode((ROOT / "Claro_Logo.jpg").read_bytes()).decode("ascii")
+    logo = "data:image/jpeg;base64," + base64.b64encode((ROOT.parent / "recursos/imagenes/claro-logo.jpg").read_bytes()).decode("ascii")
     html = template.replace("__META_JSON__", safe_json(metadata)).replace("__STYLE_JSON__", safe_json(style)).replace("__GEO_GZIP_BASE64__", encoded).replace("__CLARO_LOGO_DATA_URL__", logo).replace("__NETWORK_JSON__", safe_json(network))
     output = ROOT / "mapa-estratos-bogota.html"
     output.write_text(html, encoding="utf-8")

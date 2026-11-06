@@ -22,8 +22,9 @@ from sklearn.neighbors import KNeighborsRegressor
 from threadpoolctl import threadpool_limits
 import torch
 
-from .ejecutar import ROOT, write_json
+from .ejecutar import write_json
 from .perfiles import Autoencoder, Preprocessor
+from .rutas import DATOS
 
 
 def row_errors(actual, predicted):
@@ -274,7 +275,7 @@ def save_figures(rows, directory):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--datos", type=Path, default=ROOT / "clientes 1.csv")
+    parser.add_argument("--datos", type=Path, default=DATOS)
     parser.add_argument("--config", type=Path, default=Path(__file__).parent / "config/comparacion.json")
     parser.add_argument("--perfiles", type=Path, default=Path(__file__).parent / "resultados/perfiles")
     parser.add_argument("--salida", type=Path, default=Path(__file__).parent / "resultados/comparacion")

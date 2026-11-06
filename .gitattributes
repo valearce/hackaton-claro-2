@@ -1,2 +1,13 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Fuentes originales: conservar sus bytes, incluidos los saltos de línea.
+/datos/clientes.csv -text
+/docs/reto/transcripcion.md -text -whitespace
+/docs/ideas.md -text -whitespace
+/modelo/kit_original/*.csv -text
+
+*.pdf binary
+*.zip binary
+*.jpg binary
+*.png binary

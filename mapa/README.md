@@ -5,7 +5,7 @@ Abre `mapa-estratos-bogota.html` en un navegador moderno. Es un único HTML: inc
 - MapLibre y estilo de referencia de GrouPay, sobre OpenFreeMap/OpenMapTiles. Se usa la distribución 5.6.0 con worker clásico para que el HTML funcione al abrirlo con doble clic; los workers de módulo de la versión 6 fallan en Chrome con origen `file://`.
 - Filtros por estrato, búsqueda local de códigos de manzana, selección y detalle.
 - Capas activables: estratos, sitios móviles de Claro reportados en el WMS público de la CRC y cobertura móvil Claro 4G/5G con leyenda y opacidad.
-- Los clientes proceden de `../clientes 1.csv`, exclusivamente de la región Bogotá. Se muestran agregados por estrato. No se inventan coordenadas ni se distribuyen clientes entre manzanas.
+- Los clientes proceden de [`../datos/clientes.csv`](../datos/clientes.csv), exclusivamente de la región Bogotá. Se muestran agregados por estrato. No se inventan coordenadas ni se distribuyen clientes entre manzanas.
 - La lista permite consultar las mismas manzanas cuando WebGL o la cartografía no están disponibles.
 - La ubicación se solicita únicamente al pulsar «Mi ubicación» y se usa para centrar el mapa. No se registra presencia ni se envía al visor de Claro.
 - El visor completo de Claro se abre con un enlace externo porque restringe la incrustación. Sus imágenes de cobertura publicadas se recortan para Bogotá y se incluyen en el HTML con su leyenda y fecha de corte (27 de octubre de 2026). La cobertura móvil no certifica disponibilidad de Hogar.
@@ -28,12 +28,12 @@ Python 3. La primera descarga de capas de red requiere Pillow; las regeneracione
 
 ```powershell
 python -m pip install Pillow
-python 'producto añadido/generar_mapa.py'
-python 'producto añadido/generar_mapa.py' --actualizar
-python 'producto añadido/generar_mapa.py' --actualizar-red
+python mapa/generar_mapa.py
+python mapa/generar_mapa.py --actualizar
+python mapa/generar_mapa.py --actualizar-red
 ```
 
-`mapa.template.html` contiene la interfaz editable. `estilo-base.json` conserva el estilo cartográfico de la referencia y su atribución. `.cache/` guarda la última descarga y está excluida de Git.
+`mapa.template.html` contiene la interfaz editable. `estilo-base.json` conserva el estilo cartográfico de la referencia y su atribución. El logo compartido está en [`../recursos/imagenes/claro-logo.jpg`](../recursos/imagenes/claro-logo.jpg). `.cache/` guarda la última descarga y está excluida de Git.
 
 `capas_red.py` prepara los recortes georreferenciados a partir de imágenes públicas. Las teselas de cobertura no permiten CORS desde un archivo local; la copia incluida evita depender de esas peticiones al visualizar el HTML, sin desactivar la seguridad del navegador. Los recortes son estáticos y no sustituyen los visores oficiales. Las atribuciones se mantienen visibles.
 

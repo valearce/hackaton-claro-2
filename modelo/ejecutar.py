@@ -11,8 +11,8 @@ import pandas as pd
 import scipy
 
 from .nba import CONFIG, Engine, OUTPUT_COLUMNS, load_config, validate_grid
+from .rutas import DATOS, RAIZ as ROOT
 
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def write_json(path, value):
@@ -60,7 +60,7 @@ def run_nba(data, config, directory, day, datos_sha256=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--datos", type=Path, default=ROOT / "clientes 1.csv")
+    parser.add_argument("--datos", type=Path, default=DATOS)
     parser.add_argument("--config", type=Path, default=CONFIG)
     parser.add_argument("--salida", type=Path, default=Path(__file__).parent / "resultados")
     parser.add_argument("--fecha", default=date.today().isoformat())

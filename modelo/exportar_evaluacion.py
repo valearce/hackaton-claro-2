@@ -4,13 +4,14 @@ import json
 from pathlib import Path
 import shutil
 
-from .ejecutar import ROOT, write_json
+from .ejecutar import write_json
 from .nba import load_config
+from .rutas import DATOS
 
 
 def main():
     model = Path(__file__).resolve().parent
-    fingerprint = hashlib.sha256((ROOT / "clientes 1.csv").read_bytes()).hexdigest()
+    fingerprint = hashlib.sha256(DATOS.read_bytes()).hexdigest()
     output = model / "evaluacion"
     reports = {}
     for task in ("nba", "perfiles", "comparacion"):

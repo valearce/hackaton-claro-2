@@ -1,0 +1,35 @@
+{
+  "tipo": "fuentes_reto_contenido_original",
+  "archivos": [
+    {
+      "ruta": "docs/reto/diccionario-datos.pdf",
+      "nombre_original": "Hackatón NBA — Diccionario de datos y formatos.pdf",
+      "bytes": 263550,
+      "sha256": "ca530a7ac2f96129daba0e91ee13e00219b3d0c07e30ad9b5186401a1ed4d868"
+    },
+    {
+      "ruta": "docs/reto/enunciado.pdf",
+      "nombre_original": "Hackatón Orquestador NBA configurable — El reto estudiantes (1).pdf",
+      "bytes": 191646,
+      "sha256": "3da242d8b93ea86d18f1c94519d1926396379b279291a85bd2d24d2d63374ccc"
+    },
+    {
+      "ruta": "docs/reto/kit-oficial.zip",
+      "nombre_original": "Hackatón Orquestador NBA.zip",
+      "bytes": 1407944,
+      "sha256": "0d370ae86a09255b139546000110cd84ffbc2465f70b449d3852d5c23f5c2bf5"
+    },
+    {
+      "ruta": "docs/reto/presentacion.pdf",
+      "nombre_original": "Reto_Hackaton_Orquestador_NBA.pdf",
+      "bytes": 1423492,
+      "sha256": "4a905f43a2c12a7180eeea6fe1138468e97fecb9a9f6d6d8045bd2bb796fa24e"
+    },
+    {
+      "ruta": "docs/reto/transcripcion.md",
+      "nombre_original": "transcript.md",
+      "bytes": 30583,
+      "sha256": "1612593d7682a5ae576a97e9d29d74ca62d715b3452abe91c4bd45d32f52e5d2"
+    }
+  ]
+}

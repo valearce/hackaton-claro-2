@@ -20,7 +20,7 @@ La ejecución usa CPU y cuatro hilos. Los programas no abren terminales ni servi
 
 ## Resultado NBA
 
-Ejecución sobre los 100.000 registros de `clientes 1.csv`, fecha de evaluación 2026-11-05:
+Ejecución sobre los 100.000 registros de [`../datos/clientes.csv`](../datos/clientes.csv), fecha de evaluación 2026-11-05:
 
 | Métrica | Baseline | Optimización global |
 | --- | ---: | ---: |
@@ -85,6 +85,6 @@ Los segmentos son exploratorios. Los datos no tienen compras observadas, respues
 
 ## Referencias
 
-- Reto y diccionario oficiales en los PDF y ZIP de la raíz. La presentación local `Reto_Hackaton_Orquestador_NBA.pdf` se leyó como contexto; no se agrega fuera de esta carpeta.
+- Reto, diccionario, presentación y ZIP oficial en [`../docs/reto/`](../docs/reto/README.md). El CSV principal está en [`../datos/clientes.csv`](../datos/clientes.csv); `rutas.py` centraliza las ubicaciones del modelo.
 - Notebooks de Aprendizaje Profundo: optimización y regularización, PyTorch y autoencoders. Se adaptan separación train/validación/test, escalado en train, referencia PCA y reconstrucción. Los archivos externos y sus datasets no se copian al repositorio.
 - Documentación primaria: [GaussianMixture](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html), [Isomap](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.Isomap.html), [trustworthiness](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.trustworthiness.html), [parámetros de HNSW](https://github.com/nmslib/hnswlib/blob/master/ALGO_PARAMS.md).

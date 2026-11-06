@@ -1,0 +1,199 @@
+{
+  "fecha_consulta": "2026-11-05",
+  "tipo_revision": "Seleccion exploratoria, no revision sistematica",
+  "frase_principal": "Logramos convertir al cliente en el momento preciso",
+  "contexto_local": {
+    "archivo": "../docs/reto/transcripcion.md",
+    "linea": 72,
+    "intervalo": "Intervencion iniciada a las 24:18 y terminada antes de 28:01"
+  },
+  "consultas_google_academico": [
+    "https://scholar.google.com/scholar?q=%22diurnal%22+%22mood%22",
+    "https://scholar.google.com/scholar?q=%22notification%22+%22receptivity%22+%22time+of+day%22"
+  ],
+  "estudios": [
+    {
+      "id": "golder_macy_2011",
+      "autores": [
+        "Scott A. Golder",
+        "Michael W. Macy"
+      ],
+      "anio": 2011,
+      "titulo": "Diurnal and Seasonal Mood Vary with Work, Sleep, and Daylength Across Diverse Cultures",
+      "publicacion": "Science 333(6051), 1878-1881",
+      "doi": "10.1126/science.1202775",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/21960633/",
+      "alcance": "Texto completo revisado; lenguaje emocional en Twitter, no ventas.",
+      "derechos": "El PDF indica uso personal no comercial.",
+      "copia_local": {
+        "archivo": "estudios/2011_golder_macy_ritmos_animo.pdf",
+        "paginas": 5,
+        "bytes": 3035601,
+        "sha256": "ed67f4bb4fe6ed9d8ad42056f241b78fc219a9ec23d438963e3b85c27ab4d128",
+        "caracteres_texto": 51433,
+        "url_descarga": "https://homes.luddy.indiana.edu/jbollen/I501F13/readings/Science-2011-Golder-1878-81.pdf",
+        "url_final": "https://homes.luddy.indiana.edu/jbollen/I501F13/readings/Science-2011-Golder-1878-81.pdf",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    },
+    {
+      "id": "bu_bone_fancourt_2025",
+      "autores": [
+        "Feifei Bu",
+        "Jessica K. Bone",
+        "Daisy Fancourt"
+      ],
+      "anio": 2025,
+      "titulo": "Will things feel better in the morning? A time-of-day analysis of mental health and wellbeing from nearly 1 million observations",
+      "publicacion": "BMJ Mental Health 28(1), e301418",
+      "doi": "10.1136/bmjment-2024-301418",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11795389/",
+      "alcance": "Texto completo revisado; estudio observacional de bienestar y salud mental reportados.",
+      "derechos": "CC BY 4.0.",
+      "nota_acceso": "El enlace PDF editorial devolvio HTTP 403; se guardo una copia publica del articulo con los avisos editoriales originales.",
+      "copia_local": {
+        "archivo": "estudios/2025_bu_bone_fancourt_animo_hora.pdf",
+        "paginas": 8,
+        "bytes": 1433414,
+        "sha256": "ea06a0fa7d625672a18a3dff631d541d35ea60315b79cf6edf900e391e1ca47c",
+        "caracteres_texto": 59676,
+        "url_descarga": "https://mesplaisirs.com/wp-content/uploads/2025/02/e301418.full_.pdf",
+        "url_final": "https://mesplaisirs.com/wp-content/uploads/2025/02/e301418.full_.pdf",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    },
+    {
+      "id": "mehrotra_2016",
+      "autores": [
+        "Abhinav Mehrotra",
+        "Veljko Pejovic",
+        "Jo Vermeulen",
+        "Robert Hendley",
+        "Mirco Musolesi"
+      ],
+      "anio": 2016,
+      "titulo": "My Phone and Me: Understanding People's Receptivity to Mobile Notifications",
+      "publicacion": "CHI 2016, 1021-1032",
+      "doi": "10.1145/2858036.2858566",
+      "url": "https://discovery.ucl.ac.uk/id/eprint/1502364/",
+      "alcance": "Texto completo revisado; analisis de 20 usuarios, 10372 notificaciones y 474 cuestionarios.",
+      "derechos": "Version de autor con aviso de derechos ACM; conservar las condiciones del PDF.",
+      "copia_local": {
+        "archivo": "estudios/2016_mehrotra_receptividad_notificaciones.pdf",
+        "paginas": 12,
+        "bytes": 1971361,
+        "sha256": "9e0f75fbd05743c2bb3b1e371054d2958f39d9a637f4f25dff91e1341c36f12d",
+        "caracteres_texto": 88086,
+        "url_descarga": "https://lrss.fri.uni-lj.si/Veljko/docs/Mehrotra16MyPhone.pdf",
+        "url_final": "https://lrss.fri.uni-lj.si/Veljko/docs/Mehrotra16MyPhone.pdf",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    },
+    {
+      "id": "okoshi_2018",
+      "autores": [
+        "Tadashi Okoshi",
+        "Kota Tsubouchi",
+        "Hideyuki Tokuda"
+      ],
+      "anio": 2018,
+      "titulo": "Real-world large-scale study on adaptive notification scheduling on smartphones",
+      "publicacion": "Pervasive and Mobile Computing 50, 1-24",
+      "doi": "10.1016/j.pmcj.2018.07.005",
+      "url": "https://www.sciencedirect.com/science/article/pii/S1574119217304388",
+      "alcance": "Solo resumen editorial publico revisado; texto completo no revisado.",
+      "derechos": "Sin copia local.",
+      "resultado_reportado": {
+        "metrica": "reduccion del tiempo de respuesta frente a entrega inmediata",
+        "porcentaje": 49.7,
+        "usuarios": "mas de 680000",
+        "duracion": "tres semanas",
+        "no_es": "aumento de conversion o ventas"
+      },
+      "copia_local": null
+    },
+    {
+      "id": "heinisch_2022_arxiv",
+      "autores": [
+        "Judith S. Heinisch",
+        "Nan Gao",
+        "Christoph Anderson",
+        "Shohreh Deldari",
+        "Klaus David",
+        "Flora Salim"
+      ],
+      "anio": 2022,
+      "titulo": "Investigating the Effects of Mood & Usage Behaviour on Notification Response Time",
+      "publicacion": "Version arXiv 2207.03405v1, 7 de julio de 2022",
+      "doi": "10.48550/arXiv.2207.03405",
+      "url": "https://arxiv.org/abs/2207.03405",
+      "alcance": "Preprint consultado; 27 reclutados y analisis movil de 18 usuarios; no se asigna aqui una publicacion editorial distinta.",
+      "derechos": "Conservar los avisos de derechos de la version descargada.",
+      "copia_local": {
+        "archivo": "estudios/2022_heinisch_animo_respuesta_preprint.pdf",
+        "paginas": 24,
+        "bytes": 2168834,
+        "sha256": "966d380dda5083287e828bd14852264094971d0445bfd328cf9736e8950a296c",
+        "caracteres_texto": 122480,
+        "url_descarga": "https://arxiv.org/pdf/2207.03405",
+        "url_final": "https://arxiv.org/pdf/2207.03405",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    },
+    {
+      "id": "morrison_2017",
+      "autores": [
+        "Leanne G. Morrison",
+        "Charlie Hargood",
+        "Veljko Pejovic",
+        "Adam W. A. Geraghty",
+        "Scott Lloyd",
+        "Natalie Goodman",
+        "Danius T. Michaelides",
+        "Anna Weston",
+        "Mirco Musolesi",
+        "Mark J. Weal",
+        "Lucy Yardley"
+      ],
+      "anio": 2017,
+      "titulo": "The Effect of Timing and Frequency of Push Notifications on Usage of a Smartphone-Based Stress Management Intervention: An Exploratory Trial",
+      "publicacion": "PLOS ONE 12(1), e0169162",
+      "doi": "10.1371/journal.pone.0169162",
+      "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169162",
+      "alcance": "Texto completo revisado; 77 participantes con datos utilizables; ensayo exploratorio.",
+      "derechos": "CC BY.",
+      "correccion": "morrison_2018_correccion",
+      "copia_local": {
+        "archivo": "estudios/2017_morrison_tiempo_frecuencia_notificaciones.pdf",
+        "paginas": 15,
+        "bytes": 823176,
+        "sha256": "ffd3be9fe2549dcc02b4736a328ea406e7280a0612a6ac06854f2db733c92220",
+        "caracteres_texto": 89934,
+        "url_descarga": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0169162&type=printable",
+        "url_final": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0169162&type=printable",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    }
+  ],
+  "anexos": [
+    {
+      "id": "morrison_2018_correccion",
+      "anio": 2018,
+      "titulo": "Correction: The Effect of Timing and Frequency of Push Notifications on Usage of a Smartphone-Based Stress Management Intervention: An Exploratory Trial",
+      "doi": "10.1371/journal.pone.0198008",
+      "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0198008",
+      "alcance": "Corrige la afiliacion de Anna Weston; no modifica resultados.",
+      "derechos": "CC BY.",
+      "copia_local": {
+        "archivo": "estudios/2018_morrison_correccion.pdf",
+        "paginas": 1,
+        "bytes": 217686,
+        "sha256": "234f3b506fe640f97794e93e96aa5e1707723fc3c836b1d3518a2a3223153c38",
+        "caracteres_texto": 2586,
+        "url_descarga": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0198008&type=printable",
+        "url_final": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0198008&type=printable",
+        "verificacion": "Cabecera PDF, metadatos, extraccion de texto y renderizado de primera pagina correctos."
+      }
+    }
+  ]
+}
