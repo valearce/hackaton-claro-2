@@ -40,7 +40,7 @@ export default function Proximity({ config = null }: { config?: Config | null })
   const [events, setEvents] = useState<Event[]>([]); const [lastResult, setLastResult] = useState<ProximityResult | null>(null); const [lastSignature, setLastSignature] = useState('');
   const mounted = useRef(true); const busyRef = useRef(false);
   const lastActions = useRef<Record<string, string>>({});
-  const [playing, setPlaying] = useState(false), [progress, setProgress] = useState(0), [speed, setSpeed] = useState(1);
+  const [playing, setPlaying] = useState(false), [progress, setProgress] = useState(0), [speed, setSpeed] = useState(4);
   const progressRef = useRef(0);
   const demoView = useRef<HTMLDivElement>(null), audio = useRef<AudioContext | null>(null);
   const soundEnabled = useRef(false), previousAntennas = useRef(new Set<string>());
