@@ -30,14 +30,14 @@ def main():
         rows = sum(1 for _ in reader)
     if (rows, columns) != (dataset["filas"], dataset["columnas"]):
         raise ValueError("Dimensiones del CSV diferentes al manifiesto")
-    evaluations = ["nba", "perfiles", "comparacion"]
-    if (ROOT / "modelo/evaluacion/optimizador.json").exists():
-        evaluations.append("optimizador")
+    evaluations = ["nba", "perfiles", "comparacion", "optimizador"]
     for task in evaluations:
         metrics = read_json(ROOT / "modelo/evaluacion" / f"{task}.json")
         if metrics["datos_sha256"] != dataset["archivos"][0]["sha256"]:
             raise ValueError(f"Evaluación {task}: huella del CSV diferente")
-        if task in ("nba", "optimizador"):
+        if task in ("comparacion", "optimizador"):
+            continue  # Informes históricos de los comparadores retirados.
+        if task == "nba":
             config = {key: read_json(ROOT / "modelo/config" / f"{key}.json") for key in ("campanas", "reglas", "parametros")}
         else:
             config = read_json(ROOT / "modelo/config" / f"{task}.json")

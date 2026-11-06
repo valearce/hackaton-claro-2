@@ -60,7 +60,8 @@ def main():
     parameters["canal"]["columnas_score"] = {
         channel: f"score_canal_{channel}" for channel in parameters["canal"]["capacidad_por_corrida"]
     }
-    parameters["optimizacion"] = {"objetivo": "valor_esperado", "limite_segundos": 180, "tolerancia_entera": 1e-7}
+    parameters["optimizacion"] = {"backend": "flujo_ortools", "objetivo": "valor_esperado"}
+    parameters["priorizacion"]["modos_disponibles"] = ["ponderado"]
     profiles = {
         "semilla": 42, "fraccion_train": 0.7, "fraccion_validacion": 0.15,
         "numericas": ["edad", "antiguedad_meses", "plan_datos_gb", "consumo_datos_pct", "arpu_movil", "arpu_hogar", "edad_equipo_meses"],

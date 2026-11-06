@@ -2,8 +2,7 @@
   "priorizacion": {
     "modo": "ponderado",
     "modos_disponibles": [
-      "ponderado",
-      "jerarquia_estricta"
+      "ponderado"
     ],
     "jerarquia": [
       "C-VCH",
@@ -58,8 +57,7 @@
     }
   },
   "optimizacion": {
-    "objetivo": "valor_esperado",
-    "limite_segundos": 180,
-    "tolerancia_entera": 1e-07
+    "backend": "flujo_ortools",
+    "objetivo": "valor_esperado"
   }
 }

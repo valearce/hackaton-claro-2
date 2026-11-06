@@ -1,113 +1,62 @@
-# Modelo NBA y perfiles de consumo
+# Motor NBA con flujo de coste mínimo
 
-El motor elige campañas y un canal por cliente, respeta las reglas y los cupos y maximiza el valor esperado con los scores suministrados por el reto. Los perfiles exploratorios comparan un autoencoder, PCA, mezclas gaussianas e Isomap. No se entrena una nueva propensión de compra.
+El motor elige productos y un canal por cliente mediante **OR-Tools**, con los scores del reto, reglas de elegibilidad, permisos y capacidades. Es el único optimizador de la ejecución normal. Cada parrilla exige un certificado primal-dual entero con brecha exacta cero y una auditoría de reglas sin violaciones.
 
 ## Ejecutar
 
-Desde la raíz del repositorio. Las pruebas estándar reutilizan el kernel GPU `wsl_rtx5080` de los notebooks:
+Desde la raíz, en PowerShell:
 
 ```powershell
-python -m modelo.probar
-```
-
-El [contrato de entorno](docs/entorno.md) verifica versiones y CUDA y guarda evidencia de la ejecución. `requirements.txt` conserva las versiones científicas del proyecto; la variante CUDA del runtime se fija en `config/entorno-pruebas.json`. Para ejecutar los módulos con el Python seleccionado:
-
-```powershell
-python -m modelo.ejecutar --tarea todo --fecha 2026-11-05
-python -m modelo.comparar
+python -m modelo.ejecutar --fecha 2026-11-05
 python -m modelo.exportar_evaluacion
 ```
 
-`--tarea nba` ejecuta solo la asignación; `--tarea perfiles` entrena solo el autoencoder y PCA. `comparar` requiere los artefactos de perfiles. Las ejecuciones completas, pesos, perfiles por cliente y parrillas se guardan en `resultados/`, que está excluido de Git. `evaluacion/` conserva únicamente métricas, una tabla y un gráfico para revisar esta ejecución. No se incluyen notebooks.
+La tarea predeterminada es `nba`. El lanzador reutiliza el Python WSL del kernel `wsl_rtx5080`, sin abrir terminales. El flujo calcula en CPU; no necesita inicializar CUDA. La preparación de OR-Tools está en [docs/entorno.md](docs/entorno.md).
 
-La evaluación histórica de esta página usa CPU y cuatro hilos. Las pruebas estándar usan CUDA para el autoencoder y CPU para HiGHS/scikit-learn dentro del mismo entorno WSL. El entrenamiento admite `--dispositivo cuda` o `cpu`; la fecha es explícita para reproducir la vigencia de las campañas. Los programas no abren terminales ni servidores.
+`--datos RUTA`, `--config CARPETA` y `--salida CARPETA` permiten elegir las entradas y el destino. La fecha controla la vigencia de las campañas. El CSV se lee como texto para conservar los decimales originales y los identificadores.
+
+La ejecución guarda en `resultados/nba/`:
+
+- `parrilla_optimo.csv`: una fila por cliente, canal, campañas y explicación.
+- `certificado.json.gz`: multiplicadores enteros ligados a datos, configuración y fecha.
+- `metricas.json`: valor exacto, cupos, controles, certificado, tiempos y huellas de código.
+
+`resultados/` está excluido de Git. La exportación actualiza [evaluacion/nba.json](evaluacion/nba.json) únicamente si coinciden los datos, configuración y código y el resultado está certificado sin violaciones.
 
 ## Resultado NBA
 
-Ejecución sobre los 100.000 registros de [`../datos/clientes.csv`](../datos/clientes.csv), fecha de evaluación 2026-11-05:
+Sobre los 100.000 clientes de [datos/clientes.csv](../datos/clientes.csv), fecha 2026-11-05:
 
-| Métrica | Baseline | Optimización global |
-| --- | ---: | ---: |
-| Valor esperado | 10.241,5933 | 10.940,0025 |
-| Clientes con acción | 55.393 | 60.422 |
-| Productos asignados | 70.444 | 76.841 |
-| Cumplimiento de jerarquía entre asignados | 99,677 % | 99,836 % |
-| Violaciones | 0 | 0 |
+| Métrica | Motor OR-Tools |
+| --- | ---: |
+| Valor esperado exacto | 10.940,0024511 |
+| Clientes con acción | 60.422 |
+| Productos asignados | 76.841 |
+| Violaciones | 0 |
+| Brecha exacta | 0 |
 
-La optimización mejora el valor esperado calculado en **698,4091 (+6,819 %)** respecto de nuestra baseline. Los cinco ejemplos oficiales coinciden en estado, canal y campañas al consultar la corrida completa. Esos ejemplos incluyen el efecto de los cupos de los otros clientes; ejecutar solo cinco clientes no reproduce la corrida de 100.000.
+Frente a la referencia publicada de 10.241,5, el incremento es **698,5024511 (+6,82 %)**. Son valores sobre scores sintéticos, no ventas observadas. La [guía del optimizador](docs/optimizador.md) explica el certificado y el alcance.
 
-El PDF publica 10.241,5 y 70.443 productos. Nuestra baseline produce una pequeña diferencia y usa desempates deterministas por ID; no se afirma reproducción exacta de esa cifra publicada. Los resultados numéricos completos están en [evaluacion/nba.json](evaluacion/nba.json).
-
-`nba/motor.py` construye el mejor conjunto factible de productos para cada combinación cliente/canal y resuelve la asignación global con `scipy.optimize.linprog`/HiGHS. El problema de capacidades tiene soluciones enteras; se comprueba la integralidad obtenida y no se redondean asignaciones fraccionarias silenciosamente. Un auditor por filas revisa las salidas contra los datos y las reglas antes de exportarlas.
-
-La [implementación exacta y comparación LP–flujo](docs/optimizador.md) enumera alternativas de forma independiente y produce certificados primal-dual enteros. Se ejecuta con `python -m modelo.benchmark_optimizador`. La certificación es en Python; la verificación mediante Lean sigue siendo una extensión propuesta.
-
-## Organización del módulo
+## Organización
 
 | Carpeta | Responsabilidad |
 | --- | --- |
-| `nba/` | Motor configurable y auditoría de reglas |
-| `perfiles/` | Preprocesamiento, autoencoder, inferencia y comparación PCA/GMM/Isomap |
-| `optimizacion/` | Problema exacto, LP, flujo, certificados y benchmark |
-| `entorno/` | Selección de dispositivo y ejecución de pruebas en WSL/GPU |
-| `config/` | Parámetros de negocio, experimentos y contrato de entorno |
-| `docs/` | Guías de entorno y optimización |
-| `tests/` | Pruebas del motor, perfiles, CUDA y certificados |
+| `nba/` | Motor único y auditoría independiente de reglas |
+| `optimizacion/` | Problema decimal exacto, flujo OR-Tools y certificados |
+| `entorno/` | Lanzador WSL y selección de dispositivo para perfiles |
+| `config/` | Campañas, reglas, parámetros y entorno |
+| `docs/` | Guías de ejecución y optimización |
 | `kit_original/` | CSV oficiales sin modificar |
-| `evaluacion/` | Informes compactos revisados y versionables |
-| `resultados/` | Pesos, parrillas, certificados y logs locales, excluidos de Git |
+| `evaluacion/` | Métricas actuales del motor e informes históricos |
+| `perfiles/` | Entrenamiento e inferencia de perfiles, independientes de la asignación NBA |
+| `resultados/` | Parrillas, pesos y registros locales |
 
-Los archivos pequeños de la raíz (`probar.py`, `comparar.py`, `certificado.py`, `benchmark_optimizador.py`) son entradas estables de los comandos existentes; su implementación está en las carpetas anteriores. `ejecutar.py` orquesta las corridas y `rutas.py` centraliza ubicaciones.
+Se retiraron la suite de pruebas, los comparadores ejecutables, el LP y la baseline. Los [resultados históricos LP/flujo](evaluacion/optimizador.json) y [perfiles PCA/GMM/Isomap/autoencoder](evaluacion/comparacion.json) conservan las mediciones y configuraciones originales; no describen corridas del código actual.
 
-## Configuración
+## Configuración y alcance
 
-- `config/campanas.json`: productos, scores, valor, canales, vigencia y activación.
-- `config/reglas.json`: reglas activas y condiciones por columnas; permite reglas nuevas sin cambiar Python. Operadores: `==`, `!=`, `<`, `<=`, `>`, `>=`, `en`, `no_en`, `contiene` y composiciones `todas`/`alguna`. `contiene` compara tokens separados por `|`; `$producto` referencia el producto de la campaña. La acción implementada es `excluir`.
-- `config/parametros.json`: umbrales, capacidades, política de contacto, jerarquía y objetivo.
-- `config/perfiles.json`: variables, preprocesamiento, red, particiones y entrenamiento.
-- `config/comparacion.json`: candidatos gaussianos, tamaño del grafo Isomap y validación.
+`campanas.json`, `reglas.json` y `parametros.json` determinan las ofertas, exclusiones, umbrales y capacidades. El backend es `flujo_ortools`, el objetivo es `valor_esperado` y el modo admitido es `ponderado`. Se rechazan otros backends u objetivos. Las [reglas](../REGLAS.md) documentan las 45 variables y los controles R01–R16.
 
-La baseline usa la prioridad ponderada configurada para ordenar clientes y productos, y selecciona canales por `score_canal` o `orden_preferencia`. En el optimizador, `optimizacion.objetivo: "valor_esperado"` maximiza `score_producto × score_canal × valor_negocio`; `"prioridad"` usa los pesos de priorización. Los pesos no alteran el objetivo puro de valor esperado. `jerarquia_estricta` obliga a conservar el producto de mayor prioridad elegible dentro de cada propuesta de canal. La jerarquía también se reporta como indicador independiente. El optimizador de valor no impone el orden de preferencia del canal de la baseline.
+El objetivo es `score_producto × score_canal × valor_negocio`, sumado sobre los productos asignados. Se admite un canal y hasta dos productos distintos por contacto; dos productos consumen un solo cupo de canal. Los pesos de prioridad no alteran ese objetivo. La jerarquía se informa como indicador.
 
-El contrato de salida admite un canal y hasta dos campañas por cliente. Se rechazan configuraciones que excedan esos límites. Los CSV originales del kit están en `kit_original/`; `importar_kit.py` los convierte inicialmente a JSON y se niega a sobrescribir una configuración existente. Las reglas del CSV y del PDF tienen numeración diferente: el campo `control` permite agrupar la auditoría en los controles R01–R16 del PDF.
-
-## Validación de autoencoder, gaussianos e Isomap
-
-Se conservan exactamente **70.000 clientes de entrenamiento, 15.000 de validación y 15.000 de test**, con semilla 42. Las estadísticas de imputación y estandarización se aprenden solo en entrenamiento. El plan `999` se trata como ilimitado, con indicador separado; los ARPU reciben `log1p`. No se usan IDs, scores de oferta, riesgo ni historial de contacto como entradas del perfil.
-
-| Método | MSE test ↓ | Reducción MSE frente a PCA | Silhouette original ↑ | Trustworthiness ↑ |
-| --- | ---: | ---: | ---: | ---: |
-| PCA, 5 dimensiones | 0,521525 | referencia | 0,11430 | 0,91865 |
-| Autoencoder, 5 dimensiones | **0,182633** | **64,98 %** | 0,10303 | **0,97744** |
-| Mezcla gaussiana, 5 componentes | 0,715131 | −37,12 % | 0,11435 | 0,78032 |
-| Isomap, 5 dimensiones + decoder kNN | 0,251570 | 51,76 % | 0,10689 | 0,95138 |
-
-**El autoencoder conserva el menor error de reconstrucción.** Isomap mejora frente a PCA, pero tiene 37,75 % más error que el autoencoder. GMM tiene 291,57 % más error que el autoencoder usando reconstrucción por medias de componentes. Los coeficientes silhouette son bajos para todos: no se observa una separación fuerte de grupos en las variables originales. La diferencia entre GMM y PCA en silhouette es apenas 0,00005 y no justifica afirmar una mejora material.
-
-La tabla completa, candidatos y límites están en [evaluacion/comparacion.json](evaluacion/comparacion.json) y [comparacion.csv](evaluacion/comparacion.csv).
-
-![Comparación de métodos](evaluacion/comparacion_metodos.png)
-
-Protocolo y alcance:
-
-- Autoencoder `20 → 32 → 16 → 5 → 16 → 32 → 20`, MSE, Adam, hasta 50 épocas, selección de pesos por validación. PCA conserva cinco componentes y ajusta solo en train. La comparación reutiliza sus pesos, proyección y particiones; comprueba que los datos reproducen sus latentes y errores guardados.
-- GMM prueba covarianzas diagonal y completa, cinco componentes y dos inicializaciones; ambas convergen. Se elige covarianza completa por máxima log-verosimilitud de validación. Test tiene log-verosimilitud media 0,37368. Esa cifra solo compara densidades gaussianas con la misma codificación: no equivale a MSE ni a exactitud de clasificación. Las variables binarias y categóricas codificadas limitan la interpretación de una densidad gaussiana continua.
-- La reconstrucción de GMM es `probabilidades × medias`. Sus cinco probabilidades suman uno y tienen cuatro grados de libertad; no es un decoder con la misma capacidad que el autoencoder. No se concluye que toda variante gaussiana sea inferior: se evalúa este pipeline de cinco componentes.
-- Isomap ajusta un grafo en 3.000 puntos tomados exclusivamente de train y transforma el resto por lotes. Prueba 15/30 vecinos del grafo y 5/15/30 del decoder. Ganan 30 y 5 por MSE de validación. El decoder kNN se ajusta con los 70.000 clientes train. No hubo avisos de grafo desconectado. Isomap no ofrece `inverse_transform`; su `reconstruction_error()` mide otro coste geométrico, así que no se mezcla con el MSE de las variables. Aquí se compara el pipeline **Isomap + kNN**.
-- PCA, autoencoder e Isomap se segmentan con KMeans en sus representaciones; GMM usa el componente más probable. Se comparan cinco grupos. Silhouette, Davies–Bouldin y Calinski–Harabasz se calculan sobre las mismas 2.000 observaciones test en el espacio original estandarizado. El silhouette latente de la ejecución original del autoencoder no se compara directamente con estos valores.
-- Trustworthiness utiliza los mismos 1.000 clientes test y diez vecinos. El IC bootstrap pareado, con 500 repeticiones por cliente, estima diferencias de MSE frente al autoencoder. Es evidencia sobre este conjunto sintético, no sobre ventas reales.
-- Los tiempos de los modelos reutilizados no representan nuevos entrenamientos. Las métricas guardan tiempos de los candidatos y del pipeline elegido; no se comparan como un benchmark de entrenamiento con presupuestos idénticos.
-
-Los segmentos son exploratorios. Los datos no tienen compras observadas, respuesta a campañas, emociones ni horas de respuesta. Estas pruebas no demuestran mejora de conversión y no cambian los scores oficiales ni las asignaciones del motor NBA.
-
-## HNSW
-
-[HNSW](https://arxiv.org/abs/1603.09320) es un índice de vecinos aproximados organizado como grafo por capas. Puede usarse sobre los perfiles originales o sus representaciones para recuperar clientes similares. Como propuesta de arquitectura, podría acelerar la etapa de vecinos de Isomap; no elimina el cálculo posterior de distancias geodésicas ni su proyección. La implementación [hnswlib](https://github.com/nmslib/hnswlib) expone `M`, `ef_construction` y `ef` para ajustar memoria y el compromiso entre velocidad y recall.
-
-**Se investigó, pero no se ejecutó ni se incorporó HNSW en los resultados anteriores.** La prueba de Isomap usa vecinos exactos. Para validar HNSW habría que construir el índice solo en train, ajustar `ef` en validación y medir `recall@k`, latencia, tiempo de construcción y memoria frente a búsqueda exacta con las mismas consultas test. HNSW optimiza búsqueda; no estima conversión ni sustituye la optimización NBA.
-
-## Referencias
-
-- Reto, diccionario, presentación y ZIP oficial en [`../docs/reto/`](../docs/reto/README.md). El CSV principal está en [`../datos/clientes.csv`](../datos/clientes.csv); `rutas.py` centraliza las ubicaciones del modelo.
-- Notebooks de Aprendizaje Profundo: optimización y regularización, PyTorch y autoencoders. Se adaptan separación train/validación/test, escalado en train, referencia PCA y reconstrucción. Los archivos externos y sus datasets no se copian al repositorio.
-- Documentación primaria: [GaussianMixture](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html), [Isomap](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.Isomap.html), [trustworthiness](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.trustworthiness.html), [parámetros de HNSW](https://github.com/nmslib/hnswlib/blob/master/ALGO_PARAMS.md).
+Los perfiles guardados se pueden volver a entrenar de forma independiente con `python -m modelo.ejecutar --tarea perfiles --dispositivo cuda --fecha 2026-11-05`. No modifican los scores ni participan en la optimización NBA. Se conservan sus pesos locales; los notebooks no se incluyen.

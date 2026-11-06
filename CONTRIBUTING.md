@@ -5,13 +5,13 @@ Ejecuta los comandos desde la raíz. Mantén los datos en `datos/`, las fuentes 
 ## Comprobaciones
 
 ```powershell
-python -m modelo.probar
+python -m modelo.ejecutar --fecha 2026-11-05
 python scripts/verificar_repositorio.py
 node --test herramientas/android/tests/android.test.mjs
 git diff --check
 ```
 
-Los tests Android utilizan ADB simulado: no requieren teléfono ni publican notificaciones. Las pruebas del modelo se ejecutan mediante el kernel GPU registrado, validan versiones y CUDA y guardan el informe en `modelo/resultados/pruebas-gpu/`. Incluyen optimización frente a búsqueda exhaustiva, auditoría de asignaciones, preprocesamiento sin fuga de datos, perfiles entrenados en CUDA y portabilidad CPU/GPU. Consulta [el entorno estándar](modelo/docs/entorno.md).
+Los tests Android utilizan ADB simulado: no requieren teléfono ni publican notificaciones. El modelo ya no tiene suite de pruebas ni comparadores ejecutables. La ejecución NBA usa exclusivamente OR-Tools y exige certificado exacto y auditoría de negocio antes de exportar. Consulta [el entorno de ejecución](modelo/docs/entorno.md).
 
 Después de modificar rutas del mapa:
 
@@ -21,7 +21,7 @@ python mapa/generar_mapa.py
 
 Se reutiliza `mapa/.cache/` cuando existe; un clon nuevo descarga las fuentes públicas. `--actualizar` y `--actualizar-red` solicitan expresamente nuevas descargas. Comprueba los totales del CSV y la apertura del HTML.
 
-No es necesario volver a entrenar modelos para cambiar documentación o rutas. Las huellas SHA-256 de la evaluación deben seguir coincidiendo con el CSV. `python -m modelo.exportar_evaluacion` verifica los datos y la configuración antes de actualizar los informes versionados.
+No es necesario volver a entrenar modelos para cambiar documentación o rutas. Las huellas SHA-256 de la evaluación deben seguir coincidiendo con el CSV. `python -m modelo.exportar_evaluacion` verifica los datos, configuración, código y certificado del motor antes de actualizar los informes versionados.
 
 ## Archivos locales
 

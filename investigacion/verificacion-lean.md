@@ -2,7 +2,7 @@
 
 [Lean 4](https://lean-lang.org/doc/reference/latest/) es un lenguaje de programación y un asistente de demostraciones. Permite expresar definiciones y teoremas y comprobar sus pruebas. [Mathlib](https://leanprover-community.github.io/mathlib4_docs/) aporta la biblioteca matemática de la comunidad.
 
-Para este proyecto proponemos conservar Python/HiGHS para encontrar una asignación y utilizar Lean como verificador de un certificado. El proyecto [duality](https://github.com/madvorak/duality) y el [artículo de Dvorak y Kolmogorov](https://arxiv.org/abs/2409.08119) formalizan resultados de dualidad y alternativas de Farkas para programación lineal en Lean 4. Son una referencia para diseñar la verificación; su código no se ha incorporado a este repositorio.
+Para este proyecto proponemos conservar Python/OR-Tools para encontrar una asignación y utilizar Lean como verificador de un certificado. El proyecto [duality](https://github.com/madvorak/duality) y el [artículo de Dvorak y Kolmogorov](https://arxiv.org/abs/2409.08119) formalizan resultados de dualidad y alternativas de Farkas para programación lineal en Lean 4. Son una referencia para diseñar la verificación; su código no se ha incorporado a este repositorio.
 
 ## Aplicación propuesta al motor NBA
 

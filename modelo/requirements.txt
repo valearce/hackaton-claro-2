@@ -1,4 +1,4 @@
-# Base científica verificada; el runtime CUDA se comprueba en config/entorno-pruebas.json.
+# Bibliotecas para perfiles de consumo; el flujo NBA usa requirements-flujo.txt en WSL.
 numpy==2.4.6
 pandas==3.0.5
 scipy==1.17.1

@@ -1,0 +1,4 @@
+{
+  "kernel_jupyter": "wsl_rtx5080",
+  "hilos_cpu": 4
+}

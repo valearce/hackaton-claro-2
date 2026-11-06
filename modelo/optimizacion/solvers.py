@@ -1,10 +1,8 @@
-"""Dos backends para el mismo problema exacto de asignación capacitada."""
+"""Único backend NBA: flujo de coste mínimo exacto con OR-Tools."""
 import importlib
-from math import gcd
 from pathlib import Path
 import sys
 import time
-import warnings
 
 import numpy as np
 
@@ -38,51 +36,6 @@ def edges_and_divisor(problem):
     weights = problem.weights[customer, channel]
     divisor = int(np.gcd.reduce(weights)) if len(weights) else 1
     return customer, channel, weights, max(divisor, 1)
-
-
-def solve_lp(problem, threads=None, time_limit=180):
-    from scipy.optimize import linprog
-    from scipy.sparse import coo_matrix
-    started = time.perf_counter()
-    customer, channel, weights, divisor = edges_and_divisor(problem)
-    selected = np.full(problem.n, -1, dtype=np.int32)
-    diagnostics = {"backend": "lp_highs", "denominador_costes": problem.scale, "variables": len(customer), "hilos_solicitados": threads}
-    setup_end = time.perf_counter()
-    if len(customer):
-        costs = weights
-        if int(costs.max()) >= 2 ** 53:
-            raise OverflowError("Los coeficientes enteros no caben exactamente en float64 para HiGHS")
-        index = np.arange(len(customer))
-        matrix = coo_matrix((np.ones(2 * len(index)), (np.r_[customer, problem.n + channel], np.r_[index, index])),
-                            shape=(problem.n + problem.k, len(index))).tocsr()
-        setup_end = time.perf_counter()
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            options = {"time_limit": time_limit, "dual_feasibility_tolerance": 1e-10,
-                       "primal_feasibility_tolerance": 1e-9}
-            if threads is not None:
-                options["threads"] = threads
-            result = linprog(-costs.astype(np.float64) / problem.scale, A_ub=matrix,
-                b_ub=np.r_[np.ones(problem.n), problem.capacities], bounds=(0, None), method="highs-ds",
-                options=options)
-        if not result.success:
-            raise RuntimeError(f"HiGHS no acreditó óptimo: {result.message}")
-        deviation = float(np.max(np.abs(result.x - np.rint(result.x))))
-        if deviation > 1e-7:
-            raise RuntimeError("HiGHS devolvió una asignación fraccionaria")
-        chosen = result.x > .5
-        selected[customer[chosen]] = channel[chosen]
-        diagnostics.update(estado=str(result.message), desviacion_entera=deviation, iteraciones=int(result.nit),
-                           avisos=[str(w.message) for w in caught], escala_objetivo="valor esperado normalizado",
-                           tolerancia_dual=1e-10)
-    else:
-        diagnostics["estado"] = "OPTIMAL: sin arcos de valor positivo"
-    solved_end = time.perf_counter()
-    grid = problem.grid(selected, "LP HiGHS con verificación exacta posterior")
-    finished = time.perf_counter()
-    diagnostics.update(preparar_backend_seg=setup_end-started, resolver_seg=solved_end-setup_end,
-                       reconstruir_seg=finished-solved_end, total_backend_seg=finished-started)
-    return grid, diagnostics
 
 
 def solve_flow(problem):

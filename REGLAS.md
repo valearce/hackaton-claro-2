@@ -158,7 +158,7 @@ La baseline recorre clientes de mayor a menor prioridad y asigna el canal habili
 
 Los parámetros iniciales son modo `ponderado`, jerarquía `C-VCH, C-TER, C-OTT`, pesos `0.6, 0.2, 0.2` que suman 1 y desempate por score de producto y valor de negocio. El criterio alternativo de canal usa el orden `whatsapp, correo, sms, asesor`.
 
-En nuestro optimizador, `optimizacion.objetivo: "valor_esperado"` maximiza la métrica oficial. `"prioridad"` usa la prioridad configurada. Los pesos de prioridad no cambian el objetivo puro de valor esperado. `jerarquia_estricta` restringe las propuestas a las que conservan la campaña elegible de mayor jerarquía. El criterio fijo de preferencia de canal corresponde a la baseline; no se impone al optimizador de valor.
+El motor actual usa únicamente flujo de coste mínimo con OR-Tools (`optimizacion.backend: "flujo_ortools"`) y `optimizacion.objetivo: "valor_esperado"`. Los pesos de prioridad no cambian ese objetivo. Solo se admite el modo `ponderado`; los modos `prioridad` y `jerarquia_estricta` se rechazan. La jerarquía se informa como indicador, sin imponerse al objetivo. La baseline y su preferencia de canal se describen aquí como referencia del reto; ya no se ejecutan en el motor.
 
 ## 6. Calidad de datos y coherencia
 

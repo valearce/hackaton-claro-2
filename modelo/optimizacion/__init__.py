@@ -1,1 +1,1 @@
-"""Problema exacto, backends de asignación, certificados y benchmark."""
+"""Problema NBA exacto, flujo OR-Tools y certificados de optimalidad."""

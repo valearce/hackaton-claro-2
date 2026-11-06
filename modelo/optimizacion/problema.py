@@ -1,9 +1,4 @@
-"""Modelo de asignación con coeficientes decimales exactos y reglas independientes.
-
-No usa las máscaras ni la selección de paquetes de Engine. Enumera todos los
-paquetes de uno/dos productos admitidos por el contrato de salida.
-"""
-import csv
+"""Problema NBA exacto: reglas y paquetes de uno/dos productos por canal."""
 from datetime import date
 from decimal import Decimal, InvalidOperation
 import hashlib
@@ -141,7 +136,7 @@ class ExactProblem:
         campaigns = config["campanas"]
         params = config["parametros"]
         if params["optimizacion"]["objetivo"] != "valor_esperado" or params["priorizacion"]["modo"] != "ponderado":
-            raise ValueError("La certificación actual admite valor_esperado en modo ponderado")
+            raise ValueError("El motor NBA admite únicamente valor_esperado en modo ponderado")
         if params["politica_contacto"]["canales_por_cliente"] != 1:
             raise ValueError("Se requiere un canal por cliente")
         maximum_week = params["politica_contacto"]["max_contactos_semana"]
@@ -308,19 +303,3 @@ class ExactProblem:
         if np.any(usage > self.capacities):
             raise ValueError("Se supera la capacidad de un canal")
         return selected, total, usage
-
-    def save(self, path):
-        metadata = {key: getattr(self, key) for key in ("config", "day", "data_hash", "config_hash", "channels", "campaign_ids",
-            "products", "n", "k", "m", "scale", "packages_examined")}
-        np.savez_compressed(path, metadata=np.array(json.dumps(metadata, ensure_ascii=False)),
-            **{key: getattr(self, key) for key in ("ids", "capacities", "limits", "product_cost", "channel_cost", "allowed", "weights", "picks")})
-
-    @classmethod
-    def load(cls, path):
-        result = cls.__new__(cls)
-        with np.load(path, allow_pickle=False) as saved:
-            for key, value in json.loads(str(saved["metadata"])).items():
-                setattr(result, key, value)
-            for key in ("ids", "capacities", "limits", "product_cost", "channel_cost", "allowed", "weights", "picks"):
-                setattr(result, key, saved[key])
-        return result

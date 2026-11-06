@@ -1,16 +1,15 @@
-"""Motor NBA configurable: línea base y asignación global con cupos."""
-from dataclasses import dataclass
+"""Motor NBA: asignación por flujo de coste mínimo y auditoría de reglas."""
 from datetime import date
 from pathlib import Path
 import json
-import math
 import operator
 import time
 
-import numpy as np
 import pandas as pd
-from scipy.optimize import linprog
-from scipy.sparse import coo_matrix
+
+from ..optimizacion.problema import ExactProblem
+from ..optimizacion.solvers import solve_flow
+from ..optimizacion.certificado import create_certificate
 from ..rutas import MODELO
 
 CONFIG = MODELO / "config"
@@ -23,6 +22,34 @@ def load_config(directory=CONFIG):
     directory = Path(directory)
     return {key: json.loads((directory / f"{key}.json").read_text(encoding="utf-8-sig"))
             for key in ("campanas", "reglas", "parametros")}
+
+
+class Engine:
+    """Un único backend: OR-Tools; cada salida exige certificado exacto."""
+
+    def __init__(self, data, config, as_of=None, datos_sha256=None):
+        started = time.perf_counter()
+        self.day = date.fromisoformat(as_of) if isinstance(as_of, str) else (as_of or date.today())
+        backend = config["parametros"]["optimizacion"].get("backend", "flujo_ortools")
+        if backend != "flujo_ortools":
+            raise ValueError("El único backend del motor NBA es flujo_ortools")
+        self.problem = ExactProblem(data.reset_index(drop=True), config, self.day.isoformat(), datos_sha256)
+        self.preparation_seconds = time.perf_counter() - started
+        self.certificate = None
+
+    def optimize(self):
+        started = time.perf_counter()
+        self.certificate = None
+        grid, solver = solve_flow(self.problem)
+        stamp = time.perf_counter()
+        certificate, proof = create_certificate(self.problem, grid)
+        self.certificate = certificate
+        diagnostics = {**solver, "metodo": "optimo", "objetivo": "valor_esperado",
+                       "preparar_modelo_seg": self.preparation_seconds,
+                       "certificar_seg": time.perf_counter() - stamp,
+                       "certificado": proof,
+                       "segundos": self.preparation_seconds + time.perf_counter() - started}
+        return grid, diagnostics
 
 
 def applies(rule, campaign=None, channel=None):
@@ -50,286 +77,6 @@ def operand(value, campaign):
     return value
 
 
-def condition_mask(data, condition, campaign):
-    if "todas" in condition:
-        return np.logical_and.reduce([condition_mask(data, item, campaign) for item in condition["todas"]])
-    if "alguna" in condition:
-        return np.logical_or.reduce([condition_mask(data, item, campaign) for item in condition["alguna"]])
-    column, op = condition["atributo"], condition["operador"]
-    if column not in data:
-        raise ValueError(f"La regla usa una columna ausente: {column}")
-    series = data[column]
-    value = operand(condition["valor"], campaign)
-    if op in OPS:
-        return OPS[op](series, value).to_numpy(dtype=bool)
-    if op in ("en", "no_en"):
-        values = value if isinstance(value, list) else [value]
-        mask = series.isin(values).to_numpy()
-        return ~mask if op == "no_en" else mask
-    if op == "contiene":
-        return series.astype(str).str.split("|", regex=False).map(lambda items: str(value) in items).to_numpy()
-    raise ValueError(f"Operador no soportado: {op}")
-
-
-def numeric_column(data, column, score=False):
-    values = pd.to_numeric(data[column], errors="raise").to_numpy(dtype=float)
-    if not np.isfinite(values).all():
-        raise ValueError(f"Valores no finitos en {column}")
-    if score and ((values < 0).any() or (values > 1).any()):
-        raise ValueError(f"El score {column} está fuera de [0, 1]")
-    return values
-
-
-@dataclass
-class Bundle:
-    picks: np.ndarray
-    utility: np.ndarray
-    expected: np.ndarray
-
-
-class Engine:
-    def __init__(self, data, config, as_of=None):
-        self.data = data.reset_index(drop=True).copy()
-        self.config = config
-        self.params = config["parametros"]
-        self.campaigns = config["campanas"]
-        self.rules = [rule for rule in config["reglas"] if rule["activa"]]
-        self.day = date.fromisoformat(as_of) if isinstance(as_of, str) else (as_of or date.today())
-        self.n, self.m = len(data), len(self.campaigns)
-        self.channels = list(self.params["canal"]["capacidad_por_corrida"])
-        self.k = len(self.channels)
-        self._validate()
-        self.ids = self.data["id_cliente"].astype(str).to_numpy()
-        self.capacity = np.array([self.params["canal"]["capacidad_por_corrida"][c] for c in self.channels], dtype=int)
-        self.limits = np.array([self.params["politica_contacto"]["max_productos_por_canal"][c] for c in self.channels], dtype=int)
-        hierarchy = self.params["priorizacion"]["jerarquia"]
-        hierarchy = hierarchy + [c["id"] for c in self.campaigns if c["id"] not in hierarchy]
-        self.rank = np.array([hierarchy.index(c["id"]) for c in self.campaigns])
-        self.active = np.array([c["activa"] and date.fromisoformat(c["vigencia_inicio"]) <= self.day <= date.fromisoformat(c["vigencia_fin"]) for c in self.campaigns])
-        self.product_scores = np.column_stack([numeric_column(self.data, c["columna_score"], score=True) for c in self.campaigns])
-        self.channel_scores = np.column_stack([numeric_column(self.data, self.params["canal"]["columnas_score"][c], score=True) for c in self.channels])
-        self.values = np.array([c["valor_negocio"] for c in self.campaigns])
-        self.value_product = self.product_scores * self.values
-        weights = self.params["priorizacion"]["pesos"]
-        rank_level = 1 - self.rank / max(self.m - 1, 1)
-        self.priority = (weights["score_producto"] * self.product_scores
-                         + weights["valor_negocio"] * self.values
-                         + weights["jerarquia"] * rank_level)
-        week_column = self.params["politica_contacto"].get("columna_contactos_semana", "contactos_semana_actual")
-        self.weekly_ok = numeric_column(self.data, week_column) < self.params["politica_contacto"]["max_contactos_semana"]
-        self.product_ok = np.broadcast_to(self.active, (self.n, self.m)).copy()
-        self.product_blocks = [[] for _ in self.campaigns]
-        for j, campaign in enumerate(self.campaigns):
-            low_score = self.product_scores[:, j] < self.params["priorizacion"]["umbral_score_producto"]
-            self.product_ok[:, j] &= ~low_score
-            self.product_blocks[j].append((low_score, "Score de producto inferior al umbral"))
-            for rule in self.rules:
-                if rule["tipo"] == "elegibilidad" and applies(rule, campaign):
-                    mask = condition_mask(self.data, rule["condicion"], campaign)
-                    self.product_ok[:, j] &= ~mask
-                    self.product_blocks[j].append((mask, rule["nombre"]))
-        self.feasible = []
-        for h, channel in enumerate(self.channels):
-            allowed = self.product_ok.copy()
-            channel_ok = self.weekly_ok & (self.channel_scores[:, h] >= self.params["canal"]["umbral_score_canal"])
-            allowed &= channel_ok[:, None]
-            for j, campaign in enumerate(self.campaigns):
-                if channel not in campaign["canales_permitidos"]:
-                    allowed[:, j] = False
-                for rule in self.rules:
-                    if rule["tipo"] == "canal" and applies(rule, campaign, channel):
-                        allowed[:, j] &= ~condition_mask(self.data, rule["condicion"], campaign)
-            self.feasible.append(allowed)
-
-    def _validate(self):
-        if self.n == 0 or self.m == 0 or self.k == 0:
-            raise ValueError("Se necesitan clientes, campañas y canales")
-        if self.data["id_cliente"].isna().any() or self.data["id_cliente"].astype(str).eq("").any() or self.data["id_cliente"].duplicated().any():
-            raise ValueError("id_cliente debe ser único y no vacío")
-        if len({c["id"] for c in self.campaigns}) != self.m:
-            raise ValueError("IDs de campaña duplicados")
-        if self.params["politica_contacto"]["canales_por_cliente"] != 1:
-            raise ValueError("El contrato de salida de esta versión admite un canal por cliente")
-        if self.params["priorizacion"]["modo"] not in ("ponderado", "jerarquia_estricta"):
-            raise ValueError("Modo de priorización desconocido")
-        if self.params["canal"]["criterio"] not in ("score_canal", "orden_preferencia"):
-            raise ValueError("Criterio de canal desconocido")
-        weights = self.params["priorizacion"]["pesos"]
-        if set(weights) != {"score_producto", "valor_negocio", "jerarquia"}:
-            raise ValueError("Se requieren exactamente los tres pesos documentados")
-        if any(not 0 <= float(v) <= 1 for v in weights.values()) or not math.isclose(sum(weights.values()), 1, abs_tol=1e-9):
-            raise ValueError("Los pesos deben estar entre 0 y 1 y sumar 1")
-        for key in ("umbral_score_producto",):
-            if not 0 <= self.params["priorizacion"][key] <= 1:
-                raise ValueError(f"Umbral inválido: {key}")
-        if not 0 <= self.params["canal"]["umbral_score_canal"] <= 1:
-            raise ValueError("Umbral de canal inválido")
-        for channel in self.channels:
-            capacity = self.params["canal"]["capacidad_por_corrida"][channel]
-            limit = self.params["politica_contacto"]["max_productos_por_canal"][channel]
-            if type(capacity) is not int or capacity < 0 or type(limit) is not int or not 0 <= limit <= 2:
-                raise ValueError("Cupos enteros no negativos; el CSV fijo admite hasta dos productos")
-        for campaign in self.campaigns:
-            if not 0 <= campaign["valor_negocio"] <= 1:
-                raise ValueError("Valor de negocio fuera de [0, 1]")
-            if set(campaign["canales_permitidos"]) - set(self.channels):
-                raise ValueError(f"Canal no configurado en {campaign['id']}")
-        for rule in self.rules:
-            if rule["accion"] != "excluir" or rule["tipo"] not in ("elegibilidad", "canal"):
-                raise ValueError(f"Regla no soportada: {rule['id']}")
-            if rule["tipo"] == "elegibilidad" and rule["alcance"]["nivel"] == "canal":
-                raise ValueError("Una regla de elegibilidad no puede tener alcance canal; usa tipo canal")
-            self._validate_condition(rule["condicion"])
-        weekly = numeric_column(self.data, self.params["politica_contacto"].get("columna_contactos_semana", "contactos_semana_actual"))
-        if (weekly < 0).any() or (weekly != np.floor(weekly)).any():
-            raise ValueError("Los contactos semanales deben ser enteros no negativos")
-
-    def _validate_condition(self, condition):
-        for connective in ("todas", "alguna"):
-            if connective in condition:
-                if not condition[connective]:
-                    raise ValueError("Una condición compuesta no puede estar vacía")
-                for item in condition[connective]:
-                    self._validate_condition(item)
-                return
-        column = condition["atributo"]
-        if column not in self.data:
-            raise ValueError(f"La regla usa una columna ausente: {column}")
-        series = self.data[column]
-        if series.isna().any() or (condition["operador"] != "contiene" and series.astype(str).eq("").any()):
-            raise ValueError(f"Datos ausentes en una columna usada por las reglas: {column}")
-        if pd.api.types.is_numeric_dtype(series):
-            numeric_column(self.data, column)
-
-    def bundles(self, objective):
-        metric = self.value_product if objective == "valor_esperado" else self.priority
-        strict = self.params["priorizacion"]["modo"] == "jerarquia_estricta"
-        top = np.argmin(np.where(self.product_ok, self.rank, self.m + 1), axis=1)
-        product_codes = np.array([c["producto"] for c in self.campaigns])
-        rows = np.arange(self.n)
-        result = []
-        for h, allowed in enumerate(self.feasible):
-            # Las claves posteriores tienen mayor prioridad en lexsort.
-            tie_values = {"score_producto": self.product_scores,
-                          "valor_negocio": np.broadcast_to(self.values, metric.shape),
-                          "jerarquia": np.broadcast_to(-self.rank, metric.shape)}
-            keys = [np.broadcast_to(np.arange(self.m), metric.shape)]
-            for criterion in reversed(self.params["priorizacion"]["desempate"]):
-                if criterion not in tie_values:
-                    raise ValueError(f"Criterio de desempate desconocido: {criterion}")
-                keys.append(-tie_values[criterion])
-            keys.append(np.where(allowed, -metric, np.inf))
-            if strict:
-                keys.append(np.where(allowed, self.rank, self.m + 1))
-            order = np.lexsort(tuple(keys), axis=1)
-            picks = np.full((self.n, 2), -1, dtype=int)
-            filled = np.zeros(self.n, dtype=int)
-            for position in range(self.m):
-                candidate = order[:, position]
-                ok = allowed[rows, candidate] & (filled < self.limits[h])
-                duplicate = (picks[:, 0] >= 0) & (product_codes[np.maximum(picks[:, 0], 0)] == product_codes[candidate])
-                ok &= ~duplicate
-                chosen = rows[ok]
-                picks[chosen, filled[chosen]] = candidate[chosen]
-                filled[chosen] += 1
-            if strict:
-                picks[~np.any(picks == top[:, None], axis=1)] = -1
-            utility = np.zeros(self.n)
-            expected = np.zeros(self.n)
-            for slot in range(2):
-                valid = picks[:, slot] >= 0
-                r, j = rows[valid], picks[valid, slot]
-                utility[r] += metric[r, j] * self.channel_scores[r, h]
-                expected[r] += self.value_product[r, j] * self.channel_scores[r, h]
-            result.append(Bundle(picks, utility, expected))
-        return result
-
-    def baseline(self):
-        start = time.perf_counter()
-        bundles = self.bundles("prioridad")
-        best = np.max(np.where(self.product_ok, self.priority, -np.inf), axis=1)
-        if self.params["priorizacion"]["modo"] == "jerarquia_estricta":
-            rank = np.min(np.where(self.product_ok, self.rank, self.m + 1), axis=1)
-            order = np.lexsort((self.ids, -best, rank))
-        else:
-            order = np.lexsort((self.ids, -best))
-        selected = np.full(self.n, -1, dtype=int)
-        remaining = self.capacity.copy()
-        preference = self.params["canal"]["orden_preferencia"]
-        channel_rank = {c: i for i, c in enumerate(preference)}
-        for row in order:
-            options = [h for h, bundle in enumerate(bundles) if remaining[h] > 0 and bundle.picks[row, 0] >= 0]
-            if not options:
-                continue
-            options.sort(key=lambda h: ((-self.channel_scores[row, h]) if self.params["canal"]["criterio"] == "score_canal" else 0,
-                                        channel_rank.get(self.channels[h], self.k)))
-            selected[row] = options[0]
-            remaining[options[0]] -= 1
-        grid = self.grid(selected, bundles, "Línea base")
-        return grid, {"metodo": "baseline", "segundos": time.perf_counter() - start}
-
-    def optimize(self):
-        start = time.perf_counter()
-        objective = self.params["optimizacion"]["objetivo"]
-        if objective not in ("valor_esperado", "prioridad"):
-            raise ValueError("Objetivo debe ser valor_esperado o prioridad")
-        bundles = self.bundles(objective)
-        utility = np.column_stack([b.utility for b in bundles])
-        valid = np.column_stack([b.picks[:, 0] >= 0 for b in bundles]) & (utility > 0)
-        valid[:, self.capacity == 0] = False
-        customer, channel = np.nonzero(valid)
-        selected = np.full(self.n, -1, dtype=int)
-        diagnostics = {"metodo": "optimo", "objetivo": objective, "variables": len(customer)}
-        if len(customer):
-            variables = np.arange(len(customer))
-            matrix = coo_matrix((np.ones(2 * len(customer)),
-                                 (np.r_[customer, self.n + channel], np.r_[variables, variables])),
-                                shape=(self.n + self.k, len(customer))).tocsr()
-            solved = linprog(-utility[customer, channel], A_ub=matrix,
-                             b_ub=np.r_[np.ones(self.n), self.capacity], bounds=(0, 1),
-                             method="highs-ds", options={"time_limit": self.params["optimizacion"]["limite_segundos"]})
-            if not solved.success:
-                raise RuntimeError(f"El optimizador no acreditó optimalidad: {solved.message}")
-            deviation = np.max(np.abs(solved.x - np.rint(solved.x)))
-            if deviation > self.params["optimizacion"]["tolerancia_entera"]:
-                raise RuntimeError(f"Solución fraccionaria: {deviation}; no se redondea silenciosamente")
-            chosen = solved.x > 0.5
-            selected[customer[chosen]] = channel[chosen]
-            diagnostics.update({"estado_solver": solved.message, "objetivo_optimo": float(-solved.fun),
-                                "desviacion_entera_maxima": float(deviation), "iteraciones": int(solved.nit)})
-        diagnostics["segundos"] = time.perf_counter() - start
-        return self.grid(selected, bundles, f"Asignación global ({objective})"), diagnostics
-
-    def grid(self, selected, bundles, description):
-        records = []
-        for row, channel in enumerate(selected):
-            if channel >= 0:
-                picks = [int(j) for j in bundles[channel].picks[row] if j >= 0]
-                campaign_ids = [self.campaigns[j]["id"] for j in picks]
-                reason = f"{description}; {self.channels[channel]}; {len(picks)} producto(s); valor esperado {bundles[channel].expected[row]:.6f}"
-                records.append((self.ids[row], "asignado", self.channels[channel], campaign_ids[0], campaign_ids[1] if len(picks) > 1 else "", reason))
-            else:
-                if not self.weekly_ok[row]:
-                    reason = "Tope semanal de contactos"
-                elif not self.product_ok[row].any():
-                    causes = []
-                    for j, campaign in enumerate(self.campaigns):
-                        if not self.active[j]:
-                            causes.append(f"{campaign['id']}: inactiva o fuera de vigencia")
-                        else:
-                            failed = next((name for mask, name in self.product_blocks[j] if mask[row]), "Sin elegibilidad")
-                            causes.append(f"{campaign['id']}: {failed}")
-                    reason = "Sin campaña elegible (" + "; ".join(causes) + ")"
-                elif not any(b.picks[row, 0] >= 0 for b in bundles):
-                    reason = "Sin canal habilitado compatible: autorización, score, reglas o prioridad estricta"
-                elif not any(b.utility[row] > 0 for b in bundles):
-                    reason = "Sin valor positivo para la estrategia seleccionada"
-                else:
-                    reason = "Sin cupo disponible en los canales compatibles"
-                records.append((self.ids[row], "sin_accion", "", "", "", reason))
-        return pd.DataFrame(records, columns=OUTPUT_COLUMNS)
-
-
 def condition_scalar(row, condition, campaign):
     """Intérprete escalar para auditar la salida sin reutilizar máscaras del motor."""
     if "todas" in condition:
@@ -354,7 +101,17 @@ def validate_grid(data, grid, config, as_of=None):
     day = date.fromisoformat(as_of) if isinstance(as_of, str) else (as_of or date.today())
     params = config["parametros"]
     campaigns = {c["id"]: c for c in config["campanas"]}
-    source = data.set_index("id_cliente").to_dict("index")
+    numeric = data.copy()
+    text_columns = {"id_cliente", "region", "tipo_linea", "calificacion_riesgo", "gama_equipo",
+                    "canales_contactados_mes", "productos_ofertados_mes"}
+    for column in numeric.columns:
+        if column not in text_columns:
+            try:
+                numeric[column] = pd.to_numeric(numeric[column], errors="raise")
+            except (ValueError, TypeError):
+                pass
+    numeric["id_cliente"] = numeric["id_cliente"].astype(str)
+    source = numeric.set_index("id_cliente").to_dict("index")
     errors = {f"R{i:02d}": set() for i in range(1, 17)}
     details = []
     usage = {channel: 0 for channel in params["canal"]["capacidad_por_corrida"]}

@@ -1,124 +1,6 @@
 {
-  "baseline": {
-    "violaciones": 0,
-    "controles": {
-      "R01": 0,
-      "R02": 0,
-      "R03": 0,
-      "R04": 0,
-      "R05": 0,
-      "R06": 0,
-      "R07": 0,
-      "R08": 0,
-      "R09": 0,
-      "R10": 0,
-      "R11": 0,
-      "R12": 0,
-      "R13": 0,
-      "R14": 0,
-      "R15": 0,
-      "R16": 0
-    },
-    "muestras_errores": [],
-    "exceso_cupos": {},
-    "clientes": 100000,
-    "clientes_con_accion": 55393,
-    "productos_asignados": 70444,
-    "valor_esperado": 10241.59334503203,
-    "indicador_jerarquia": 0.9967685447619735,
-    "uso_canales": {
-      "asesor": 2500,
-      "whatsapp": 15000,
-      "correo": 16553,
-      "sms": 21340
-    },
-    "ejecucion": {
-      "metodo": "baseline",
-      "segundos": 0.3900617000181228
-    },
-    "casos_kit_en_corrida_completa": [
-      {
-        "id_cliente": "CL000018",
-        "coincide": true,
-        "esperado": {
-          "estado": "asignado",
-          "canal": "correo",
-          "campana_1": "C-TER",
-          "campana_2": "C-OTT"
-        },
-        "obtenido": {
-          "estado": "asignado",
-          "canal": "correo",
-          "campana_1": "C-TER",
-          "campana_2": "C-OTT"
-        }
-      },
-      {
-        "id_cliente": "CL000020",
-        "coincide": true,
-        "esperado": {
-          "estado": "sin_accion",
-          "canal": "",
-          "campana_1": "",
-          "campana_2": ""
-        },
-        "obtenido": {
-          "estado": "sin_accion",
-          "canal": "",
-          "campana_1": "",
-          "campana_2": ""
-        }
-      },
-      {
-        "id_cliente": "CL000039",
-        "coincide": true,
-        "esperado": {
-          "estado": "asignado",
-          "canal": "asesor",
-          "campana_1": "C-VCH",
-          "campana_2": ""
-        },
-        "obtenido": {
-          "estado": "asignado",
-          "canal": "asesor",
-          "campana_1": "C-VCH",
-          "campana_2": ""
-        }
-      },
-      {
-        "id_cliente": "CL000089",
-        "coincide": true,
-        "esperado": {
-          "estado": "sin_accion",
-          "canal": "",
-          "campana_1": "",
-          "campana_2": ""
-        },
-        "obtenido": {
-          "estado": "sin_accion",
-          "canal": "",
-          "campana_1": "",
-          "campana_2": ""
-        }
-      },
-      {
-        "id_cliente": "CL000741",
-        "coincide": true,
-        "esperado": {
-          "estado": "asignado",
-          "canal": "sms",
-          "campana_1": "C-TER",
-          "campana_2": "C-OTT"
-        },
-        "obtenido": {
-          "estado": "asignado",
-          "canal": "sms",
-          "campana_1": "C-TER",
-          "campana_2": "C-OTT"
-        }
-      }
-    ]
-  },
+  "backend": "flujo_ortools",
+  "fecha_utc": "2026-11-06T05:00:14.521349+00:00",
   "optimo": {
     "violaciones": 0,
     "controles": {
@@ -152,22 +34,55 @@
       "correo": 18806,
       "sms": 24116
     },
+    "valor_esperado_exacto": "10940.0024511",
     "ejecucion": {
+      "backend": "flujo_ortools",
+      "ortools": "9.15.6755",
+      "estado": "OPTIMAL",
+      "nodos": 100006,
+      "arcos": 334470,
+      "divisor_costes": 2,
+      "preparar_backend_seg": 0.012366717000006133,
+      "resolver_seg": 0.16537748400000396,
+      "reconstruir_seg": 0.15328872099999558,
+      "total_backend_seg": 0.33103292200000567,
       "metodo": "optimo",
       "objetivo": "valor_esperado",
-      "variables": 134466,
-      "estado_solver": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
-      "objetivo_optimo": 10940.00245109999,
-      "desviacion_entera_maxima": 0.0,
-      "iteraciones": 9494,
-      "segundos": 7.779243299999507
+      "preparar_modelo_seg": 1.6447479309999977,
+      "certificar_seg": 1.0151292439999935,
+      "certificado": {
+        "certificado_dual_valido": true,
+        "optimo_exacto": true,
+        "valor_numerador": 10940002451100,
+        "cota_numerador": 10940002451100,
+        "brecha_numerador": 0,
+        "denominador": 1000000000,
+        "valor_exacto": "10940.0024511",
+        "cota_exacta": "10940.0024511",
+        "brecha_exacta": "0",
+        "alternativas_verificadas": 400000,
+        "paquetes_factibles_enumerados": 209320,
+        "uso_canales": {
+          "asesor": 2500,
+          "whatsapp": 15000,
+          "correo": 18806,
+          "sms": 24116
+        },
+        "precios_canales_numerador": {
+          "asesor": 92409304,
+          "whatsapp": 65106944,
+          "correo": 0,
+          "sms": 0
+        },
+        "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+      },
+      "segundos": 3.193954178999988
     }
   },
   "comparacion": {
-    "diferencia_valor": 698.409106067962,
-    "mejora_relativa": 0.06819340336401325,
     "referencia_publicada_pdf": 10241.5,
-    "nota_referencia": "La referencia publicada es 10241.5 y 70443 productos. Nuestra baseline usa desempates deterministas por ID y debe compararse con sus cifras efectivamente calculadas; no se afirma reproducción exacta de la cifra publicada."
+    "diferencia_valor": 698.5024510999992,
+    "mejora_relativa": 0.06820313929600141
   },
   "fecha_evaluacion": "2026-11-05",
   "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
@@ -436,8 +351,7 @@
       "priorizacion": {
         "modo": "ponderado",
         "modos_disponibles": [
-          "ponderado",
-          "jerarquia_estricta"
+          "ponderado"
         ],
         "jerarquia": [
           "C-VCH",
@@ -492,10 +406,29 @@
         }
       },
       "optimizacion": {
-        "objetivo": "valor_esperado",
-        "limite_segundos": 180,
-        "tolerancia_entera": 1e-07
+        "backend": "flujo_ortools",
+        "objetivo": "valor_esperado"
       }
     }
+  },
+  "normalizacion_codigo": "LF",
+  "codigo_sha256": {
+    "modelo/__init__.py": "5efa9fe8aa0fbd4dd9ab84ecaf10a93808d404b4623c1da3085f9a69d10ce6de",
+    "modelo/certificado.py": "bb10c7f7a217e4c464eb450671a31fa00d1c520ce73d036c0b724a28e3afc978",
+    "modelo/ejecutar.py": "386373645fe60279ecaec1a698c8df1101d4c997d11e0bdab1e90bb0a4b86b1a",
+    "modelo/entorno/__init__.py": "a16e058bcb837a441eb476c60b4870ee6e306d85618e7a3d7c851becf6d067f3",
+    "modelo/entorno/dispositivo.py": "61161b1d5afa3c32400225caf722400ad6b7ad03d1bb7a1e0c1684c65a0daf63",
+    "modelo/entorno/kernel.py": "001302101bd200775ce1aeff4604d4c41e9491ef0bb8ec40f3c65b9e9976ce17",
+    "modelo/exportar_evaluacion.py": "f0f7507a33f7498c2c4c478c06d1aecef70208dd56d0f2c5915ecf43e94eedb6",
+    "modelo/importar_kit.py": "eb3c7adb3d902881698de5582804b0a436cb5d5ab77447c1fdccfc4549f211cd",
+    "modelo/nba/__init__.py": "70f7a339385230ae9f4bbb7a221baf4c0540f17295c1f14a6e8b6e0c0ec067ba",
+    "modelo/nba/motor.py": "0076c76191fa0866bcc20a87cb75bb9ac4f0c0cd614d4bbaecce9614251c6429",
+    "modelo/optimizacion/__init__.py": "edec7e2da12c5f627ecbeb6947be6aa42334e6e2372dda598a0fbc95a10c65ce",
+    "modelo/optimizacion/certificado.py": "6c8fb6b53f673bf4d45e21d47dc6e27ca36a08149a65266871b3175ccdb1ff03",
+    "modelo/optimizacion/problema.py": "a8097dd91b79f219433c598ed1b9f023487b856710f96b5c406b8ad247bf8110",
+    "modelo/optimizacion/solvers.py": "4b90fa4b6bb9216691bab4b13a598e46e537b249003cc305672f3dc726b06fae",
+    "modelo/perfiles/__init__.py": "dc13ae2f3e0fcf75b6b434bf9d160e7b41559897167f511e61f7d114c3c5f06d",
+    "modelo/perfiles/autoencoder.py": "f841e952c3d1b33af6ca64a949c346da4f86420e7ed213570f39fa440c95f46b",
+    "modelo/rutas.py": "dc0127742693476a1652e3d5c55db89ed8cfef0cdd21af630fb1dc62fd49c266"
   }
 }

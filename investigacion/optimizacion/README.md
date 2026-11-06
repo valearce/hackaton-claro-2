@@ -10,7 +10,7 @@ Actualización posterior a la revisión: se implementaron LP, flujo de coste mí
 
 ## Qué problema tenemos hoy
 
-El [motor actual](../../modelo/nba/motor.py) maximiza una suma de valores por cliente/canal, después de elegir el mejor paquete factible de productos. Cada cliente consume como máximo un cupo y hay cuatro capacidades de canal. El [reporte guardado](../../modelo/evaluacion/nba.json) da **10.940,0024511**, estado HiGHS `Optimal`, cero desviación entera y cero violaciones. Es una conclusión para esa formulación y su interpretación de las [reglas](../../REGLAS.md), no una demostración ya comprobada por Lean.
+El [motor actual](../../modelo/nba/motor.py) maximiza el valor esperado mediante flujo de coste mínimo con OR-Tools. El [reporte vigente](../../modelo/evaluacion/nba.json) registra **10.940,0024511**, cero violaciones y brecha exacta cero con certificado entero verificado por Python. La comparación LP/flujo se conserva como evidencia histórica; sus ejecutores y la suite de pruebas se retiraron. El catálogo siguiente conserva las propuestas de la revisión original.
 
 Una formulación equivalente bien resuelta debería alcanzar el mismo máximo, dentro de la precisión definida. Otra arquitectura puede mejorar tiempo, memoria, explicaciones o validación. Agregar presupuesto, incertidumbre, horarios u otro objetivo crea una extensión que debe evaluarse aparte. No se alteran scores ni reglas para simular una mejora del benchmark.
 
