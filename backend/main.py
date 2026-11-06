@@ -18,14 +18,17 @@ from typing import Literal
 try:
     from . import servicio as svc
     from . import cercania
+    from . import datos
     from .esquemas import Configuracion, Pedido, Guardar, diccionario
 except ImportError:
     import servicio as svc
     import cercania
+    import datos
     from esquemas import Configuracion, Pedido, Guardar, diccionario
 
 app=FastAPI(title="Consola NBA Claro",version="1.0.0")
 app.include_router(cercania.router)
+app.include_router(datos.router)
 
 
 @app.post("/api/cercania/evaluar")

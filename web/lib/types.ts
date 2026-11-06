@@ -10,9 +10,9 @@ export type Config = {
     optimizacion: { backend: 'flujo_ortools'; objetivo: 'valor_esperado' | 'prioridad' };
   };
 };
-export type Result = { valor_esperado: number; clientes: number; total_clientes: number; productos: number; jerarquia: number | null; violaciones: number; violaciones_reto: number; exceso_cupos_reto: Record<string, number>; controles_reto: { control: string; nombre: string; violaciones: number }[]; canales: { canal: string; cupo: number; uso: number }[]; campanas: { id: string; ofertas: number }[]; segundos: number; segundos_motor: number; objetivo: string };
+export type Result = { valor_esperado: number; clientes: number; total_clientes: number; productos: number; jerarquia: number | null; violaciones: number; violaciones_reto: number | null; exceso_cupos_reto: Record<string, number>; controles_reto: { control: string; nombre: string; violaciones: number }[]; canales: { canal: string; cupo: number; uso: number }[]; campanas: { id: string; ofertas: number }[]; segundos: number; segundos_motor: number; objetivo: string };
 export type Reference = { valor_esperado: number; clientes_con_accion: number; productos_asignados: number };
-export type Run = { id: string; creado: string; fecha: string; metodos: { optimo: Result }; referencia: Reference; datos_sha256: string; motor_sha256: string };
+export type Run = { id: string; creado: string; fecha: string; metodos: { optimo: Result }; referencia: Reference | null; datos_sha256: string; motor_sha256: string; base?: { id: string; nombre: string } };
 export type Version = { version: string; nombre: string; creado: string; fecha: string; corrida: string; resultado: Result; config?: Config };
 export type Metadata = { config: Config; config_reto: Config; fecha: string; version_activa: string | null; meta: number; columnas: string[]; tipos_columnas: Record<string, 'numero' | 'texto'>; clientes: number; referencia: Reference };
 export type Row = { id_cliente: string; estado: string; canal: string; campana_1: string; campana_2: string; razon: string };

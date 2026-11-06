@@ -49,13 +49,14 @@ def now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def column_types():
+def column_types(data=None):
+    data = DATA if data is None else data
     result = {}
-    for name in DATA.columns:
+    for name in data.columns:
         numeric = name in NUMBER_COLUMNS or name.startswith("score_")
         if not numeric and name not in TEXT_COLUMNS:
             try:
-                pd.to_numeric(DATA[name], errors="raise")
+                pd.to_numeric(data[name], errors="raise")
                 numeric = True
             except (ValueError, TypeError):
                 pass
@@ -66,7 +67,8 @@ def column_types():
 TYPES = column_types()
 
 
-def check_conditions(config):
+def check_conditions(config, types=None):
+    types = TYPES if types is None else types
     def check(condition, depth=0):
         if depth > 4:
             raise ValueError("Las condiciones permiten hasta cuatro niveles")
@@ -75,10 +77,10 @@ def check_conditions(config):
                 for child in condition[key]: check(child, depth+1)
                 return
         column = condition["atributo"]
-        if column not in TYPES:
+        if column not in types:
             raise ValueError(f"La columna {column} no existe en la base")
         values = condition["valor"] if isinstance(condition["valor"], list) else [condition["valor"]]
-        if TYPES[column] == "numero":
+        if types[column] == "numero":
             for value in values:
                 try: float(value)
                 except (ValueError, TypeError): raise ValueError(f"La columna {column} necesita valores numéricos")
@@ -87,7 +89,7 @@ def check_conditions(config):
     for rule in config["reglas"]:
         if rule["activa"]: check(rule["condicion"])
     for column in [c["columna_score"] for c in config["campanas"]] + list(config["parametros"]["canal"]["columnas_score"].values()):
-        if column not in TYPES or TYPES[column] != "numero":
+        if column not in types or types[column] != "numero":
             raise ValueError(f"La columna de score {column} debe existir y ser numérica")
 
 
@@ -115,26 +117,29 @@ def load_run(key):
     return remember(key, record)
 
 
-def summary(grid, config, date, info, seconds):
-    own = validate_grid(DATA, grid, config, date)
-    original = own if config == RETO else validate_grid(DATA, grid, RETO, date)
+def summary(grid, config, date, info, seconds, data=None, custom=False):
+    data = DATA if data is None else data
+    own = validate_grid(data, grid, config, date)
+    original = None if custom else (own if config == RETO else validate_grid(data, grid, RETO, date))
     if own["violaciones"]:
         raise ValueError("La parrilla incumple su configuración; no se guarda")
     counts = pd.concat([grid.campana_1, grid.campana_2]); counts = counts[counts != ""].value_counts().to_dict()
     return {"valor_esperado": float(info["certificado"]["valor_esperado_exacto"]),
-        "clientes": own["clientes_con_accion"], "total_clientes": len(DATA), "productos": own["productos_asignados"],
-        "jerarquia": own["indicador_jerarquia"], "violaciones": own["violaciones"], "violaciones_reto": original["violaciones"],
-        "exceso_cupos_reto": original["exceso_cupos"],
-        "controles_reto": [{"control": k, "nombre": NOMBRES.get(k,k), "violaciones": v} for k,v in original["controles"].items()],
+        "clientes": own["clientes_con_accion"], "total_clientes": len(data), "productos": own["productos_asignados"],
+        "jerarquia": own["indicador_jerarquia"], "violaciones": own["violaciones"], "violaciones_reto": original["violaciones"] if original else None,
+        "exceso_cupos_reto": original["exceso_cupos"] if original else {},
+        "controles_reto": [{"control": k, "nombre": NOMBRES.get(k,k), "violaciones": v} for k,v in original["controles"].items()] if original else [],
         "canales": [{"canal": c,"cupo": v,"uso": own["uso_canales"][c]} for c,v in config["parametros"]["canal"]["capacidad_por_corrida"].items()],
         "campanas": [{"id": c["id"],"ofertas": int(counts.get(c["id"],0))} for c in config["campanas"]],
         "segundos_motor": info["segundos"], "segundos": round(seconds,3),
         "objetivo": info["objetivo"]}
 
 
-def simulate(config, date):
-    check_conditions(config)
-    key = canonical_hash({"config":config,"fecha":date,"datos":DATA_HASH,"motor":REVISION})[:32]
+def simulate(config, date, *, data=None, data_hash=None, dataset=None):
+    data = DATA if data is None else data
+    data_hash = DATA_HASH if data_hash is None else data_hash
+    check_conditions(config, column_types(data) if dataset else TYPES)
+    key = canonical_hash({"config":config,"fecha":date,"datos":data_hash,"motor":REVISION, **({"base": dataset["id"]} if dataset else {})})[:32]
     record = cached(key) or STORE.json(f"corridas/{key}/manifest.json")
     if record: return remember(key,record)
     if not LOCK.acquire(timeout=30): raise TimeoutError("Hay otra simulación en curso; vuelve a intentarlo")
@@ -142,14 +147,15 @@ def simulate(config, date):
         record = cached(key) or STORE.json(f"corridas/{key}/manifest.json")
         if record: return remember(key,record)
         started=time.perf_counter()
-        engine=Engine(DATA,config,date,DATA_HASH)
+        engine=Engine(data,config,date,data_hash)
         grid,info=engine.optimize()
-        result=summary(grid,config,date,info,time.perf_counter()-started)
+        result=summary(grid,config,date,info,time.perf_counter()-started,data,custom=bool(dataset))
         csv=gzip.compress(grid.to_csv(index=False).encode(),mtime=0)
         STORE.write(f"corridas/{key}/parrilla.csv.gz",csv,"application/gzip")
         result["segundos"]=round(time.perf_counter()-started,3)
-        record={"id":key,"creado":now(),"fecha":date,"config":config,"datos_sha256":DATA_HASH,"motor_sha256":REVISION,
-                "commit":os.environ.get("VERCEL_GIT_COMMIT_SHA"),"metodos":{"optimo":result},"referencia":REFERENCE}
+        record={"id":key,"creado":now(),"fecha":date,"config":config,"datos_sha256":data_hash,"motor_sha256":REVISION,
+                "commit":os.environ.get("VERCEL_GIT_COMMIT_SHA"),"metodos":{"optimo":result},"referencia":None if dataset else REFERENCE,
+                **({"base": dataset} if dataset else {})}
         STORE.write_json(f"corridas/{key}/manifest.json",record)
         return remember(key,record)
     finally:
@@ -257,6 +263,8 @@ def breakdown(grid, config):
 def by_cluster(key):
     """Desglosa la parrilla seleccionada; no ejecuta motores ni líneas base."""
     record = load_run(key)
+    if record.get("base"):
+        raise ValueError("Los clusters del reto original no corresponden a la base cargada")
     if "clusters" in record:
         return record["clusters"]
     config = record["config"]

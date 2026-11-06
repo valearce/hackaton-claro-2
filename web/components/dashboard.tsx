@@ -14,8 +14,11 @@ import MapPanel from './map-panel';
 import Proximity from './proximity';
 import Clusters from './clusters';
 import HomeIntro from './home-intro';
+import dynamic from 'next/dynamic';
 
-type Page = 'inicio' | 'campanas' | 'parrilla' | 'mapa' | 'clusters' | 'cercania';
+const DataWorkbench = dynamic(() => import('./data-workbench'), { loading: () => <p role="status">Cargando datos y adaptabilidad…</p> });
+
+type Page = 'inicio' | 'campanas' | 'parrilla' | 'mapa' | 'clusters' | 'cercania' | 'datos';
 export default function Dashboard() {
   const [meta, setMeta] = useState<Metadata | null>(null);
   const [config, setConfig] = useState<Config | null>(null);
@@ -70,7 +73,7 @@ export default function Dashboard() {
     return () => { alive.current = false; controller.abort(); };
   }, [init]);
   useEffect(() => {
-    const sync = () => { const p = location.hash.slice(1); if (['inicio', 'campanas', 'parrilla', 'mapa', 'clusters', 'cercania'].includes(p)) setPage(p as Page); };
+    const sync = () => { const p = location.hash.slice(1); if (['inicio', 'campanas', 'parrilla', 'mapa', 'clusters', 'cercania', 'datos'].includes(p)) setPage(p as Page); };
     sync(); window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
   }, []);
@@ -120,11 +123,11 @@ export default function Dashboard() {
   return <main className="cl">
     <header className="cl-top"><div className="cl-top-in">
       <div className="cl-brand"><button className="cl-brand-home" type="button" onClick={() => navigate('inicio')} aria-label="Volver al inicio"><Image className="cl-logo" src="/claro.png" width={110} height={40} alt="Claro" unoptimized priority /></button><div className="cl-titulo"><h1>Orquestador NBA</h1><p className="sub">Grupo 5 · Claro + Universidad del Rosario</p></div></div>
-      <nav className="cl-tabs" aria-label="Páginas">{([['inicio', 'Inicio'], ['campanas', 'Campañas'], ['parrilla', 'Parrilla'], ['mapa', 'Mapa'], ['clusters', 'Clusters'], ['cercania', 'Cercanía']] as const).map(([id, title]) => <button type="button" className="cl-tab" key={id} aria-current={page === id ? 'page' : undefined} aria-selected={page === id} onClick={() => navigate(id)}>{title}</button>)}</nav>
+      <nav className="cl-tabs" aria-label="Páginas">{([['inicio', 'Inicio'], ['campanas', 'Campañas'], ['parrilla', 'Parrilla'], ['mapa', 'Mapa'], ['clusters', 'Clusters'], ['cercania', 'Cercanía'], ['datos', 'Datos']] as const).map(([id, title]) => <button type="button" className="cl-tab" key={id} aria-current={page === id ? 'page' : undefined} aria-selected={page === id} onClick={() => navigate(id)}>{title}</button>)}</nav>
       <button className="cl-header-cta" type="button" onClick={openSimulator}>Ir al simulador</button>
     </div></header>
     <section className={`cl-page${page === 'inicio' ? ' cl-page-home' : ''}`} aria-label={page === 'inicio' ? 'Inicio' : page === 'campanas' ? 'Campañas' : page === 'mapa' ? 'Mapa' : page === 'clusters' ? 'Clusters' : page === 'cercania' ? 'Cercanía' : 'Parrilla'}>
-      {page === 'mapa' ? <MapPanel /> : page === 'cercania' ? <Proximity config={config} /> : !meta || !config ? <section className="cl-card"><h2>{error ? 'No se pudo cargar la consola' : 'Cargando configuración…'}</h2>{error && <><p className="cl-error" role="alert">{error}</p><button type="button" className="cl-step" onClick={() => void init()}>Reintentar</button></>}</section> : <>
+      {page === 'datos' ? <DataWorkbench /> : page === 'mapa' ? <MapPanel /> : page === 'cercania' ? <Proximity config={config} /> : !meta || !config ? <section className="cl-card"><h2>{error ? 'No se pudo cargar la consola' : 'Cargando configuración…'}</h2>{error && <><p className="cl-error" role="alert">{error}</p><button type="button" className="cl-step" onClick={() => void init()}>Reintentar</button></>}</section> : <>
         {page === 'inicio' && <>
           <HomeIntro clients={meta.clientes} campaigns={meta.config_reto.campanas.length} channelCount={Object.keys(meta.config_reto.parametros.canal.capacidad_por_corrida).length} onExplore={openSimulator} />
           <section id="simulador" className="cl-simulator" aria-label="Simulador de campañas" tabIndex={-1}>

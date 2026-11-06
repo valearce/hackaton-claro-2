@@ -29,11 +29,12 @@ function RuleValue({ value, operator, numeric, change }: { value: unknown; opera
 }
 
 export default function AdvancedSettings({ config, metadata, change, date, setDate }: { config: Config; metadata: Metadata; change: Change; date: string; setDate: (d: string) => void }) {
-  const [ruleName, setRuleName] = useState(''); const [column, setColumn] = useState('edad'); const [op, setOp] = useState('>='); const [ruleValue, setRuleValue] = useState('18'); const [scope, setScope] = useState('global'); const [formError, setFormError] = useState('');
-  const [channel, setChannel] = useState(''); const [channelScore, setChannelScore] = useState('score_canal_sms');
-  const [campaignName, setCampaignName] = useState(''); const [campaignScore, setCampaignScore] = useState('score_venta_cruzada_hogar'); const [campaignProduct, setCampaignProduct] = useState('');
-  const p = config.parametros; const channels = Object.keys(p.canal.capacidad_por_corrida);
   const numerical = metadata.columnas.filter(c => metadata.tipos_columnas[c] === 'numero');
+  const initialColumn = metadata.columnas.includes('edad') ? 'edad' : metadata.columnas.find(c => c !== 'id_cliente') || '';
+  const [ruleName, setRuleName] = useState(''); const [column, setColumn] = useState(initialColumn); const [op, setOp] = useState(metadata.tipos_columnas[initialColumn] === 'numero' ? '>=' : '=='); const [ruleValue, setRuleValue] = useState(initialColumn === 'edad' ? '18' : ''); const [scope, setScope] = useState('global'); const [formError, setFormError] = useState('');
+  const [channel, setChannel] = useState(''); const [channelScore, setChannelScore] = useState(numerical.includes('score_canal_sms') ? 'score_canal_sms' : numerical[0] || '');
+  const [campaignName, setCampaignName] = useState(''); const [campaignScore, setCampaignScore] = useState(numerical.includes('score_venta_cruzada_hogar') ? 'score_venta_cruzada_hogar' : numerical[0] || ''); const [campaignProduct, setCampaignProduct] = useState('');
+  const p = config.parametros; const channels = Object.keys(p.canal.capacidad_por_corrida);
   const operators = metadata.tipos_columnas[column] === 'numero' ? ['==', '!=', '<', '<=', '>', '>=', 'en', 'no_en'] : ['==', '!=', 'en', 'no_en', 'contiene'];
   function weight(key: keyof typeof p.priorizacion.pesos, n: number) {
     n = Math.round(n * 1000) / 1000;

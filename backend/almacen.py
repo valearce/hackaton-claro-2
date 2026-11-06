@@ -52,6 +52,16 @@ class Almacen:
         raw = self.read(name)
         return json.loads(raw) if raw is not None else None
 
+    def delete(self, name):
+        key = self.key(name)
+        if self.blob:
+            from vercel.blob import sync
+            sync.delete_blob(key)
+        elif self.cloud:
+            raise RuntimeError("Conecta el almacenamiento privado de Vercel al proyecto")
+        else:
+            (self.local / key).unlink(missing_ok=True)
+
     def write_json(self, name, value):
         raw = json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode()
         self.write(name, raw, "application/json")

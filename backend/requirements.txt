@@ -5,3 +5,4 @@ numpy==2.4.6
 ortools==9.15.6755
 vercel-blob==0.5.1
 python-dotenv==1.2.4
+openpyxl==3.1.5
