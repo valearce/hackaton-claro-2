@@ -162,6 +162,20 @@ contactos. Es más estable que el A/B de ganador único (peor caso +3,5 %, frent
   simulado. El *lift* usa una aproximación de Poisson, adecuada para comparar propuestas, no para predecir
   conversiones absolutas.
 
+## Para la consola del Grupo 5 (sin mapa)
+
+`exportar_app.py` corre todo esto sobre los **100.000 clientes** (no solo Bogotá) y escribe en la consola
+(`hackatonv.2`): `app/static/datos/clusters.json` (5 clusters, 30 segmentos, publicidad por cluster y rendimiento) y
+`datos/clusters.csv` (cluster de cada cliente). La consola desglosa en vivo, por cluster, lo que hace su motor con cada
+simulación; ver su README.
+
+```powershell
+python -m modelo.experimentos.exportar_app --app C:\ruta\a\hackatonv.2     # ~1 min
+```
+
+Con los 100.000 clientes hay más contactos por segmento y el reparto por cluster rinde más que en Bogotá sola: +7,1 %
+frente a +3,9 % del A/B de ganador único, con el mismo equilibrio (el A/B global gana si los clusters responden casi igual).
+
 ## Cómo probarlo con campañas reales
 
 1. Elegir sectores y campañas y publicar las 4 propuestas con el reparto que sugiere `propuestas_por_sector.csv`.
@@ -173,6 +187,6 @@ contactos. Es más estable que el A/B de ganador único (peor caso +3,5 %, frent
 
 - `config.json`: perfil de los clusters, parámetros del experimento, supuestos del simulador, foco, restricciones
   hipotéticas, variantes, ganchos y plantillas.
-- `comportamiento.py`, `sectores.py`, `propuestas.py`, `bandido.py`, `simulador.py`, `viabilidad.py`, `foco.py`, `ejecutar.py`.
+- `comportamiento.py`, `sectores.py`, `propuestas.py`, `bandido.py`, `simulador.py`, `viabilidad.py`, `foco.py`, `exportar_app.py`, `ejecutar.py`.
 - Salidas versionadas en `../evaluacion/`: `experimentos.json` (lo lee el mapa), `comportamiento.json`, `foco.json`,
   `propuestas_por_sector.csv`, `experimentos_rendimiento.png`.

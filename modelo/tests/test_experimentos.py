@@ -8,6 +8,7 @@ import pandas as pd
 
 from modelo.experimentos import bandido as B, propuestas, simulador as sim, viabilidad as via
 from modelo.experimentos.comportamiento import sondeo
+from modelo.experimentos.exportar_app import publicidad_por_cluster
 from modelo.experimentos.sectores import (UMBRAL_EFECTO, config_perfil, construir_sectores, describir, filtrar_region,
                                           indices_region)
 from modelo.nba import Engine, load_config
@@ -126,6 +127,21 @@ class ComportamientoTest(unittest.TestCase):
         self.assertIn("usa_banca_digital", usadas)
         contrato = {**CONFIG, "sectores": {**CONFIG["sectores"], "perfil": "contrato"}}
         self.assertIs(config_perfil(contrato, PERFILES), PERFILES)
+
+
+class ExportarAppTest(unittest.TestCase):
+    def test_la_publicidad_por_cluster_reparte_nombra_la_principal_y_suma_los_contactos(self):
+        _, primera = sim.evaluar(CONTACTOS, Z, CONFIG, 1)
+        recs = sim.recomendaciones(CONTACTOS, TABLA, CONFIG, primera, NBA["campanas"], muestras=500)
+        pub = publicidad_por_cluster(recs, CONFIG, TABLA, {c["id"]: c for c in NBA["campanas"]}, {})
+        self.assertTrue(pub)
+        for p in pub:
+            self.assertAlmostEqual(sum(p["reparto"].values()), 1.0, places=2)
+            self.assertIn(p["principal"], CONFIG["variantes"])
+            self.assertEqual(p["principal"], max(p["reparto"], key=p["reparto"].get))
+            self.assertTrue(p["texto"])
+            self.assertEqual(p["contactos"], sum(x["contactos"] for x in p["por_estrato"]))
+        self.assertFalse(any("otros" in str(x) for x in pub))
 
 
 class PropuestasTest(unittest.TestCase):
