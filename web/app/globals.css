@@ -373,6 +373,9 @@ html { min-width: 320px; }
 .cl .sim-client-marker{width:24px;height:24px;pointer-events:none}.cl .sim-client-dot{position:absolute;inset:2px;border:4px solid white;border-radius:50%;background:var(--ok);box-shadow:0 3px 12px #1D1D1F40}
 .cl .sim-client-halo{position:absolute;inset:-5px;border-radius:50%;background:#1E7F4522;animation:sim-client-pulse 1.7s ease-in-out infinite}
 .cl .sim-playback{display:grid;gap:12px;margin-top:16px}.cl .sim-playback .cl-acciones{margin:0}.cl .sim-playback input[type=range]{width:100%;accent-color:var(--rojo)}
+.cl .sim-map-shell:fullscreen{width:100vw;height:100dvh;border:0;border-radius:0;background:#F2F3EF}
+.cl .sim-map-shell:fullscreen .sim-map-canvas{height:100%}.cl .sim-map-shell:fullscreen>svg{height:100%;max-height:100%;min-height:0}
+.cl .sim-map-shell:fullscreen .sim-map-follow,.cl .sim-map-shell:fullscreen .maplibregl-ctrl-top-right{display:none}
 .cl .sim-playback-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris)}
 .cl .sim-coverage-state{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--linea);border-radius:10px;background:var(--fondo);font-size:13px}
 .cl .sim-coverage-state>div{display:grid;gap:4px}.cl .sim-coverage-state span:not(.sim-state-dot){font-size:12px;color:var(--gris);line-height:1.45}

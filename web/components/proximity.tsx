@@ -42,6 +42,59 @@ export default function Proximity({ config = null }: { config?: Config | null })
   const lastActions = useRef<Record<string, string>>({});
   const [playing, setPlaying] = useState(false), [progress, setProgress] = useState(0), [speed, setSpeed] = useState(1);
   const progressRef = useRef(0);
+  const demoView = useRef<HTMLDivElement>(null), audio = useRef<AudioContext | null>(null);
+  const soundEnabled = useRef(false), previousAntennas = useRef(new Set<string>());
+  const [sound, setSound] = useState(false), [fullscreen, setFullscreen] = useState(false), [mediaError, setMediaError] = useState('');
+
+  useEffect(() => {
+    const changed = () => setFullscreen(!!document.fullscreenElement && demoView.current?.contains(document.fullscreenElement) === true);
+    document.addEventListener('fullscreenchange', changed);
+    return () => {
+      document.removeEventListener('fullscreenchange', changed);
+      soundEnabled.current = false;
+      const context = audio.current; audio.current = null;
+      if (context && context.state !== 'closed') void context.close().catch(() => {});
+    };
+  }, []);
+
+  async function enableSound() {
+    try {
+      const context = audio.current ?? new AudioContext(); audio.current = context;
+      await context.resume();
+      if (mounted.current) { soundEnabled.current = true; setSound(true); setMediaError(''); }
+    } catch { if (mounted.current) setMediaError('No se pudo activar el sonido. Comprueba el audio del navegador.'); }
+  }
+
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement && demoView.current?.contains(document.fullscreenElement)) await document.exitFullscreen();
+      else {
+        void enableSound();
+        await demoView.current?.querySelector<HTMLElement>('.sim-map-shell')?.requestFullscreen();
+      }
+      setMediaError('');
+    } catch { setMediaError('El navegador no permitió abrir el mapa en pantalla completa.'); }
+  }
+
+  const antennaRangeKey = antennas.filter(zone => zone.activo && meters(position, zone) <= zone.radio_m).map(zone => zone.id).sort().join('|');
+  useEffect(() => {
+    const current = new Set(antennaRangeKey ? antennaRangeKey.split('|') : []);
+    const entered = [...current].some(id => !previousAntennas.current.has(id));
+    previousAntennas.current = current;
+    const context = audio.current;
+    if (!entered || !soundEnabled.current || !context || context.state !== 'running') return;
+    for (const [index, frequency] of [880, 1174.66].entries()) {
+      const oscillator = context.createOscillator(), gain = context.createGain();
+      const start = context.currentTime + index * .19;
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(.18, start + .015);
+      gain.gain.exponentialRampToValueAtTime(.001, start + .3);
+      oscillator.connect(gain); gain.connect(context.destination);
+      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+      oscillator.start(start); oscillator.stop(start + .32);
+    }
+  }, [antennaRangeKey]);
 
   useEffect(() => {
     mounted.current = true;
@@ -69,8 +122,8 @@ export default function Proximity({ config = null }: { config?: Config | null })
   const clientId = settings?.cliente_demo.id || 'DEMO-001';
   const channels = settings?.politica.canales || ['sms', 'whatsapp', 'push'];
 
-  async function evaluate(event: FormEvent) {
-    event.preventDefault(); if (!campaign || busyRef.current) return;
+  async function evaluate(event?: FormEvent) {
+    event?.preventDefault(); if (!campaign || busyRef.current) return;
     busyRef.current = true; setBusy(true); setError(''); const submittedSignature = signature;
     const previous = lastActions.current['mapa_demo'];
     const timestamp = simulatedTime;
@@ -184,6 +237,7 @@ export default function Proximity({ config = null }: { config?: Config | null })
         <span className="cl-eyebrow">Paso 1 · Recorrido</span><h2>Antenas y vallas del escenario</h2>
         <p className="cl-q" id="proximity-map-help">Haz clic en el mapa o usa las flechas del teclado para mover el cliente. El recorrido solo cambia su posición; pulsa Evaluar cercanía para consultar la decisión.</p>
         <div className="cl-steps" role="group" aria-label="Escala del esquema"><button className="cl-step" type="button" aria-pressed={mapZoom === 'sector'} onClick={() => setMapZoom('sector')}>Acercar al sector</button><button className="cl-step" type="button" aria-pressed={mapZoom === 'bogota'} onClick={() => setMapZoom('bogota')}>Ver todos los sectores</button></div>
+        <div className="sim-demo-view" ref={demoView}>
         <AntennaSimulationMap antennas={antennas} billboards={billboards} position={position} route={route} progress={progress}
           sector={{ antennaId, billboardId, zoom: mapZoom }} playing={playing}
           onMove={point => { setPlaying(false); setRouteStep(-1); setPosition(point); }} onSelect={selectZone}>
@@ -208,11 +262,14 @@ export default function Proximity({ config = null }: { config?: Config | null })
         </AntennaSimulationMap>
         <div className="sim-playback">
           <div className="cl-acciones"><button type="button" className="cl-cta" disabled={!settings} onClick={() => {
-            if (playing) setPlaying(false); else { if (progressRef.current >= 1 || routeStep < 0) seek(0); setPlaying(true); }
-          }}>{playing ? 'Pausar simulación' : 'Reproducir recorrido'}</button><button type="button" className="cl-cta sec" onClick={resetSimulation}>Reiniciar simulación</button></div>
+            if (playing) setPlaying(false); else { if (!soundEnabled.current) void enableSound(); if (progressRef.current >= 1 || routeStep < 0) seek(0); setPlaying(true); }
+          }}>{playing ? 'Pausar simulación' : 'Reproducir recorrido'}</button><button type="button" className="cl-cta sec" onClick={resetSimulation}>Reiniciar simulación</button><button type="button" className="cl-cta sec" onClick={() => void toggleFullscreen()}>{fullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}</button><button type="button" className="cl-cta sec" aria-pressed={sound} onClick={() => { if (sound) { soundEnabled.current = false; setSound(false); } else void enableSound(); }}>{sound ? 'Silenciar aviso' : 'Activar sonido'}</button>{fullscreen && <button type="button" className="cl-cta" disabled={busy || !campaign} onClick={() => void evaluate()}>{busy ? 'Evaluando…' : 'Evaluar cercanía'}</button>}</div>
+          {mediaError && <p className="cl-error" role="alert">{mediaError}</p>}
           <label className="cl-proximity-field">Recorrido del cliente<input aria-label="Progreso del recorrido" type="range" min={0} max={100} step={.1} value={progress * 100} onChange={event => seek(Number(event.target.value) / 100)} /></label>
           <div className="sim-playback-row"><div className="cl-steps" role="group" aria-label="Velocidad de reproducción">{[.5, 1, 2, 4].map(value => <button type="button" className="cl-step" key={value} aria-pressed={speed === value} onClick={() => setSpeed(value)}>{value === .5 ? '0,5' : value}×</button>)}</div><span>Hora simulada: <time dateTime={simulatedTime}>{new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(simulatedTime))}</time></span></div>
           <div className="sim-coverage-state" data-stage={inAntenna && inBillboard ? 'opportunity' : inAntenna ? 'coverage' : 'outside'} role="status"><span className="sim-state-dot" /><div><b>{stage}</b><span>{inAntenna && inBillboard ? 'Cobertura y cercanía listas. Evalúa la campaña para comprobar autorización y frecuencia.' : inAntenna ? 'El cliente está dentro de una antena activa; todavía no está junto a la valla.' : 'Acerca el cliente a una antena activa para entrar al sector.'}</span></div></div>
+          {fullscreen && lastResult && <div className={`cl-status ${lastResult.elegible ? 'ok' : 'bad'}`} role="status">{stale ? 'Posición modificada. Evalúa de nuevo.' : lastResult.elegible ? `Oferta elegible · ${lastResult.accion?.campana_nombre} · ${channelName(lastResult.accion?.canal || channel)}` : lastResult.motivos.join(' ')}</div>}
+        </div>
         </div>
         <div className="cl-proximity-legend"><span><i className="antenna" />Antena del escenario</span><span><i className="billboard" />Valla</span><span><i className="customer" />Cliente demo</span><span>Círculos: radio configurado</span></div>
         <><div className="cl-steps" role="group" aria-label="Recorrido de demostración">{route.map((point, i) => <button className="cl-step" type="button" key={point.nombre} aria-pressed={routeStep === i} onClick={() => moveRoute(i)}>{i + 1}. {point.nombre}</button>)}</div><div className="cl-acciones"><button type="button" className="cl-cta sec" onClick={() => moveRoute((routeStep + 1) % route.length)}>Avanzar recorrido</button></div><p className="cl-q">Posición de demo: {position.lat.toFixed(5)}, {position.lon.toFixed(5)}</p></>
