@@ -30,7 +30,7 @@ export default function HomeIntro({ clients, campaigns, channelCount, onExplore 
         <p className="cl-intro-description">Elegimos qué ofrecer y por qué canal contactar a cada cliente.</p>
       </div>
       <div className="cl-intro-photo">
-        <Image src="/imagenes/portada-claro-v2.png" alt="Una mujer consulta su celular en su hogar en Bogotá" fill sizes="(max-width: 700px) 1920px, (max-width: 1150px) 1600px, 100vw" quality={90} preload />
+        <Image src="/imagenes/portada-claro-v2.png" alt="Una mujer consulta su celular en su hogar en Bogotá" fill unoptimized preload />
         <div className="cl-intro-action">
           <h3>Encuentra la siguiente mejor acción</h3>
           <p>Explora tus campañas y configura el escenario que quieres comparar.</p>
