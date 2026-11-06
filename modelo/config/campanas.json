@@ -1,0 +1,52 @@
+[
+  {
+    "id": "C-VCH",
+    "nombre": "Venta cruzada Hogar",
+    "producto": "VCH",
+    "objetivo": "Venta cruzada",
+    "columna_score": "score_venta_cruzada_hogar",
+    "valor_negocio": 1.0,
+    "canales_permitidos": [
+      "asesor",
+      "whatsapp",
+      "correo",
+      "sms"
+    ],
+    "vigencia_inicio": "2026-11-01",
+    "vigencia_fin": "2026-12-31",
+    "activa": true
+  },
+  {
+    "id": "C-TER",
+    "nombre": "Renovacion de terminal",
+    "producto": "TER",
+    "objetivo": "Terminales",
+    "columna_score": "score_terminales",
+    "valor_negocio": 0.8,
+    "canales_permitidos": [
+      "asesor",
+      "whatsapp",
+      "correo",
+      "sms"
+    ],
+    "vigencia_inicio": "2026-11-01",
+    "vigencia_fin": "2026-12-31",
+    "activa": true
+  },
+  {
+    "id": "C-OTT",
+    "nombre": "Upgrade OTT (Netflix, Amazon Prime, Win)",
+    "producto": "OTT",
+    "objetivo": "Upgrade",
+    "columna_score": "score_upgrade_ott",
+    "valor_negocio": 0.4,
+    "canales_permitidos": [
+      "whatsapp",
+      "correo",
+      "sms"
+    ],
+    "vigencia_inicio": "2026-11-01",
+    "vigencia_fin": "2026-12-31",
+    "activa": true
+  }
+]

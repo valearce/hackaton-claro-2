@@ -1,0 +1,22 @@
+{
+  "semilla": 42,
+  "hilos_cpu": 4,
+  "segmentos": 5,
+  "dimension_latente": 5,
+  "muestra_calidad": 2000,
+  "muestra_vecinos": 1000,
+  "vecinos_calidad": 10,
+  "bootstrap_repeticiones": 500,
+  "gmm": {
+    "covarianzas": ["diag", "full"],
+    "n_init": 2,
+    "max_iter": 200,
+    "reg_covar": 0.0001
+  },
+  "isomap": {
+    "puntos_entrenamiento": 3000,
+    "vecinos": [15, 30],
+    "vecinos_decoder": [5, 15, 30],
+    "batch_size": 512
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "priorizacion": {
+    "modo": "ponderado",
+    "modos_disponibles": [
+      "ponderado",
+      "jerarquia_estricta"
+    ],
+    "jerarquia": [
+      "C-VCH",
+      "C-TER",
+      "C-OTT"
+    ],
+    "pesos": {
+      "score_producto": 0.6,
+      "valor_negocio": 0.2,
+      "jerarquia": 0.2
+    },
+    "umbral_score_producto": 0.35,
+    "desempate": [
+      "score_producto",
+      "valor_negocio"
+    ]
+  },
+  "canal": {
+    "criterio": "score_canal",
+    "criterios_disponibles": [
+      "score_canal",
+      "orden_preferencia"
+    ],
+    "orden_preferencia": [
+      "whatsapp",
+      "correo",
+      "sms",
+      "asesor"
+    ],
+    "umbral_score_canal": 0.25,
+    "capacidad_por_corrida": {
+      "asesor": 2500,
+      "whatsapp": 15000,
+      "correo": 30000,
+      "sms": 40000
+    },
+    "columnas_score": {
+      "asesor": "score_canal_asesor",
+      "whatsapp": "score_canal_whatsapp",
+      "correo": "score_canal_correo",
+      "sms": "score_canal_sms"
+    }
+  },
+  "politica_contacto": {
+    "canales_por_cliente": 1,
+    "max_contactos_semana": 3,
+    "max_productos_por_canal": {
+      "asesor": 1,
+      "whatsapp": 2,
+      "correo": 2,
+      "sms": 2
+    }
+  },
+  "optimizacion": {
+    "objetivo": "valor_esperado",
+    "limite_segundos": 180,
+    "tolerancia_entera": 1e-07
+  }
+}

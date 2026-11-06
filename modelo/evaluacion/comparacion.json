@@ -1,0 +1,347 @@
+{
+  "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
+  "particiones": {
+    "train": 70000,
+    "validacion": 15000,
+    "test": 15000
+  },
+  "dimension_entrada": 20,
+  "dimension_latente": 5,
+  "configuracion": {
+    "semilla": 42,
+    "hilos_cpu": 4,
+    "segmentos": 5,
+    "dimension_latente": 5,
+    "muestra_calidad": 2000,
+    "muestra_vecinos": 1000,
+    "vecinos_calidad": 10,
+    "bootstrap_repeticiones": 500,
+    "gmm": {
+      "covarianzas": [
+        "diag",
+        "full"
+      ],
+      "n_init": 2,
+      "max_iter": 200,
+      "reg_covar": 0.0001
+    },
+    "isomap": {
+      "puntos_entrenamiento": 3000,
+      "vecinos": [
+        15,
+        30
+      ],
+      "vecinos_decoder": [
+        5,
+        15,
+        30
+      ],
+      "batch_size": 512
+    }
+  },
+  "seleccion_solo_validacion": {
+    "gmm": [
+      {
+        "covarianza": "diag",
+        "log_verosimilitud_validacion": -3.567168712615967,
+        "bic_train": 503963.65930123674,
+        "convergio": true,
+        "iteraciones": 3,
+        "mse_validacion": 0.7140733411300825,
+        "segundos": 0.22409970001899637,
+        "avisos": []
+      },
+      {
+        "covarianza": "full",
+        "log_verosimilitud_validacion": 0.3388960361480713,
+        "bic_train": -33047.87863781199,
+        "convergio": true,
+        "iteraciones": 3,
+        "mse_validacion": 0.7140733411300825,
+        "segundos": 0.6607731999829412,
+        "avisos": []
+      }
+    ],
+    "isomap": [
+      {
+        "vecinos_grafo": 15,
+        "vecinos_decoder": 5,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.2610414693042529,
+        "segundos_isomap": 7.382115399988834,
+        "segundos_decoder": 0.11524450001888908,
+        "avisos": []
+      },
+      {
+        "vecinos_grafo": 15,
+        "vecinos_decoder": 15,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.2630102953495362,
+        "segundos_isomap": 7.382115399988834,
+        "segundos_decoder": 0.18783549999352545,
+        "avisos": []
+      },
+      {
+        "vecinos_grafo": 15,
+        "vecinos_decoder": 30,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.2777345742779236,
+        "segundos_isomap": 7.382115399988834,
+        "segundos_decoder": 0.2649280999903567,
+        "avisos": []
+      },
+      {
+        "vecinos_grafo": 30,
+        "vecinos_decoder": 5,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.25188718369519825,
+        "segundos_isomap": 11.343498000002,
+        "segundos_decoder": 0.1133960000006482,
+        "avisos": []
+      },
+      {
+        "vecinos_grafo": 30,
+        "vecinos_decoder": 15,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.2527519166999464,
+        "segundos_isomap": 11.343498000002,
+        "segundos_decoder": 0.18183699998189695,
+        "avisos": []
+      },
+      {
+        "vecinos_grafo": 30,
+        "vecinos_decoder": 30,
+        "puntos_grafo_train": 3000,
+        "puntos_decoder_train": 70000,
+        "mse_validacion": 0.26627659861053893,
+        "segundos_isomap": 11.343498000002,
+        "segundos_decoder": 0.2566762999922503,
+        "avisos": []
+      }
+    ]
+  },
+  "criterio_gmm": "Máxima log-verosimilitud de validación entre modelos convergidos",
+  "criterio_isomap": "Mínimo MSE de validación del pipeline Isomap + decoder kNN",
+  "muestra_calidad": 2000,
+  "muestra_vecinos": 1000,
+  "espacio_calidad_grupos": "20 variables preprocesadas originales, misma muestra test para todos",
+  "resultados": [
+    {
+      "metodo": "PCA + KMeans",
+      "mse_test": 0.5215245133440789,
+      "mse_validacion": 0.5192818117830068,
+      "segundos_ajuste": null,
+      "segundos_auxiliares": 0.17266229999950156,
+      "artefacto_reutilizado": true,
+      "reduccion_mse_vs_pca_pct": 0.0,
+      "reduccion_mse_vs_autoencoder_pct": -185.5592712136693,
+      "silhouette_original": 0.11430037766695023,
+      "davies_bouldin_original": 2.554801927952803,
+      "calinski_harabasz_original": 199.90754570821548,
+      "grupos_observados": 5,
+      "trustworthiness_test": 0.9186468257998984,
+      "comparacion_pareada_autoencoder": {
+        "diferencia_mse": 0.3388918461827143,
+        "ic95": [
+          0.33521847265668747,
+          0.34315525181721096
+        ],
+        "unidad_remuestreo": "cliente_test",
+        "repeticiones": 500
+      }
+    },
+    {
+      "metodo": "Autoencoder + KMeans",
+      "mse_test": 0.18263266716136453,
+      "mse_validacion": 0.18249246503405683,
+      "segundos_ajuste": null,
+      "segundos_auxiliares": 0.013344100007088855,
+      "artefacto_reutilizado": true,
+      "reduccion_mse_vs_pca_pct": 64.9810004154356,
+      "reduccion_mse_vs_autoencoder_pct": 0.0,
+      "silhouette_original": 0.10302530974149704,
+      "davies_bouldin_original": 2.6467123335715517,
+      "calinski_harabasz_original": 142.50732212136535,
+      "grupos_observados": 5,
+      "trustworthiness_test": 0.977444591163027,
+      "comparacion_pareada_autoencoder": {
+        "diferencia_mse": 0.0,
+        "ic95": [
+          0.0,
+          0.0
+        ],
+        "unidad_remuestreo": "cliente_test",
+        "repeticiones": 500
+      }
+    },
+    {
+      "metodo": "Mezcla gaussiana",
+      "mse_test": 0.7151310157673785,
+      "mse_validacion": 0.7140733411300825,
+      "segundos_ajuste": 0.6607731999829412,
+      "artefacto_reutilizado": false,
+      "log_verosimilitud_test": 0.3736845850944519,
+      "covarianza": "full",
+      "representacion": "5 probabilidades de pertenencia (suman 1; 4 grados de libertad)",
+      "reduccion_mse_vs_pca_pct": -37.123183564636506,
+      "reduccion_mse_vs_autoencoder_pct": -291.5679636521579,
+      "silhouette_original": 0.11434837430715561,
+      "davies_bouldin_original": 2.5548941100149096,
+      "calinski_harabasz_original": 199.94600225384505,
+      "grupos_observados": 5,
+      "trustworthiness_test": 0.7803159979685119,
+      "comparacion_pareada_autoencoder": {
+        "diferencia_mse": 0.532498348606014,
+        "ic95": [
+          0.5284969496395139,
+          0.536770822173094
+        ],
+        "unidad_remuestreo": "cliente_test",
+        "repeticiones": 500
+      }
+    },
+    {
+      "metodo": "Isomap + kNN + KMeans",
+      "mse_test": 0.2515699774574584,
+      "mse_validacion": 0.25188718369519825,
+      "segundos_ajuste": 11.456894000002649,
+      "segundos_transformacion_test_y_cluster": 1.8774413999926765,
+      "artefacto_reutilizado": false,
+      "vecinos_grafo": 30,
+      "vecinos_decoder": 5,
+      "puntos_grafo_train": 3000,
+      "puntos_decoder_train": 70000,
+      "segundos_isomap": 11.343498000002,
+      "segundos_decoder": 0.1133960000006482,
+      "avisos": [],
+      "reduccion_mse_vs_pca_pct": 51.7625785517998,
+      "reduccion_mse_vs_autoencoder_pct": -37.74642913974668,
+      "silhouette_original": 0.10689035058021545,
+      "davies_bouldin_original": 2.21708823100892,
+      "calinski_harabasz_original": 194.1135293359939,
+      "grupos_observados": 5,
+      "trustworthiness_test": 0.9513768410360589,
+      "comparacion_pareada_autoencoder": {
+        "diferencia_mse": 0.0689373102960939,
+        "ic95": [
+          0.06544122628536278,
+          0.0729156821270855
+        ],
+        "unidad_remuestreo": "cliente_test",
+        "repeticiones": 500
+      }
+    }
+  ],
+  "segundos_experimento": 23.582836499990663,
+  "columnas_errores_test": {
+    "1": "PCA + KMeans",
+    "2": "Autoencoder + KMeans",
+    "3": "Mezcla gaussiana",
+    "4": "Isomap + kNN + KMeans"
+  },
+  "sklearn": "1.9.1",
+  "referencia_autoencoder": {
+    "objetivo": "reconstruccion_y_perfiles_exploratorios",
+    "datos_sinteticos": true,
+    "train": 70000,
+    "validacion": 15000,
+    "test": 15000,
+    "dimension_entrada": 20,
+    "dimension_latente": 5,
+    "mejor_epoca": 50,
+    "epocas_ejecutadas": 50,
+    "mse_test_autoencoder": 0.1826326698064804,
+    "mse_test_pca": 0.5215245485305786,
+    "autoencoder_mejora_pca": true,
+    "silhouette_test": 0.29733705520629883,
+    "mse_test_por_variable": {
+      "edad": 0.6016987562179565,
+      "antiguedad_meses": 0.9212580323219299,
+      "plan_datos_gb": 0.10942289233207703,
+      "consumo_datos_pct": 0.18546830117702484,
+      "arpu_movil": 0.38177114725112915,
+      "arpu_hogar": 0.0036637515295296907,
+      "edad_equipo_meses": 0.02797861583530903,
+      "tiene_hogar": 0.0023480509407818317,
+      "tiene_netflix": 0.3871525526046753,
+      "tiene_amazon_prime": 0.17863765358924866,
+      "tiene_win": 0.03220772743225098,
+      "usa_redes_sociales": 0.024306097999215126,
+      "usa_banca_digital": 0.3708146810531616,
+      "compras_digitales": 0.4068235456943512,
+      "plan_ilimitado": 0.0017920754617080092,
+      "tipo_linea=Postpago": 0.001230528112500906,
+      "tipo_linea=Prepago": 0.00151365390047431,
+      "gama_equipo=Alta": 0.00635856157168746,
+      "gama_equipo=Baja": 0.005985642783343792,
+      "gama_equipo=Media": 0.002215603133663535
+    },
+    "segundos": 12.033788400003687,
+    "torch": "2.14.1+cpu",
+    "dispositivo": "cpu",
+    "configuracion": {
+      "semilla": 42,
+      "fraccion_train": 0.7,
+      "fraccion_validacion": 0.15,
+      "numericas": [
+        "edad",
+        "antiguedad_meses",
+        "plan_datos_gb",
+        "consumo_datos_pct",
+        "arpu_movil",
+        "arpu_hogar",
+        "edad_equipo_meses"
+      ],
+      "binarias": [
+        "tiene_hogar",
+        "tiene_netflix",
+        "tiene_amazon_prime",
+        "tiene_win",
+        "usa_redes_sociales",
+        "usa_banca_digital",
+        "compras_digitales"
+      ],
+      "categoricas": [
+        "tipo_linea",
+        "gama_equipo"
+      ],
+      "log1p": [
+        "arpu_movil",
+        "arpu_hogar"
+      ],
+      "plan_ilimitado": {
+        "columna": "plan_datos_gb",
+        "valor": 999
+      },
+      "capas": [
+        32,
+        16
+      ],
+      "dimension_latente": 5,
+      "epocas": 50,
+      "paciencia": 7,
+      "batch_size": 1024,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "hilos_cpu": 4,
+      "segmentos": 5,
+      "muestra_silhouette": 2000
+    },
+    "limite": "Los segmentos no predicen compras, emociones ni horarios. No sustituyen los scores oficiales.",
+    "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
+    "verificacion_artefactos": "Latentes y errores de los 100000 clientes reproducidos desde pesos y preprocesamiento guardados"
+  },
+  "limites": [
+    "No hay etiquetas de conversión; estas métricas no miden incremento de ventas.",
+    "GMM reconstruye con medias ponderadas; Isomap usa un decodificador kNN adicional.",
+    "Isomap ajusta el grafo en una muestra train y extiende a clientes fuera de muestra.",
+    "Tiempos de referencias reutilizadas no son tiempos nuevos de entrenamiento.",
+    "Un IC bootstrap en datos sintéticos no garantiza generalización a clientes reales.",
+    "HNSW fue investigado, no se incorporó a esta prueba de vecinos exactos."
+  ]
+}

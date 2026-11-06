@@ -1,0 +1,48 @@
+{
+  "semilla": 42,
+  "fraccion_train": 0.7,
+  "fraccion_validacion": 0.15,
+  "numericas": [
+    "edad",
+    "antiguedad_meses",
+    "plan_datos_gb",
+    "consumo_datos_pct",
+    "arpu_movil",
+    "arpu_hogar",
+    "edad_equipo_meses"
+  ],
+  "binarias": [
+    "tiene_hogar",
+    "tiene_netflix",
+    "tiene_amazon_prime",
+    "tiene_win",
+    "usa_redes_sociales",
+    "usa_banca_digital",
+    "compras_digitales"
+  ],
+  "categoricas": [
+    "tipo_linea",
+    "gama_equipo"
+  ],
+  "log1p": [
+    "arpu_movil",
+    "arpu_hogar"
+  ],
+  "plan_ilimitado": {
+    "columna": "plan_datos_gb",
+    "valor": 999
+  },
+  "capas": [
+    32,
+    16
+  ],
+  "dimension_latente": 5,
+  "epocas": 50,
+  "paciencia": 7,
+  "batch_size": 1024,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "hilos_cpu": 4,
+  "segmentos": 5,
+  "muestra_silhouette": 2000
+}

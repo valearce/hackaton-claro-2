@@ -1,0 +1,8 @@
+# Versiones verificadas en Python 3.11; torch CPU es suficiente.
+numpy==2.4.6
+pandas==3.0.5
+scipy==1.17.1
+scikit-learn==1.9.1
+torch==2.14.1
+matplotlib==3.11.1
+threadpoolctl==3.7.0

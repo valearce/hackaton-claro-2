@@ -1,0 +1,91 @@
+{
+  "objetivo": "reconstruccion_y_perfiles_exploratorios",
+  "datos_sinteticos": true,
+  "train": 70000,
+  "validacion": 15000,
+  "test": 15000,
+  "dimension_entrada": 20,
+  "dimension_latente": 5,
+  "mejor_epoca": 50,
+  "epocas_ejecutadas": 50,
+  "mse_test_autoencoder": 0.1826326698064804,
+  "mse_test_pca": 0.5215245485305786,
+  "autoencoder_mejora_pca": true,
+  "silhouette_test": 0.29733705520629883,
+  "mse_test_por_variable": {
+    "edad": 0.6016987562179565,
+    "antiguedad_meses": 0.9212580323219299,
+    "plan_datos_gb": 0.10942289233207703,
+    "consumo_datos_pct": 0.18546830117702484,
+    "arpu_movil": 0.38177114725112915,
+    "arpu_hogar": 0.0036637515295296907,
+    "edad_equipo_meses": 0.02797861583530903,
+    "tiene_hogar": 0.0023480509407818317,
+    "tiene_netflix": 0.3871525526046753,
+    "tiene_amazon_prime": 0.17863765358924866,
+    "tiene_win": 0.03220772743225098,
+    "usa_redes_sociales": 0.024306097999215126,
+    "usa_banca_digital": 0.3708146810531616,
+    "compras_digitales": 0.4068235456943512,
+    "plan_ilimitado": 0.0017920754617080092,
+    "tipo_linea=Postpago": 0.001230528112500906,
+    "tipo_linea=Prepago": 0.00151365390047431,
+    "gama_equipo=Alta": 0.00635856157168746,
+    "gama_equipo=Baja": 0.005985642783343792,
+    "gama_equipo=Media": 0.002215603133663535
+  },
+  "segundos": 12.033788400003687,
+  "torch": "2.14.1+cpu",
+  "dispositivo": "cpu",
+  "configuracion": {
+    "semilla": 42,
+    "fraccion_train": 0.7,
+    "fraccion_validacion": 0.15,
+    "numericas": [
+      "edad",
+      "antiguedad_meses",
+      "plan_datos_gb",
+      "consumo_datos_pct",
+      "arpu_movil",
+      "arpu_hogar",
+      "edad_equipo_meses"
+    ],
+    "binarias": [
+      "tiene_hogar",
+      "tiene_netflix",
+      "tiene_amazon_prime",
+      "tiene_win",
+      "usa_redes_sociales",
+      "usa_banca_digital",
+      "compras_digitales"
+    ],
+    "categoricas": [
+      "tipo_linea",
+      "gama_equipo"
+    ],
+    "log1p": [
+      "arpu_movil",
+      "arpu_hogar"
+    ],
+    "plan_ilimitado": {
+      "columna": "plan_datos_gb",
+      "valor": 999
+    },
+    "capas": [
+      32,
+      16
+    ],
+    "dimension_latente": 5,
+    "epocas": 50,
+    "paciencia": 7,
+    "batch_size": 1024,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "hilos_cpu": 4,
+    "segmentos": 5,
+    "muestra_silhouette": 2000
+  },
+  "limite": "Los segmentos no predicen compras, emociones ni horarios. No sustituyen los scores oficiales.",
+  "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
+  "verificacion_artefactos": "Latentes y errores de los 100000 clientes reproducidos desde pesos y preprocesamiento guardados"
+}
