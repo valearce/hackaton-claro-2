@@ -30,17 +30,20 @@ def main():
         rows = sum(1 for _ in reader)
     if (rows, columns) != (dataset["filas"], dataset["columnas"]):
         raise ValueError("Dimensiones del CSV diferentes al manifiesto")
-    for task in ("nba", "perfiles", "comparacion"):
+    evaluations = ["nba", "perfiles", "comparacion"]
+    if (ROOT / "modelo/evaluacion/optimizador.json").exists():
+        evaluations.append("optimizador")
+    for task in evaluations:
         metrics = read_json(ROOT / "modelo/evaluacion" / f"{task}.json")
         if metrics["datos_sha256"] != dataset["archivos"][0]["sha256"]:
             raise ValueError(f"Evaluación {task}: huella del CSV diferente")
-        if task == "nba":
+        if task in ("nba", "optimizador"):
             config = {key: read_json(ROOT / "modelo/config" / f"{key}.json") for key in ("campanas", "reglas", "parametros")}
         else:
             config = read_json(ROOT / "modelo/config" / f"{task}.json")
         if metrics["configuracion"] != config:
             raise ValueError(f"Evaluación {task}: configuración distinta de la evaluada")
-    markdown = [ROOT / "README.md", ROOT / "CONTRIBUTING.md"]
+    markdown = [ROOT / "README.md", ROOT / "CONTRIBUTING.md", ROOT / "REGLAS.md"]
     for folder in ("datos", "docs", "modelo", "mapa", "investigacion", "recursos", "herramientas"):
         markdown.extend(path for path in (ROOT / folder).rglob("*.md")
                         if "referencias-qnexus" not in path.parts and "resultados" not in path.parts)
@@ -57,7 +60,7 @@ def main():
             if not destination.is_relative_to(ROOT) or not destination.exists():
                 raise ValueError(f"Enlace roto en {path.relative_to(ROOT)}: {target}")
             links += 1
-    print(f"OK: {checked} fuentes originales, CSV {rows} x {columns}, 3 evaluaciones y {links} enlaces locales.")
+    print(f"OK: {checked} fuentes originales, CSV {rows} x {columns}, {len(evaluations)} evaluaciones y {links} enlaces locales.")
 
 
 if __name__ == "__main__":

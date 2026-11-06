@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
+from ..entorno.dispositivo import select_device
 
 
 class Preprocessor:
@@ -100,15 +101,17 @@ class Autoencoder(nn.Module):
 def evaluate(model, values):
     model.eval()
     with torch.no_grad():
-        reconstructed = model(torch.from_numpy(values)).numpy()
+        device = next(model.parameters()).device
+        reconstructed = model(torch.from_numpy(values).to(device)).cpu().numpy()
     return float(np.mean((values - reconstructed) ** 2)), reconstructed
 
 
-def run_profiles(data, config, directory, datos_sha256=None):
-    from .ejecutar import write_json
+def run_profiles(data, config, directory, datos_sha256=None, dispositivo=None):
+    from ..ejecutar import write_json
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    device = select_device(dispositivo)
     seed = config["semilla"]
     random.seed(seed)
     np.random.seed(seed)
@@ -126,7 +129,7 @@ def run_profiles(data, config, directory, datos_sha256=None):
     x = preprocessor.transform(data)
     if config["dimension_latente"] >= x.shape[1]:
         raise ValueError("La dimensión latente debe reducir las variables de entrada")
-    model = Autoencoder(x.shape[1], config["capas"], config["dimension_latente"])
+    model = Autoencoder(x.shape[1], config["capas"], config["dimension_latente"]).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"], weight_decay=config["weight_decay"])
     generator = torch.Generator().manual_seed(seed)
     loader = DataLoader(TensorDataset(torch.from_numpy(x[train])), batch_size=config["batch_size"],
@@ -134,11 +137,12 @@ def run_profiles(data, config, directory, datos_sha256=None):
     loss_function = nn.MSELoss()
     history = []
     best_loss, best_epoch, waiting, best = float("inf"), 0, 0, None
-    print(f"Autoencoder CPU: {x.shape[1]} entradas -> {config['dimension_latente']} latentes; {len(train)} train", flush=True)
+    print(f"Autoencoder {device}: {x.shape[1]} entradas -> {config['dimension_latente']} latentes; {len(train)} train", flush=True)
     for epoch in range(1, config["epocas"] + 1):
         model.train()
         total = 0.0
         for (batch,) in loader:
+            batch = batch.to(device)
             optimizer.zero_grad(set_to_none=True)
             loss = loss_function(model(batch), batch)
             loss.backward()
@@ -157,8 +161,9 @@ def run_profiles(data, config, directory, datos_sha256=None):
     model.load_state_dict(best)
     test_loss, reconstructed_test = evaluate(model, x[test])
     with torch.no_grad():
-        latent = model.encoder(torch.from_numpy(x)).numpy()
-        reconstructed = model(torch.from_numpy(x)).numpy()
+        tensor = torch.from_numpy(x).to(device)
+        latent = model.encoder(tensor).cpu().numpy()
+        reconstructed = model(tensor).cpu().numpy()
     pca = PCA(n_components=config["dimension_latente"], random_state=seed).fit(x[train])
     pca_test = pca.inverse_transform(pca.transform(x[test]))
     pca_loss = float(np.mean((x[test] - pca_test) ** 2))
@@ -189,7 +194,9 @@ def run_profiles(data, config, directory, datos_sha256=None):
                "mse_test_autoencoder": test_loss, "mse_test_pca": pca_loss,
                "autoencoder_mejora_pca": bool(test_loss < pca_loss), "silhouette_test": silhouette,
                "mse_test_por_variable": per_feature, "segundos": time.perf_counter() - started,
-               "torch": torch.__version__, "dispositivo": "cpu", "configuracion": config,
+               "torch": torch.__version__, "dispositivo": str(device),
+               "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
+               "cuda_runtime": torch.version.cuda if device.type == "cuda" else None, "configuracion": config,
                "limite": "Los segmentos no predicen compras, emociones ni horarios. No sustituyen los scores oficiales."}
     write_json(directory / "metricas.json", metrics)
     write_json(directory / "preprocesamiento.json", preprocessor.to_dict())
@@ -219,18 +226,21 @@ def save_figures(history, autoencoder, pca, directory):
     plt.close(fig)
 
 
-def infer_profiles(data, directory):
+def infer_profiles(data, directory, dispositivo=None):
     """Aplica los artefactos locales sin volver a ajustar escalas ni entrenar."""
     directory = Path(directory)
     preprocessor = Preprocessor.from_dict(json.loads((directory / "preprocesamiento.json").read_text(encoding="utf-8")))
     saved = torch.load(directory / "autoencoder.pt", map_location="cpu", weights_only=True)
     model = Autoencoder(saved["dimension"], saved["capas"], saved["latentes"])
     model.load_state_dict(saved["state_dict"])
+    device = select_device(dispositivo)
+    model.to(device)
     model.eval()
     x = preprocessor.transform(data)
     with torch.no_grad():
-        latent = model.encoder(torch.from_numpy(x)).numpy()
-        reconstructed = model(torch.from_numpy(x)).numpy()
+        tensor = torch.from_numpy(x).to(device)
+        latent = model.encoder(tensor).cpu().numpy()
+        reconstructed = model(tensor).cpu().numpy()
     centers = np.array(json.loads((directory / "centros_segmentos.json").read_text())["centros"], dtype=latent.dtype)
     labels = np.argmin(np.sum((latent[:, None, :] - centers[None, :, :]) ** 2, axis=2), axis=1)
     return pd.DataFrame({"id_cliente": data.id_cliente.to_numpy(), "segmento": [f"S{label + 1:02d}" for label in labels],

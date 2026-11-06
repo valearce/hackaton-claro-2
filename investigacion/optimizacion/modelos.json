@@ -1,0 +1,385 @@
+{
+  "fecha_consulta": "2026-11-05",
+  "alcance": "Selección de 19 enfoques relevantes para NBA; no catálogo exhaustivo de toda la optimización. Incluye formulaciones, estrategias, medidas de riesgo y algoritmos, identificados por tipo.",
+  "aplicaciones_son_propuestas": true,
+  "nuevos_experimentos_ejecutados": false,
+  "seguimiento_posterior": {
+    "implementados_y_evaluados": ["O01", "O02"],
+    "guia": "../../modelo/docs/optimizador.md",
+    "resultados": "../../modelo/evaluacion/optimizador.json",
+    "certificado": "Primal-dual entero verificado por Python; Lean pendiente."
+  },
+  "modelos": [
+    {
+      "id": "O01",
+      "nombre": "Programación lineal (LP)",
+      "tipo": "modelo",
+      "prioridad": "P0: referencia actual",
+      "idea": "Optimiza una función lineal con restricciones lineales.",
+      "aplicacion": "Conservar el problema cliente-canal con el mejor paquete factible y capacidades compartidas.",
+      "necesita": [],
+      "limite": "La integralidad de nuestro caso depende de su estructura de asignación; restricciones adicionales pueden perderla.",
+      "experimento": "Usar el valor, la factibilidad y la cota dual como referencia para cada alternativa.",
+      "benchmark": "mismo problema",
+      "fuentes": [
+        "S01"
+      ]
+    },
+    {
+      "id": "O02",
+      "nombre": "Flujo de coste mínimo / asignación capacitada",
+      "tipo": "formulacion en red",
+      "prioridad": "P1: probar primero",
+      "idea": "Representa decisiones como flujo por arcos con costes y capacidades.",
+      "aplicacion": "Arcos fuente-cliente-canal-sumidero y una opción sin acción; coste igual al negativo del valor.",
+      "necesita": [],
+      "limite": "Solo equivale al LP mientras la decisión por cliente/canal pueda condensarse en un paquete sin acoplamientos adicionales.",
+      "experimento": "Comparar objetivo, cero violaciones, memoria y tiempo con HiGHS; escalar decimales exactamente y comprobar desbordamientos.",
+      "benchmark": "mismo problema",
+      "fuentes": [
+        "S02"
+      ]
+    },
+    {
+      "id": "O03",
+      "nombre": "Programación lineal entera mixta (MILP)",
+      "tipo": "modelo",
+      "prioridad": "P1: extensión prioritaria",
+      "idea": "Añade decisiones enteras o binarias a restricciones y objetivos lineales.",
+      "aplicacion": "Representar presupuestos, cupos por producto y combinaciones incompatibles entre ofertas.",
+      "necesita": [
+        "costes y límites nuevos, si se añaden"
+      ],
+      "limite": "No se debe relajar a LP y redondear sin comprobar factibilidad; hay que reportar incumbente, cota y brecha.",
+      "experimento": "Reproducir el caso original y después agregar una única restricción de negocio por escenario.",
+      "benchmark": "equivalente inicialmente; ampliado al agregar restricciones",
+      "fuentes": [
+        "S03"
+      ]
+    },
+    {
+      "id": "O04",
+      "nombre": "Programación por restricciones / CP-SAT",
+      "tipo": "paradigma y solver",
+      "prioridad": "P2: reglas complejas",
+      "idea": "Busca soluciones discretas sujetas a restricciones; CP-SAT exige formulación entera de las restricciones.",
+      "aplicacion": "Agregar implicaciones, incompatibilidades, ventanas de contacto y recursos temporales.",
+      "necesita": [
+        "ventanas y duración de contactos para planificación temporal"
+      ],
+      "limite": "FEASIBLE no equivale a OPTIMAL. El escalado decimal y los límites numéricos requieren revisión.",
+      "experimento": "Comparar con MILP usando exactamente las mismas reglas, límite temporal y precisión del objetivo.",
+      "benchmark": "misma formulación si solo se cambia solver; ampliado con horarios",
+      "fuentes": [
+        "S04",
+        "S22"
+      ]
+    },
+    {
+      "id": "O05",
+      "nombre": "Mochila multidimensional y asignación con recursos",
+      "tipo": "familia de formulaciones",
+      "prioridad": "P2: presupuesto",
+      "idea": "Selecciona elementos con valor y consumo de uno o varios recursos limitados.",
+      "aplicacion": "Elegir contactos bajo dinero, minutos de asesor y capacidad de canal, conservando exclusividad por cliente.",
+      "necesita": [
+        "coste de contacto",
+        "duración o consumo de recursos"
+      ],
+      "limite": "Resolver una mochila por canal separadamente puede asignar al mismo cliente varias veces o desperdiciar alternativas.",
+      "experimento": "Construir una formulación conjunta y medir valor neto y utilización del presupuesto.",
+      "benchmark": "problema ampliado",
+      "fuentes": [
+        "S05",
+        "S03"
+      ]
+    },
+    {
+      "id": "O06",
+      "nombre": "Optimización multiobjetivo lexicográfica / frontera de compromiso",
+      "tipo": "estrategia de objetivos",
+      "prioridad": "P1: probar primero",
+      "idea": "Combina objetivos por pesos o prioridades; una prioridad superior se protege mediante restricciones y tolerancias explícitas.",
+      "aplicacion": "Primero maximizar valor; después mejorar jerarquía o reducir fatiga conservando ese valor dentro de una tolerancia acordada.",
+      "necesita": [
+        "definición del objetivo secundario",
+        "tolerancia de degradación"
+      ],
+      "limite": "Fijar el óptimo exacto conserva una cara óptima integral del caso actual; una tolerancia positiva o nuevas restricciones pueden perder esa garantía. Definir si jerarquía significa un conteo o un porcentaje.",
+      "experimento": "Construir una frontera valor-jerarquía, mostrar sacrificios y verificar integralidad en cada etapa.",
+      "benchmark": "valor principal comparable; objetivo secundario adicional",
+      "fuentes": [
+        "S06",
+        "S03"
+      ]
+    },
+    {
+      "id": "O07",
+      "nombre": "Programación cuadrática (QP / MIQP)",
+      "tipo": "modelo",
+      "prioridad": "P3: requiere evidencia",
+      "idea": "Incluye un término cuadrático; la estructura de la matriz determina convexidad.",
+      "aplicacion": "Penalizar concentración o modelar interacciones entre decisiones cuando haya una justificación medible.",
+      "necesita": [
+        "matriz de interacciones o penalización validada"
+      ],
+      "limite": "Un QP continuo puede dar contactos fraccionarios; contactos discretos requieren una formulación entera adecuada.",
+      "experimento": "Comparar un objetivo ampliado con y sin penalización y auditar la pérdida del valor oficial.",
+      "benchmark": "objetivo modificado",
+      "fuentes": [
+        "S07"
+      ]
+    },
+    {
+      "id": "O08",
+      "nombre": "Programación cónica de segundo orden (SOCP / MISOCP)",
+      "tipo": "modelo",
+      "prioridad": "P3: incertidumbre estructurada",
+      "idea": "Permite restricciones convexas de norma y ciertas formulaciones de riesgo.",
+      "aplicacion": "Representar límites de exposición a incertidumbre cuando un modelo estadístico justifique esa geometría.",
+      "necesita": [
+        "estructura de incertidumbre y estimaciones fiables"
+      ],
+      "limite": "La versión continua no produce necesariamente decisiones discretas; no toda restricción probabilística es cónica.",
+      "experimento": "Justificar la aproximación de riesgo y comparar soluciones enteras y cobertura fuera de muestra.",
+      "benchmark": "problema ampliado",
+      "fuentes": [
+        "S08"
+      ]
+    },
+    {
+      "id": "O09",
+      "nombre": "Optimización robusta con presupuesto de incertidumbre",
+      "tipo": "modelo de incertidumbre",
+      "prioridad": "P2: simulación; P3: validar",
+      "idea": "Busca decisiones resistentes a variaciones admitidas de los coeficientes, aceptando un compromiso con el valor nominal.",
+      "aplicacion": "Investigar sensibilidad a errores de scores o capacidad; proponer un presupuesto de incertidumbre ajustable.",
+      "necesita": [
+        "rangos o errores de estimación de scores/capacidades"
+      ],
+      "limite": "Perturbaciones inventadas solo justifican una simulación; el valor nominal puede bajar al protegerse.",
+      "experimento": "Evaluar curvas de protección frente a valor nominal en escenarios separados del benchmark fijo.",
+      "benchmark": "otro criterio de robustez",
+      "fuentes": [
+        "S09"
+      ]
+    },
+    {
+      "id": "O10",
+      "nombre": "Programación estocástica por escenarios / SAA",
+      "tipo": "modelo de incertidumbre",
+      "prioridad": "P3: requiere escenarios",
+      "idea": "Optimiza decisiones ante escenarios de parámetros inciertos, con posibles etapas de adaptación.",
+      "aplicacion": "Planear capacidad y asignación considerando entregas, disponibilidad o respuestas futuras.",
+      "necesita": [
+        "escenarios representativos",
+        "probabilidades o muestras históricas",
+        "momento en que se observa la incertidumbre"
+      ],
+      "limite": "Decisiones previas no pueden depender de información futura: imponer no anticipatividad.",
+      "experimento": "Reservar escenarios de evaluación y contrastar la política con una solución determinista bajo el mismo seguimiento.",
+      "benchmark": "problema ampliado",
+      "fuentes": [
+        "S10"
+      ]
+    },
+    {
+      "id": "O11",
+      "nombre": "Optimización distribucionalmente robusta (DRO Wasserstein)",
+      "tipo": "modelo de incertidumbre",
+      "prioridad": "P3: requiere datos",
+      "idea": "Optimiza frente a distribuciones adversas dentro de una vecindad de una distribución empírica.",
+      "aplicacion": "Investigar decisiones menos sensibles a que la distribución de respuesta cambie respecto del historial.",
+      "necesita": [
+        "muestras de resultados",
+        "distancia y radio de ambigüedad calibrados"
+      ],
+      "limite": "Las reformulaciones y garantías dependen de supuestos; no se transfieren automáticamente a nuestro problema discreto.",
+      "experimento": "Separación temporal y evaluación bajo cambios de distribución, mostrando sensibilidad al radio.",
+      "benchmark": "objetivo y supuestos nuevos",
+      "fuentes": [
+        "S11"
+      ]
+    },
+    {
+      "id": "O12",
+      "nombre": "CVaR: optimización de pérdidas en la cola",
+      "tipo": "medida de riesgo incorporable al objetivo",
+      "prioridad": "P3: requiere escenarios",
+      "idea": "Mide pérdidas medias en una fracción de resultados desfavorables; debe definirse sobre pérdidas con la orientación correcta.",
+      "aplicacion": "Limitar malos resultados de una cartera de contactos y compararlos con su valor medio.",
+      "necesita": [
+        "pérdidas por escenario",
+        "nivel de confianza",
+        "peso de aversión al riesgo"
+      ],
+      "limite": "CVaR no es un solver; las restricciones discretas siguen necesitando un modelo adecuado.",
+      "experimento": "Reportar promedio, cola de pérdidas y estabilidad fuera de muestra para varios niveles de aversión.",
+      "benchmark": "criterio de riesgo adicional",
+      "fuentes": [
+        "S12",
+        "S10"
+      ]
+    },
+    {
+      "id": "O13",
+      "nombre": "Restricciones probabilísticas (chance constraints)",
+      "tipo": "restriccion de incertidumbre",
+      "prioridad": "P3: solo con distribución validada",
+      "idea": "Exige que una condición incierta se cumpla con una probabilidad mínima bajo el modelo de escenarios.",
+      "aplicacion": "Estudiar capacidad operativa incierta o niveles de entrega en una extensión del sistema.",
+      "necesita": [
+        "distribución o escenarios",
+        "probabilidad admisible de fallo operativo"
+      ],
+      "limite": "No convertir permisos, elegibilidad ni topes obligatorios del reto en restricciones que puedan violarse probabilísticamente.",
+      "experimento": "Medir la frecuencia de cumplimiento en escenarios reservados y contrastar sus intervalos de incertidumbre.",
+      "benchmark": "extensión operativa; reglas obligatorias siguen siendo duras",
+      "fuentes": [
+        "S13"
+      ]
+    },
+    {
+      "id": "O14",
+      "nombre": "Planificación multiperiodo y horizonte rodante",
+      "tipo": "modelo temporal y politica de reoptimizacion",
+      "prioridad": "P2: siguiente extensión temporal",
+      "idea": "Planifica sobre un horizonte finito y recalcula al avanzar y observar el estado.",
+      "aplicacion": "Coordinar contactos de varios días, preservar cupos futuros y actualizar historial después de cada ejecución.",
+      "necesita": [
+        "calendario",
+        "estado persistente de contactos",
+        "disponibilidad futura y expiraciones"
+      ],
+      "limite": "La referencia MPC proviene de control; su adaptación a campañas es nuestra propuesta, no un resultado demostrado para NBA.",
+      "experimento": "Simulación de varios días con llegadas idénticas, sin reutilizar cupos ya consumidos ni anticipar respuestas.",
+      "benchmark": "problema temporal ampliado",
+      "fuentes": [
+        "S14",
+        "S22"
+      ]
+    },
+    {
+      "id": "O15",
+      "nombre": "Optimización submodular de presupuesto/cobertura",
+      "tipo": "familia de objetivos combinatorios",
+      "prioridad": "P3: solo si se valida la estructura",
+      "idea": "Aprovecha rendimientos marginales decrecientes en determinados modelos de cobertura o influencia.",
+      "aplicacion": "Investigar diversidad de audiencia y redundancia entre contactos cuando exista evidencia de saturación.",
+      "necesita": [
+        "función de cobertura o influencia",
+        "evidencia de rendimientos decrecientes"
+      ],
+      "limite": "Las garantías dependen de submodularidad y de las restricciones; no vale trasladar un factor de aproximación sin comprobar supuestos.",
+      "experimento": "Validar la función y comparar con un óptimo pequeño antes de escalar.",
+      "benchmark": "objetivo nuevo",
+      "fuentes": [
+        "S15"
+      ]
+    },
+    {
+      "id": "O16",
+      "nombre": "Bandits contextuales con presupuesto (CBwK)",
+      "tipo": "aprendizaje y decision secuencial",
+      "prioridad": "P3: prometedor con feedback",
+      "idea": "Aprende recompensas de las acciones elegidas mientras consume recursos; el trabajo revisado combina estimaciones de conversión con LP.",
+      "aplicacion": "Aprender qué oferta/canal funciona y asignar exploración con presupuesto, respetando elegibilidad externa.",
+      "necesita": [
+        "exposiciones y conversiones",
+        "probabilidad de la acción registrada",
+        "costes y recursos",
+        "soporte entre políticas"
+      ],
+      "limite": "El CSV no contiene ese feedback. En el artículo los costes ocurren con la conversión; nuestros contactos pueden costar aun sin compra.",
+      "experimento": "Evaluación temporal IPS/DR cuando sea identificable, análisis de varianza y un experimento posterior por cliente.",
+      "benchmark": "aprende un objetivo comercial nuevo; no reemplaza los scores oficiales en la comparación fija",
+      "fuentes": [
+        "S16",
+        "S17"
+      ]
+    },
+    {
+      "id": "O17",
+      "nombre": "MDP restringido / aprendizaje por refuerzo",
+      "tipo": "modelo de decision secuencial",
+      "prioridad": "P4: posterior a bandits",
+      "idea": "Modela acciones que afectan estados y recompensas futuras, con límites de recursos.",
+      "aplicacion": "Investigar secuencias de incentivos, retención y efectos futuros de la presión comercial.",
+      "necesita": [
+        "trayectorias de acciones y resultados",
+        "estados y transiciones",
+        "recompensa y horizonte definidos"
+      ],
+      "limite": "El problema contrafactual y la evaluación de políticas requieren evidencia; un CSV estático no basta.",
+      "experimento": "Construir primero un entorno validado y comparar con una política sencilla y bandits bajo el mismo presupuesto.",
+      "benchmark": "problema secuencial distinto",
+      "fuentes": [
+        "S18"
+      ]
+    },
+    {
+      "id": "O18",
+      "nombre": "Optimización bayesiana",
+      "tipo": "metodo de busqueda de parametros",
+      "prioridad": "P4: capa auxiliar",
+      "idea": "Selecciona evaluaciones de una función costosa usando un modelo sustituto y un criterio de adquisición.",
+      "aplicacion": "Ajustar hiperparámetros del perfil o políticas simuladas cuando la evaluación sea costosa.",
+      "necesita": [
+        "objetivo de validación fiable",
+        "presupuesto de evaluaciones",
+        "espacio de búsqueda"
+      ],
+      "limite": "No sustituye la asignación exacta ni justifica cambiar scores del benchmark; conservar un test sin usar para ajuste.",
+      "experimento": "Comparar con búsqueda aleatoria usando igual presupuesto y particiones fijas.",
+      "benchmark": "capa de ajuste, no motor de asignación",
+      "fuentes": [
+        "S19"
+      ]
+    },
+    {
+      "id": "O19",
+      "nombre": "Metaheurística evolutiva multiobjetivo (NSGA-II)",
+      "tipo": "algoritmo heuristico",
+      "prioridad": "P4: casos sin formulación manejable",
+      "idea": "Mantiene una población de candidatos para explorar compromisos entre varios objetivos.",
+      "aplicacion": "Explorar una frontera cuando objetivos complejos se evalúan mediante una simulación.",
+      "necesita": [
+        "evaluador de objetivos",
+        "codificación y reparación de restricciones",
+        "varias semillas y presupuesto de búsqueda"
+      ],
+      "limite": "No usar una buena solución encontrada como certificado del óptimo; comparar con una cota o caso exacto.",
+      "experimento": "Medir factibilidad, estabilidad por semilla y calidad de la frontera frente a un método exacto pequeño.",
+      "benchmark": "solo comparable si objetivos y restricciones coinciden",
+      "fuentes": [
+        "S20"
+      ]
+    }
+  ],
+  "metodos_complementarios": [
+    {
+      "nombre": "Sensibilidad y precios duales",
+      "funcion": "Explicar qué recurso limita el valor y orientar escenarios de capacidad; el marginal es local y no una promesa para cambios grandes.",
+      "fuentes": [
+        "S01"
+      ]
+    },
+    {
+      "nombre": "Descomposición de Benders",
+      "funcion": "Separar decisiones maestras y subproblemas cuando el modelo crezca y su estructura lo permita; evaluar frente al modelo monolítico.",
+      "fuentes": [
+        "S21"
+      ]
+    },
+    {
+      "nombre": "Lean 4",
+      "funcion": "Verificación formal propuesta; no es un optimizador. Ver ../verificacion-lean.md.",
+      "fuentes": []
+    },
+    {
+      "nombre": "HNSW y perfiles",
+      "funcion": "Búsqueda de vecinos y representación de clientes; no son métodos para repartir exactamente los cupos de canal.",
+      "fuentes": []
+    }
+  ]
+}

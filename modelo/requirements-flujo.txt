@@ -1,0 +1,4 @@
+# Solo se usa ortools.graph.python.min_cost_flow, desde una carpeta local.
+# Instalar con --no-deps --target .local/python/ortools-linux en WSL.
+# No instalar sus dependencias encima del entorno de los notebooks.
+ortools==9.15.6755

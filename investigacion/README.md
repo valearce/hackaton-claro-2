@@ -2,6 +2,7 @@
 
 | Tema | Material y aplicación |
 | --- | --- |
+| [Modelos de optimización para NBA](optimizacion/README.md) | Catálogo de 19 enfoques, 22 fuentes primarias, aplicación propuesta y experimentos prioritarios |
 | [Receptividad y horarios](receptividad-horarios.md) | Revisión de seis estudios, límites de la evidencia y diseño de un experimento de contacto |
 | [Catálogo de fuentes](fuentes.json) | Referencias, DOI, enlaces públicos y procedencia de las copias locales de lectura |
 | [Verificación matemática con Lean](verificacion-lean.md) | Propuesta para comprobar restricciones y certificados de optimalidad |

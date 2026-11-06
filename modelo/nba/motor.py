@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import linprog
 from scipy.sparse import coo_matrix
+from ..rutas import MODELO
 
-CONFIG = Path(__file__).resolve().parent / "config"
+CONFIG = MODELO / "config"
 OUTPUT_COLUMNS = ["id_cliente", "estado", "canal", "campana_1", "campana_2", "razon"]
 OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt,
        "<=": operator.le, ">": operator.gt, ">=": operator.ge}

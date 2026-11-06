@@ -5,13 +5,13 @@ Ejecuta los comandos desde la raíz. Mantén los datos en `datos/`, las fuentes 
 ## Comprobaciones
 
 ```powershell
-python -m unittest discover -s modelo/tests -v
+python -m modelo.probar
 python scripts/verificar_repositorio.py
 node --test herramientas/android/tests/android.test.mjs
 git diff --check
 ```
 
-Los tests Android utilizan ADB simulado: no requieren teléfono ni publican notificaciones. Las pruebas del modelo incluyen optimización frente a búsqueda exhaustiva en un caso pequeño, auditoría de asignaciones, preprocesamiento sin fuga de datos y una comparación integral pequeña de perfiles.
+Los tests Android utilizan ADB simulado: no requieren teléfono ni publican notificaciones. Las pruebas del modelo se ejecutan mediante el kernel GPU registrado, validan versiones y CUDA y guardan el informe en `modelo/resultados/pruebas-gpu/`. Incluyen optimización frente a búsqueda exhaustiva, auditoría de asignaciones, preprocesamiento sin fuga de datos, perfiles entrenados en CUDA y portabilidad CPU/GPU. Consulta [el entorno estándar](modelo/docs/entorno.md).
 
 Después de modificar rutas del mapa:
 

@@ -65,6 +65,7 @@ def main():
     parser.add_argument("--salida", type=Path, default=Path(__file__).parent / "resultados")
     parser.add_argument("--fecha", default=date.today().isoformat())
     parser.add_argument("--tarea", choices=("nba", "perfiles", "todo"), default="todo")
+    parser.add_argument("--dispositivo", choices=("cpu", "cuda"), help="Dispositivo del autoencoder; por defecto NBA_DEVICE o cpu")
     args = parser.parse_args()
     data = pd.read_csv(args.datos, keep_default_na=False)
     args.salida.mkdir(parents=True, exist_ok=True)
@@ -76,7 +77,7 @@ def main():
     if args.tarea in ("perfiles", "todo"):
         from .perfiles import run_profiles
         profile_config = json.loads((args.config / "perfiles.json").read_text(encoding="utf-8-sig"))
-        run_profiles(data, profile_config, args.salida / "perfiles", manifest["sha256_datos"])
+        run_profiles(data, profile_config, args.salida / "perfiles", manifest["sha256_datos"], args.dispositivo)
     write_json(args.salida / "ejecucion.json", manifest)
 
 

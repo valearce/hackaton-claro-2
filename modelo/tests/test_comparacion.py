@@ -10,8 +10,9 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from modelo.comparar import load_reference, run_comparison
-from modelo.perfiles import run_profiles
+from modelo.perfiles.comparacion import load_reference, run_comparison
+from modelo.perfiles import infer_profiles, run_profiles
+from modelo.entorno.dispositivo import select_device
 from modelo.tests.test_modelo import MODEL, clients
 
 
@@ -37,7 +38,8 @@ class ComparisonTests(unittest.TestCase):
             source = directory / "clientes.csv"
             data.to_csv(source, index=False)
             fingerprint = hashlib.sha256(source.read_bytes()).hexdigest()
-            run_profiles(data, profile_config, directory / "perfiles", fingerprint)
+            trained = run_profiles(data, profile_config, directory / "perfiles", fingerprint)
+            self.assertEqual(trained["dispositivo"], str(select_device()))
             original_preprocessing = (directory / "perfiles/preprocesamiento.json").read_bytes()
             report = run_comparison(data, comparison_config, directory / "perfiles", directory / "comparacion", source)
             self.assertEqual(report["datos_sha256"], fingerprint)
@@ -45,6 +47,8 @@ class ComparisonTests(unittest.TestCase):
             self.assertEqual(len(report["resultados"]), 4)
             self.assertEqual((directory / "perfiles/preprocesamiento.json").read_bytes(), original_preprocessing)
             profiles = pd.read_csv(directory / "perfiles/perfiles_clientes.csv")
+            portable = infer_profiles(data, directory / "perfiles", dispositivo="cpu")
+            np.testing.assert_allclose(portable.error_reconstruccion, profiles.error_reconstruccion, atol=1e-5, rtol=1e-5)
             errors = pd.read_csv(directory / "comparacion/errores_test.csv")
             self.assertEqual(errors.id_cliente.tolist(), profiles.loc[profiles.particion.eq("test"), "id_cliente"].tolist())
             for number, result in enumerate(report["resultados"], start=1):

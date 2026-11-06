@@ -1,4 +1,4 @@
-# Versiones verificadas en Python 3.11; torch CPU es suficiente.
+# Base científica verificada; el runtime CUDA se comprueba en config/entorno-pruebas.json.
 numpy==2.4.6
 pandas==3.0.5
 scipy==1.17.1

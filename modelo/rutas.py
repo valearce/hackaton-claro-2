@@ -2,5 +2,6 @@
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
+MODELO = RAIZ / "modelo"
 DATOS = RAIZ / "datos" / "clientes.csv"
 KIT_OFICIAL = RAIZ / "docs" / "reto" / "kit-oficial.zip"

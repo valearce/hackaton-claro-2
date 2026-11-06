@@ -4,11 +4,15 @@ El motor elige campañas y un canal por cliente, respeta las reglas y los cupos 
 
 ## Ejecutar
 
-Desde la raíz del repositorio, con Python 3.11:
+Desde la raíz del repositorio. Las pruebas estándar reutilizan el kernel GPU `wsl_rtx5080` de los notebooks:
 
 ```powershell
-python -m pip install -r modelo/requirements.txt
-python -m unittest discover -s modelo/tests -v
+python -m modelo.probar
+```
+
+El [contrato de entorno](docs/entorno.md) verifica versiones y CUDA y guarda evidencia de la ejecución. `requirements.txt` conserva las versiones científicas del proyecto; la variante CUDA del runtime se fija en `config/entorno-pruebas.json`. Para ejecutar los módulos con el Python seleccionado:
+
+```powershell
 python -m modelo.ejecutar --tarea todo --fecha 2026-11-05
 python -m modelo.comparar
 python -m modelo.exportar_evaluacion
@@ -16,7 +20,7 @@ python -m modelo.exportar_evaluacion
 
 `--tarea nba` ejecuta solo la asignación; `--tarea perfiles` entrena solo el autoencoder y PCA. `comparar` requiere los artefactos de perfiles. Las ejecuciones completas, pesos, perfiles por cliente y parrillas se guardan en `resultados/`, que está excluido de Git. `evaluacion/` conserva únicamente métricas, una tabla y un gráfico para revisar esta ejecución. No se incluyen notebooks.
 
-La ejecución usa CPU y cuatro hilos. Los programas no abren terminales ni servidores. La fecha es explícita para reproducir la vigencia de las campañas.
+La evaluación histórica de esta página usa CPU y cuatro hilos. Las pruebas estándar usan CUDA para el autoencoder y CPU para HiGHS/scikit-learn dentro del mismo entorno WSL. El entrenamiento admite `--dispositivo cuda` o `cpu`; la fecha es explícita para reproducir la vigencia de las campañas. Los programas no abren terminales ni servidores.
 
 ## Resultado NBA
 
@@ -34,7 +38,26 @@ La optimización mejora el valor esperado calculado en **698,4091 (+6,819 %)** r
 
 El PDF publica 10.241,5 y 70.443 productos. Nuestra baseline produce una pequeña diferencia y usa desempates deterministas por ID; no se afirma reproducción exacta de esa cifra publicada. Los resultados numéricos completos están en [evaluacion/nba.json](evaluacion/nba.json).
 
-`nba.py` construye el mejor conjunto factible de productos para cada combinación cliente/canal y resuelve la asignación global con `scipy.optimize.linprog`/HiGHS. El problema de capacidades tiene soluciones enteras; se comprueba la integralidad obtenida y no se redondean asignaciones fraccionarias silenciosamente. Un auditor por filas revisa las salidas contra los datos y las reglas antes de exportarlas.
+`nba/motor.py` construye el mejor conjunto factible de productos para cada combinación cliente/canal y resuelve la asignación global con `scipy.optimize.linprog`/HiGHS. El problema de capacidades tiene soluciones enteras; se comprueba la integralidad obtenida y no se redondean asignaciones fraccionarias silenciosamente. Un auditor por filas revisa las salidas contra los datos y las reglas antes de exportarlas.
+
+La [implementación exacta y comparación LP–flujo](docs/optimizador.md) enumera alternativas de forma independiente y produce certificados primal-dual enteros. Se ejecuta con `python -m modelo.benchmark_optimizador`. La certificación es en Python; la verificación mediante Lean sigue siendo una extensión propuesta.
+
+## Organización del módulo
+
+| Carpeta | Responsabilidad |
+| --- | --- |
+| `nba/` | Motor configurable y auditoría de reglas |
+| `perfiles/` | Preprocesamiento, autoencoder, inferencia y comparación PCA/GMM/Isomap |
+| `optimizacion/` | Problema exacto, LP, flujo, certificados y benchmark |
+| `entorno/` | Selección de dispositivo y ejecución de pruebas en WSL/GPU |
+| `config/` | Parámetros de negocio, experimentos y contrato de entorno |
+| `docs/` | Guías de entorno y optimización |
+| `tests/` | Pruebas del motor, perfiles, CUDA y certificados |
+| `kit_original/` | CSV oficiales sin modificar |
+| `evaluacion/` | Informes compactos revisados y versionables |
+| `resultados/` | Pesos, parrillas, certificados y logs locales, excluidos de Git |
+
+Los archivos pequeños de la raíz (`probar.py`, `comparar.py`, `certificado.py`, `benchmark_optimizador.py`) son entradas estables de los comandos existentes; su implementación está en las carpetas anteriores. `ejecutar.py` orquesta las corridas y `rutas.py` centraliza ubicaciones.
 
 ## Configuración
 

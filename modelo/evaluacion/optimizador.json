@@ -1,0 +1,806 @@
+{
+  "fecha_utc": "2026-11-06T04:34:34.420561+00:00",
+  "fecha_evaluacion": "2026-11-05",
+  "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
+  "config_sha256": "5f255c7f083d87d4e23997dc9ff7a5d9769030f68fdf402db79f7c08748cc60f",
+  "configuracion": {
+    "campanas": [
+      {
+        "id": "C-VCH",
+        "nombre": "Venta cruzada Hogar",
+        "producto": "VCH",
+        "objetivo": "Venta cruzada",
+        "columna_score": "score_venta_cruzada_hogar",
+        "valor_negocio": 1.0,
+        "canales_permitidos": [
+          "asesor",
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      },
+      {
+        "id": "C-TER",
+        "nombre": "Renovacion de terminal",
+        "producto": "TER",
+        "objetivo": "Terminales",
+        "columna_score": "score_terminales",
+        "valor_negocio": 0.8,
+        "canales_permitidos": [
+          "asesor",
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      },
+      {
+        "id": "C-OTT",
+        "nombre": "Upgrade OTT (Netflix, Amazon Prime, Win)",
+        "producto": "OTT",
+        "objetivo": "Upgrade",
+        "columna_score": "score_upgrade_ott",
+        "valor_negocio": 0.4,
+        "canales_permitidos": [
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      }
+    ],
+    "reglas": [
+      {
+        "id": "R01",
+        "control": "R01",
+        "nombre": "Sin venta a clientes en mora",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "en_mora",
+          "operador": "==",
+          "valor": 1
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R02",
+        "control": "R02",
+        "nombre": "Terminales solo con calificacion E, A o B",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-TER"
+          ]
+        },
+        "condicion": {
+          "atributo": "calificacion_riesgo",
+          "operador": "en",
+          "valor": [
+            "C",
+            "P"
+          ]
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R03",
+        "control": "R03",
+        "nombre": "Terminales solo con equipo de 18 meses o mas",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-TER"
+          ]
+        },
+        "condicion": {
+          "atributo": "edad_equipo_meses",
+          "operador": "<",
+          "valor": 18
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R04",
+        "control": "R04",
+        "nombre": "Venta cruzada Hogar solo a quien no tiene Hogar",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-VCH"
+          ]
+        },
+        "condicion": {
+          "atributo": "tiene_hogar",
+          "operador": "==",
+          "valor": 1
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R05",
+        "control": "R05",
+        "nombre": "Upgrade OTT solo si le falta alguna OTT",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-OTT"
+          ]
+        },
+        "condicion": {
+          "atributo": "cantidad_ott",
+          "operador": ">=",
+          "valor": 3
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R06",
+        "control": "R06",
+        "nombre": "No repetir un producto ya ofertado en el mes",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "productos_ofertados_mes",
+          "operador": "contiene",
+          "valor": "$producto"
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R07",
+        "control": "R07",
+        "nombre": "Sin venta a clientes con 3 o mas quejas",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "quejas_90d",
+          "operador": ">=",
+          "valor": 3
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R08",
+        "control": "R09",
+        "nombre": "WhatsApp requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "whatsapp"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_whatsapp",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R09",
+        "control": "R09",
+        "nombre": "Correo requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "correo"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_correo",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R10",
+        "control": "R09",
+        "nombre": "SMS requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "sms"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_sms",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R11",
+        "control": "R10",
+        "nombre": "Maximo 2 llamadas de asesor al mes",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "asesor"
+          ]
+        },
+        "condicion": {
+          "atributo": "contactos_asesor_mes",
+          "operador": ">=",
+          "valor": 2
+        },
+        "accion": "excluir",
+        "activa": true
+      }
+    ],
+    "parametros": {
+      "priorizacion": {
+        "modo": "ponderado",
+        "modos_disponibles": [
+          "ponderado",
+          "jerarquia_estricta"
+        ],
+        "jerarquia": [
+          "C-VCH",
+          "C-TER",
+          "C-OTT"
+        ],
+        "pesos": {
+          "score_producto": 0.6,
+          "valor_negocio": 0.2,
+          "jerarquia": 0.2
+        },
+        "umbral_score_producto": 0.35,
+        "desempate": [
+          "score_producto",
+          "valor_negocio"
+        ]
+      },
+      "canal": {
+        "criterio": "score_canal",
+        "criterios_disponibles": [
+          "score_canal",
+          "orden_preferencia"
+        ],
+        "orden_preferencia": [
+          "whatsapp",
+          "correo",
+          "sms",
+          "asesor"
+        ],
+        "umbral_score_canal": 0.25,
+        "capacidad_por_corrida": {
+          "asesor": 2500,
+          "whatsapp": 15000,
+          "correo": 30000,
+          "sms": 40000
+        },
+        "columnas_score": {
+          "asesor": "score_canal_asesor",
+          "whatsapp": "score_canal_whatsapp",
+          "correo": "score_canal_correo",
+          "sms": "score_canal_sms"
+        }
+      },
+      "politica_contacto": {
+        "canales_por_cliente": 1,
+        "max_contactos_semana": 3,
+        "max_productos_por_canal": {
+          "asesor": 1,
+          "whatsapp": 2,
+          "correo": 2,
+          "sms": 2
+        }
+      },
+      "optimizacion": {
+        "objetivo": "valor_esperado",
+        "limite_segundos": 180,
+        "tolerancia_entera": 1e-07
+      }
+    }
+  },
+  "entorno": {
+    "python": "3.11.16",
+    "ejecutable": "/home/juand/.venv_gpu/bin/python",
+    "plataforma": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "paquetes": {
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1",
+      "matplotlib": "3.11.1",
+      "threadpoolctl": "3.7.0",
+      "torch": "2.14.1"
+    },
+    "torch_runtime": "2.14.1+cu130",
+    "cuda_runtime": "13.0",
+    "gpu": "NVIDIA GeForce RTX 5080 Laptop GPU",
+    "capacidad_computo": [
+      12,
+      0
+    ],
+    "arquitecturas_pytorch": [
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90",
+      "sm_100",
+      "sm_120"
+    ],
+    "autograd_cuda": true,
+    "semilla": 42,
+    "hilos_cpu": 4,
+    "cublas_workspace_config": ":4096:8",
+    "ortools_graph_local": "9.15.6755",
+    "protobuf_instalado": "7.36.1"
+  },
+  "filas": 100000,
+  "escala_entera": 1000000000,
+  "preparar_modelo_independiente_seg": 1.9312370710000053,
+  "rss_pico_coordinador_mib": 1835.03125,
+  "normalizacion_codigo": "LF",
+  "codigo_sha256": {
+    "modelo/__init__.py": "5efa9fe8aa0fbd4dd9ab84ecaf10a93808d404b4623c1da3085f9a69d10ce6de",
+    "modelo/benchmark_optimizador.py": "e1fb0d2029352fb298f2b30229b978052fa6488ea3827fbdc4bb106747e1a79c",
+    "modelo/certificado.py": "bb10c7f7a217e4c464eb450671a31fa00d1c520ce73d036c0b724a28e3afc978",
+    "modelo/comparar.py": "ea8264919bb7d6b40e326c9e27a4c58b36a3840156582db6dc8b6deeec3e742e",
+    "modelo/ejecutar.py": "8f1ac9fddf45e0c7be1c7e55bf419e45a1918bb9d9dcbf7c55427639952ec35b",
+    "modelo/entorno/__init__.py": "a16e058bcb837a441eb476c60b4870ee6e306d85618e7a3d7c851becf6d067f3",
+    "modelo/entorno/dispositivo.py": "61161b1d5afa3c32400225caf722400ad6b7ad03d1bb7a1e0c1684c65a0daf63",
+    "modelo/entorno/pruebas.py": "272097c34b5f42faf9fc5ee2ae9c750af2707283d6119ff08f66317d0c7319bf",
+    "modelo/exportar_evaluacion.py": "6263aa54a0ed36b866db7f73c1c536635a8216a06e4f9006d5a58ef6ee46c643",
+    "modelo/importar_kit.py": "5a0b45b072a34a46fbb102caee78bb45afb1b40a53bd6340a81d0e2fcd23be78",
+    "modelo/nba/__init__.py": "dbb93d98be2e68f3723864f4130db623043cdbdde51c1450ed1eddeb2755527d",
+    "modelo/nba/motor.py": "0e588206fcdc2dfd4eb5d06f530df5f08ed9d358ec216e8b003c3754250ba8ab",
+    "modelo/optimizacion/__init__.py": "6c2645350065eb2f86d7255903d90e02e4eecd04a7e575f9a878bf7d28390bc6",
+    "modelo/optimizacion/benchmark.py": "0538b1d02a9a584c92fe250bb1e0aa038cd93dccc0234900ff89c86d8f9bc03c",
+    "modelo/optimizacion/certificado.py": "6c8fb6b53f673bf4d45e21d47dc6e27ca36a08149a65266871b3175ccdb1ff03",
+    "modelo/optimizacion/problema.py": "e1a5c6e2d1a0062c923fa1ed85beea818f9d12a095708691649d294d61535d04",
+    "modelo/optimizacion/solvers.py": "1587ddca343ceb3398937bb96f59cbfb1f625a29504c216272f210a7e4b2561d",
+    "modelo/perfiles/__init__.py": "dc13ae2f3e0fcf75b6b434bf9d160e7b41559897167f511e61f7d114c3c5f06d",
+    "modelo/perfiles/autoencoder.py": "f841e952c3d1b33af6ca64a949c346da4f86420e7ed213570f39fa440c95f46b",
+    "modelo/perfiles/comparacion.py": "f08fb778f331a7f4c7072e4ed228e45de47739e06710362f87732a89ed7c865d",
+    "modelo/probar.py": "832d7d30cc7fe0fd23aa257fa5d7aedf7b1884d2d1a90f8ac8da06d28a445c75",
+    "modelo/rutas.py": "dc0127742693476a1652e3d5c55db89ed8cfef0cdd21af630fb1dc62fd49c266",
+    "modelo/tests/__init__.py": "2de2ec92e0237d66d68ab07bccd653ee0297ef5576e6f4bfc52a1f576b13b4f6",
+    "modelo/tests/test_comparacion.py": "8ce7e271f716677082b815ba309c4d4674e0d6ccfe19e061efadb9a96acf9b1a",
+    "modelo/tests/test_gpu.py": "6ad2da4a083fb04ae4b18e7746506247c32a117cfff21c3678d2b3f2ee003de6",
+    "modelo/tests/test_modelo.py": "0de6fefbe832a313de8b5767c937d745a101565127b04bf70fe78f8ffe69759b",
+    "modelo/tests/test_optimizador_exacto.py": "cf891d5ef118c613e435b32a3155e950e6902d37a724b0501754ef25979fe461"
+  },
+  "contraste_mascaras_y_paquetes_motor_anterior": true,
+  "resultados": {
+    "lp": {
+      "valor_exacto": "10940.0024511",
+      "optimo_exacto": true,
+      "brecha_exacta": "0",
+      "violaciones": 0,
+      "repeticiones": 3,
+      "resolver_mediana_seg": 8.545844422000002,
+      "backend_mediana_seg": 8.694120505999997,
+      "certificar_mediana_seg": 0.7951539859999883,
+      "rss_pico_mediana_mib": 332.921875,
+      "clientes_con_accion": 60422,
+      "productos_asignados": 76841,
+      "indicador_jerarquia": 0.9983615239482307,
+      "certificado": {
+        "certificado_dual_valido": true,
+        "optimo_exacto": true,
+        "valor_numerador": 10940002451100,
+        "cota_numerador": 10940002451100,
+        "brecha_numerador": 0,
+        "denominador": 1000000000,
+        "valor_exacto": "10940.0024511",
+        "cota_exacta": "10940.0024511",
+        "brecha_exacta": "0",
+        "alternativas_verificadas": 400000,
+        "paquetes_factibles_enumerados": 209320,
+        "uso_canales": {
+          "asesor": 2500,
+          "whatsapp": 15000,
+          "correo": 18806,
+          "sms": 24116
+        },
+        "precios_canales_numerador": {
+          "asesor": 92409304,
+          "whatsapp": 65106944,
+          "correo": 0,
+          "sms": 0
+        },
+        "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+      },
+      "mediciones": [
+        {
+          "backend": "lp",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "lp_highs",
+            "denominador_costes": 1000000000,
+            "variables": 134466,
+            "hilos_solicitados": 4,
+            "estado": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+            "desviacion_entera": 0.0,
+            "iteraciones": 6901,
+            "avisos": [
+              "Unrecognized options detected: {'threads': 4}. These will be passed to HiGHS verbatim."
+            ],
+            "escala_objetivo": "valor esperado normalizado",
+            "tolerancia_dual": 1e-10,
+            "preparar_backend_seg": 0.01241942699999754,
+            "resolver_seg": 8.545844422000002,
+            "reconstruir_seg": 0.13585665699999794,
+            "total_backend_seg": 8.694120505999997
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.052799565000000825,
+          "certificar_seg": 0.7663758459999954,
+          "rss_pico_bytes": 349093888,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 9.960475978000005
+        },
+        {
+          "backend": "lp",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "lp_highs",
+            "denominador_costes": 1000000000,
+            "variables": 134466,
+            "hilos_solicitados": 4,
+            "estado": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+            "desviacion_entera": 0.0,
+            "iteraciones": 6901,
+            "avisos": [
+              "Unrecognized options detected: {'threads': 4}. These will be passed to HiGHS verbatim."
+            ],
+            "escala_objetivo": "valor esperado normalizado",
+            "tolerancia_dual": 1e-10,
+            "preparar_backend_seg": 0.010357836999993708,
+            "resolver_seg": 8.64430327600001,
+            "reconstruir_seg": 0.13686464599999226,
+            "total_backend_seg": 8.791525758999995
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.041772114000004024,
+          "certificar_seg": 0.7974824770000026,
+          "rss_pico_bytes": 349130752,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 10.102742391999996
+        },
+        {
+          "backend": "lp",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "lp_highs",
+            "denominador_costes": 1000000000,
+            "variables": 134466,
+            "hilos_solicitados": 4,
+            "estado": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+            "desviacion_entera": 0.0,
+            "iteraciones": 6901,
+            "avisos": [
+              "Unrecognized options detected: {'threads': 4}. These will be passed to HiGHS verbatim."
+            ],
+            "escala_objetivo": "valor esperado normalizado",
+            "tolerancia_dual": 1e-10,
+            "preparar_backend_seg": 0.010454316999997104,
+            "resolver_seg": 8.489812692000001,
+            "reconstruir_seg": 0.13022907200000589,
+            "total_backend_seg": 8.630496081000004
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.04374814899999535,
+          "certificar_seg": 0.7951539859999883,
+          "rss_pico_bytes": 348680192,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 9.965644946999987
+        }
+      ],
+      "estimacion_preparar_resolver_certificar_seg": 11.420511562999991
+    },
+    "flujo": {
+      "valor_exacto": "10940.0024511",
+      "optimo_exacto": true,
+      "brecha_exacta": "0",
+      "violaciones": 0,
+      "repeticiones": 3,
+      "resolver_mediana_seg": 0.16413590199999817,
+      "backend_mediana_seg": 0.3190686889999981,
+      "certificar_mediana_seg": 0.7946867440000034,
+      "rss_pico_mediana_mib": 220.734375,
+      "clientes_con_accion": 60422,
+      "productos_asignados": 76841,
+      "indicador_jerarquia": 0.9983615239482307,
+      "certificado": {
+        "certificado_dual_valido": true,
+        "optimo_exacto": true,
+        "valor_numerador": 10940002451100,
+        "cota_numerador": 10940002451100,
+        "brecha_numerador": 0,
+        "denominador": 1000000000,
+        "valor_exacto": "10940.0024511",
+        "cota_exacta": "10940.0024511",
+        "brecha_exacta": "0",
+        "alternativas_verificadas": 400000,
+        "paquetes_factibles_enumerados": 209320,
+        "uso_canales": {
+          "asesor": 2500,
+          "whatsapp": 15000,
+          "correo": 18806,
+          "sms": 24116
+        },
+        "precios_canales_numerador": {
+          "asesor": 92409304,
+          "whatsapp": 65106944,
+          "correo": 0,
+          "sms": 0
+        },
+        "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+      },
+      "mediciones": [
+        {
+          "backend": "flujo",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "flujo_ortools",
+            "ortools": "9.15.6755",
+            "estado": "OPTIMAL",
+            "nodos": 100006,
+            "arcos": 334470,
+            "divisor_costes": 2,
+            "preparar_backend_seg": 0.021502524999995387,
+            "resolver_seg": 0.16682052700000582,
+            "reconstruir_seg": 0.14175214399999447,
+            "total_backend_seg": 0.3300751959999957
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.04668015100000389,
+          "certificar_seg": 0.9042872420000023,
+          "rss_pico_bytes": 232165376,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 1.7911340650000014
+        },
+        {
+          "backend": "flujo",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "flujo_ortools",
+            "ortools": "9.15.6755",
+            "estado": "OPTIMAL",
+            "nodos": 100006,
+            "arcos": 334470,
+            "divisor_costes": 2,
+            "preparar_backend_seg": 0.018319228999999382,
+            "resolver_seg": 0.16413590199999817,
+            "reconstruir_seg": 0.13661355800000052,
+            "total_backend_seg": 0.3190686889999981
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.05039238400000556,
+          "certificar_seg": 0.7946867440000034,
+          "rss_pico_bytes": 231456768,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 1.6221978790000051
+        },
+        {
+          "backend": "flujo",
+          "python": "/home/juand/.venv_gpu/bin/python",
+          "solver": {
+            "backend": "flujo_ortools",
+            "ortools": "9.15.6755",
+            "estado": "OPTIMAL",
+            "nodos": 100006,
+            "arcos": 334470,
+            "divisor_costes": 2,
+            "preparar_backend_seg": 0.018244988999995826,
+            "resolver_seg": 0.1614986120000026,
+            "reconstruir_seg": 0.13431472400000644,
+            "total_backend_seg": 0.31405832500000486
+          },
+          "certificado": {
+            "certificado_dual_valido": true,
+            "optimo_exacto": true,
+            "valor_numerador": 10940002451100,
+            "cota_numerador": 10940002451100,
+            "brecha_numerador": 0,
+            "denominador": 1000000000,
+            "valor_exacto": "10940.0024511",
+            "cota_exacta": "10940.0024511",
+            "brecha_exacta": "0",
+            "alternativas_verificadas": 400000,
+            "paquetes_factibles_enumerados": 209320,
+            "uso_canales": {
+              "asesor": 2500,
+              "whatsapp": 15000,
+              "correo": 18806,
+              "sms": 24116
+            },
+            "precios_canales_numerador": {
+              "asesor": 92409304,
+              "whatsapp": 65106944,
+              "correo": 0,
+              "sms": 0
+            },
+            "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
+          },
+          "cargar_problema_seg": 0.04968811900000958,
+          "certificar_seg": 0.779352781,
+          "rss_pico_bytes": 231399424,
+          "metodo_memoria": "VmHWM en /proc/self/status del proceso ejecutado",
+          "proceso_seg": 1.6428768000000105
+        }
+      ],
+      "estimacion_preparar_resolver_certificar_seg": 3.0449925040000068
+    }
+  },
+  "comparacion": {
+    "diferencia_valor_exacto": "0",
+    "aceleracion_resolver_lp_sobre_flujo": 52.06566216086044,
+    "aceleracion_backend_lp_sobre_flujo": 27.24842896132641,
+    "aceleracion_con_preparacion_y_certificado": 3.7505877429903736
+  },
+  "segundos_experimento": 50.115542106999996,
+  "limites": [
+    "Certificado entero verificado por Python, no por Lean.",
+    "El RSS pico incluye carga del problema, solver, parrilla y certificado del proceso hijo.",
+    "Los tiempos de resolver excluyen la preparación común; también se reporta una estimación que la incluye.",
+    "La preparación exacta independiente se comparte; no se afirma aceleración completa mirando solo el solver.",
+    "La comparación admite valor_esperado en modo ponderado, un canal y hasta dos productos."
+  ],
+  "retencion": "Se conserva la primera parrilla y certificado por backend y las mediciones de todas las repeticiones. El problema intermedio se elimina al terminar."
+}
