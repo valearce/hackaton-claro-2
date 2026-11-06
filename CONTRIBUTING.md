@@ -4,6 +4,8 @@ Ejecuta los comandos desde la raíz. Mantén los datos en `datos/`, las fuentes 
 
 ## Comprobaciones
 
+Para cambios en la consola, ejecuta `npm ci` y `npm run build`, inicia `npm start` y verifica la simulación, la descarga completa del CSV y la recuperación de versiones. La [guía de la API](backend/README.md) describe su entorno y almacenamiento. Next.js valida TypeScript durante la compilación.
+
 ```powershell
 python -m modelo.ejecutar --fecha 2026-11-05
 python scripts/verificar_repositorio.py

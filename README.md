@@ -22,6 +22,8 @@ En la evaluación guardada de 100.000 clientes, el motor obtiene **10.940,002451
 
 ## Modelo
 
+Consola publicada: [claro-nba.vercel.app](https://claro-nba.vercel.app).
+
 La consola usa **Next.js** para la interfaz y compilación, y FastAPI para el motor Python. Desde la raíz, `npm ci` y `npm run build` generan el panel. `npm start` inicia la consola local en el puerto 3000 con su API en el 8001. La [guía de la consola](backend/README.md) incluye instalación, persistencia y despliegue conjunto en Vercel.
 
 Desde la raíz, con Python 3.11:
@@ -37,7 +39,7 @@ python -m modelo.ejecutar --tarea perfiles --fecha 2026-11-05
 python -m modelo.exportar_evaluacion
 ```
 
-El motor usa únicamente OR-Tools en el Python WSL del kernel registrado; consulta [modelo/docs/entorno.md](modelo/docs/entorno.md). La configuración editable está en [`modelo/config/`](modelo/config/). El CSV predeterminado es `datos/clientes.csv`; puede sustituirse con `--datos RUTA`. Los comandos no requieren cambiar al directorio `modelo`.
+La CLI usa únicamente OR-Tools en el Python WSL del kernel registrado; la consola utiliza el mismo motor en su entorno Python independiente. Consulta [modelo/docs/entorno.md](modelo/docs/entorno.md). La configuración editable está en [`modelo/config/`](modelo/config/). El CSV predeterminado es `datos/clientes.csv`; puede sustituirse con `--datos RUTA`. Los comandos no requieren cambiar al directorio `modelo`.
 
 ## Mapa y demostración
 
