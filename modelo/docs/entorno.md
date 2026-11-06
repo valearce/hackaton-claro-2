@@ -19,7 +19,9 @@ python -m pip install --no-deps --only-binary=:all: --no-cache-dir \
   --target .local/python/ortools-linux -r modelo/requirements-flujo.txt
 ```
 
-Se exige la versión **9.15.6755** y se comprueba que el módulo proceda de esa carpeta. Esta instalación está limitada al grafo de flujo; otras funcionalidades del paquete requieren revisar sus dependencias. Se conserva el `protobuf` de los notebooks.
+Se exige la versión **9.15.6755**. En Linux, si existe la carpeta local, se comprueba que el módulo proceda de ella. Esta instalación está limitada al grafo de flujo; otras funcionalidades del paquete requieren revisar sus dependencias. Se conserva el `protobuf` de los notebooks.
+
+La consola web usa un entorno independiente: Python 3.11 local en Windows y Python 3.12 en Vercel, con las dependencias de [backend/requirements.txt](../../backend/requirements.txt). En esos entornos se instala el paquete completo y el cargador utiliza la extensión nativa de la plataforma. Una carpeta con binarios Linux no se carga en Windows. Consulta la [guía de la API](../../backend/README.md) para iniciar Next.js y FastAPI.
 
 El motor requiere NumPy y pandas del entorno existente. `requirements.txt` conserva las bibliotecas científicas utilizadas por los perfiles. No se instalan dependencias en cada ejecución y no hay sustitución automática por LP.
 

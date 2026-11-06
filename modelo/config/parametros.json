@@ -2,7 +2,8 @@
   "priorizacion": {
     "modo": "ponderado",
     "modos_disponibles": [
-      "ponderado"
+      "ponderado",
+      "jerarquia_estricta"
     ],
     "jerarquia": [
       "C-VCH",

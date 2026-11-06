@@ -1,6 +1,7 @@
 """Problema NBA exacto: reglas y paquetes de uno/dos productos por canal."""
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 import hashlib
 import itertools
 import json
@@ -48,10 +49,21 @@ def integer(value, scale):
 
 
 def decimal_string(numerator, scale):
-    """Escalas potencia de diez, sin división flotante ni contexto Decimal."""
+    """Decimal exacto cuando es finito; fracción exacta en los demás casos."""
     digits = len(str(scale)) - 1
     if scale != 10 ** digits:
-        raise ValueError("La escala debe ser una potencia de diez")
+        value = Fraction(int(numerator), int(scale))
+        rest, twos, fives = value.denominator, 0, 0
+        while rest % 2 == 0:
+            rest //= 2
+            twos += 1
+        while rest % 5 == 0:
+            rest //= 5
+            fives += 1
+        if rest != 1:
+            return str(value)
+        decimal_scale = 10 ** max(twos, fives)
+        return decimal_string(value.numerator * (decimal_scale // value.denominator), decimal_scale)
     sign = "-" if numerator < 0 else ""
     whole, fraction = divmod(abs(int(numerator)), scale)
     suffix = str(fraction).zfill(digits).rstrip("0") if digits else ""
@@ -96,8 +108,23 @@ def condition_mask(frame, condition, campaign):
             return campaign["producto"]
         return number(value) if isinstance(value, (int, float, Decimal)) else value
 
-    expected = resolve(condition["valor"])
     op = condition["operador"]
+    expected = resolve(condition["valor"])
+    numeric = isinstance(actual.iloc[0], Decimal)
+    def typed(value):
+        if isinstance(value, list):
+            return [typed(item) for item in value]
+        if numeric:
+            try:
+                return number(value)
+            except ValueError as error:
+                raise ValueError(f"La columna {condition['atributo']} requiere un valor numérico") from error
+        if not isinstance(value, str):
+            raise ValueError(f"La columna {condition['atributo']} requiere un valor de texto")
+        return value
+    expected = typed(expected)
+    if not numeric and op in ("<", "<=", ">", ">="):
+        raise ValueError(f"La columna de texto {condition['atributo']} admite igualdad, listas o contiene")
     if op == "contiene":
         return actual.astype(str).map(lambda value: str(expected) in value.split("|")).to_numpy(bool)
     if op in ("en", "no_en"):
@@ -135,8 +162,13 @@ class ExactProblem:
         self.config_hash = canonical_hash(config)
         campaigns = config["campanas"]
         params = config["parametros"]
-        if params["optimizacion"]["objetivo"] != "valor_esperado" or params["priorizacion"]["modo"] != "ponderado":
-            raise ValueError("El motor NBA admite únicamente valor_esperado en modo ponderado")
+        self.objective = params["optimizacion"]["objetivo"]
+        self.strict = params["priorizacion"]["modo"] == "jerarquia_estricta"
+        if self.objective not in ("valor_esperado", "prioridad") or params["priorizacion"]["modo"] not in ("ponderado", "jerarquia_estricta"):
+            raise ValueError("Objetivo valor_esperado/prioridad y modo ponderado/jerarquia_estricta requeridos")
+        weights = {key: number(value) for key, value in params["priorizacion"]["pesos"].items()}
+        if set(weights) != {"score_producto", "valor_negocio", "jerarquia"} or any(not 0 <= value <= 1 for value in weights.values()) or sum(weights.values()) != 1:
+            raise ValueError("Los tres pesos deben estar entre 0 y 1 y sumar exactamente 1")
         if params["politica_contacto"]["canales_por_cliente"] != 1:
             raise ValueError("Se requiere un canal por cliente")
         maximum_week = params["politica_contacto"]["max_contactos_semana"]
@@ -155,6 +187,11 @@ class ExactProblem:
         self.k, self.m = len(self.channels), len(campaigns)
         if not self.k or not self.m or len(set(self.campaign_ids)) != self.m:
             raise ValueError("Se requieren campañas únicas y canales")
+        hierarchy = params["priorizacion"]["jerarquia"]
+        if len(set(hierarchy)) != len(hierarchy) or set(hierarchy) - set(self.campaign_ids):
+            raise ValueError("La jerarquía debe contener campañas conocidas sin duplicados")
+        hierarchy = hierarchy + [key for key in self.campaign_ids if key not in hierarchy]
+        ranks = np.array([hierarchy.index(key) for key in self.campaign_ids], dtype=np.int64)
         capacities = [params["canal"]["capacidad_por_corrida"][h] for h in self.channels]
         limits = [params["politica_contacto"]["max_productos_por_canal"][h] for h in self.channels]
         if any(type(c) is not int or not 0 <= c <= INT_LIMIT for c in capacities):
@@ -205,13 +242,24 @@ class ExactProblem:
         if product_digits + channel_digits + value_digits > 15:
             raise OverflowError("Precisión decimal excesiva para los backends int64; no se redondea")
         ps, cs, vs = 10 ** product_digits, 10 ** channel_digits, 10 ** value_digits
-        self.scale = ps * cs * vs
+        self.expected_scale = ps * cs * vs
+        hierarchy_divisor = max(self.m - 1, 1)
+        ws = 10 ** max(max(0, -value.as_tuple().exponent) for value in weights.values())
+        self.scale = self.expected_scale if self.objective == "valor_esperado" else ps * cs * vs * ws * hierarchy_divisor
         if self.scale * 2 * (self.n + self.k + 3) > INT_LIMIT:
             raise OverflowError("Escala/rango de costes inseguro para el solver de flujo")
         self.product_cost = np.column_stack([np.fromiter((integer(v, ps) * integer(values[j], vs)
             for v in frame[c["columna_score"]]), dtype=np.int64, count=self.n) for j, c in enumerate(campaigns)])
         self.channel_cost = np.column_stack([np.fromiter((integer(v, cs) for v in frame[params["canal"]["columnas_score"][h]]),
             dtype=np.int64, count=self.n) for h in self.channels])
+        self.objective_cost = self.product_cost
+        if self.objective == "prioridad":
+            self.objective_cost = np.column_stack([np.fromiter((
+                integer(v, ps) * integer(weights["score_producto"], ws) * vs * hierarchy_divisor
+                + integer(values[j], vs) * integer(weights["valor_negocio"], ws) * ps * hierarchy_divisor
+                + integer(weights["jerarquia"], ws) * (hierarchy_divisor - int(ranks[j])) * ps * vs
+                for v in frame[c["columna_score"]]), dtype=np.int64, count=self.n)
+                for j, c in enumerate(campaigns)])
         product_allowed = np.zeros((self.n, self.m), dtype=bool)
         for j, campaign in enumerate(campaigns):
             if set(campaign["canales_permitidos"]) - set(self.channels):
@@ -226,6 +274,8 @@ class ExactProblem:
                 if rule["tipo"] == "elegibilidad" and scope_matches(rule, campaign):
                     mask &= ~condition_mask(frame, rule["condicion"], campaign)
             product_allowed[:, j] = mask
+        self.required_top = np.argmin(np.where(product_allowed, ranks, self.m + 1), axis=1)
+        self.required_top[~product_allowed.any(axis=1)] = -1
         self.allowed = np.zeros((self.n, self.k, self.m), dtype=bool)
         self.weights = np.zeros((self.n, self.k), dtype=np.int64)
         self.picks = np.full((self.n, self.k, 2), -1, dtype=np.int32)
@@ -245,8 +295,10 @@ class ExactProblem:
                     if len({self.products[j] for j in combination}) != size:
                         continue
                     valid = self.allowed[:, h, combination].all(axis=1)
+                    if self.strict:
+                        valid &= np.isin(self.required_top, combination)
                     self.packages_examined += int(valid.sum())
-                    weight = self.product_cost[:, combination].sum(axis=1) * self.channel_cost[:, h]
+                    weight = self.objective_cost[:, combination].sum(axis=1) * self.channel_cost[:, h]
                     better = valid & ((weight > self.weights[:, h]) | ((weight == self.weights[:, h]) & (size > filled)))
                     self.weights[better, h] = weight[better]
                     self.picks[better, h, :] = -1
@@ -256,7 +308,7 @@ class ExactProblem:
             # Orden de presentación por aporte, sin alterar la elección óptima.
             both = self.picks[:, h, 1] >= 0
             rows = np.flatnonzero(both)
-            swap = self.product_cost[rows, self.picks[rows, h, 1]] > self.product_cost[rows, self.picks[rows, h, 0]]
+            swap = self.objective_cost[rows, self.picks[rows, h, 1]] > self.objective_cost[rows, self.picks[rows, h, 0]]
             rows = rows[swap]
             self.picks[rows, h] = self.picks[rows, h, ::-1]
 
@@ -269,8 +321,9 @@ class ExactProblem:
                 records.append((self.ids[i], "sin_accion", "", "", "", reason))
             else:
                 picks = [self.campaign_ids[j] for j in self.picks[i, h] if j >= 0]
+                expected = sum(int(self.product_cost[i, j]) for j in self.picks[i, h] if j >= 0) * int(self.channel_cost[i, h])
                 records.append((self.ids[i], "asignado", self.channels[h], picks[0], picks[1] if len(picks) > 1 else "",
-                    f"{description}; valor exacto {decimal_string(int(self.weights[i, h]), self.scale)}"))
+                    f"{description}; objetivo {self.objective}; valor esperado exacto {decimal_string(expected, self.expected_scale)}"))
         return pd.DataFrame(records, columns=OUTPUT)
 
     def evaluate_grid(self, grid):
@@ -297,9 +350,22 @@ class ExactProblem:
             js = [campaigns[value] for value in picks]
             if len({self.products[j] for j in js}) != len(js) or not self.allowed[i, h, js].all():
                 raise ValueError("Producto repetido o asignación no elegible")
-            total += sum(int(self.product_cost[i, j]) for j in js) * int(self.channel_cost[i, h])
+            if self.strict and self.required_top[i] not in js:
+                raise ValueError("La asignación incumple la jerarquía estricta")
+            total += sum(int(self.objective_cost[i, j]) for j in js) * int(self.channel_cost[i, h])
             selected[i] = h
             usage[h] += 1
         if np.any(usage > self.capacities):
             raise ValueError("Se supera la capacidad de un canal")
         return selected, total, usage
+
+    def expected_value(self, grid):
+        ids = {value: i for i, value in enumerate(self.ids)}
+        channels = {value: h for h, value in enumerate(self.channels)}
+        campaigns = {value: j for j, value in enumerate(self.campaign_ids)}
+        total = 0
+        for row in grid.to_dict("records"):
+            if row["estado"] == "asignado":
+                i, h = ids[row["id_cliente"]], channels[row["canal"]]
+                total += sum(int(self.product_cost[i, campaigns[row[key]]]) for key in ("campana_1", "campana_2") if row[key]) * int(self.channel_cost[i, h])
+        return decimal_string(total, self.expected_scale)

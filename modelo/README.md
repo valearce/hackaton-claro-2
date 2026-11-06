@@ -55,8 +55,8 @@ Se retiraron la suite de pruebas, los comparadores ejecutables, el LP y la basel
 
 ## Configuración y alcance
 
-`campanas.json`, `reglas.json` y `parametros.json` determinan las ofertas, exclusiones, umbrales y capacidades. El backend es `flujo_ortools`, el objetivo es `valor_esperado` y el modo admitido es `ponderado`. Se rechazan otros backends u objetivos. Las [reglas](../REGLAS.md) documentan las 45 variables y los controles R01–R16.
+`campanas.json`, `reglas.json` y `parametros.json` determinan las ofertas, exclusiones, umbrales y capacidades. El único backend es `flujo_ortools`. El objetivo predeterminado `valor_esperado` conserva el benchmark; `prioridad` aplica los pesos de modelo, valor y jerarquía a la decisión. El modo opcional `jerarquia_estricta` exige el producto de mayor jerarquía en cada contacto. La [guía del optimizador](docs/optimizador.md) detalla la fórmula y el certificado de cada objetivo. Las [reglas](../REGLAS.md) documentan las 45 variables y los controles R01–R16.
 
-El objetivo es `score_producto × score_canal × valor_negocio`, sumado sobre los productos asignados. Se admite un canal y hasta dos productos distintos por contacto; dos productos consumen un solo cupo de canal. Los pesos de prioridad no alteran ese objetivo. La jerarquía se informa como indicador.
+El objetivo predeterminado es `score_producto × score_canal × valor_negocio`, sumado sobre los productos asignados. Se admite un canal y hasta dos productos distintos por contacto; dos productos consumen un solo cupo de canal. Con `prioridad`, los pesos y el orden de la jerarquía cambian la función que maximiza el flujo. El panel informa por separado ese objetivo y el valor esperado comercial.
 
 Los perfiles guardados se pueden volver a entrenar de forma independiente con `python -m modelo.ejecutar --tarea perfiles --dispositivo cuda --fecha 2026-11-05`. No modifican los scores ni participan en la optimización NBA. Se conservan sus pesos locales; los notebooks no se incluyen.

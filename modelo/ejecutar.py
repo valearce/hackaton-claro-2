@@ -33,10 +33,10 @@ def run_nba(data, config, directory, day, datos_sha256=None):
         raise RuntimeError(f"Hay {audit['violaciones']} violaciones; no se exporta la parrilla")
     grid.to_csv(directory / "parrilla_optimo.csv", index=False, encoding="utf-8")
     save_certificate(directory / "certificado.json.gz", engine.certificate)
-    optimum = float(solver["certificado"]["valor_exacto"])
+    optimum = float(solver["certificado"]["valor_esperado_exacto"])
     reports = {
         "backend": "flujo_ortools", "fecha_utc": datetime.now(timezone.utc).isoformat(),
-        "optimo": {**audit, "valor_esperado_exacto": solver["certificado"]["valor_exacto"], "ejecucion": solver},
+        "optimo": {**audit, "valor_esperado_exacto": solver["certificado"]["valor_esperado_exacto"], "ejecucion": solver},
         "comparacion": {"referencia_publicada_pdf": 10241.5, "diferencia_valor": optimum - 10241.5,
                         "mejora_relativa": optimum / 10241.5 - 1},
         "fecha_evaluacion": day, "datos_sha256": engine.problem.data_hash, "configuracion": config,
@@ -46,7 +46,7 @@ def run_nba(data, config, directory, day, datos_sha256=None):
             for path in sorted(MODELO.rglob("*.py")) if "resultados" not in path.parts},
     }
     write_json(directory / "metricas.json", reports)
-    print(json.dumps({"backend": "flujo_ortools", "valor_exacto": solver["certificado"]["valor_exacto"],
+    print(json.dumps({"backend": "flujo_ortools", "valor_exacto": solver["certificado"]["valor_esperado_exacto"],
                       "brecha_exacta": solver["certificado"]["brecha_exacta"],
                       "violaciones": audit["violaciones"], "clientes": audit["clientes_con_accion"],
                       "resolver_seg": solver["resolver_seg"], "segundos_motor": solver["segundos"]}), flush=True)

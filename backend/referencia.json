@@ -1,0 +1,453 @@
+{
+  "fecha": "2026-11-05",
+  "datos_sha256": "8849edf05dbc2626cfecc5d23377157f9ecda46e85aeefbce70150241df1e8a0",
+  "configuracion": {
+    "campanas": [
+      {
+        "id": "C-VCH",
+        "nombre": "Venta cruzada Hogar",
+        "producto": "VCH",
+        "objetivo": "Venta cruzada",
+        "columna_score": "score_venta_cruzada_hogar",
+        "valor_negocio": 1.0,
+        "canales_permitidos": [
+          "asesor",
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      },
+      {
+        "id": "C-TER",
+        "nombre": "Renovacion de terminal",
+        "producto": "TER",
+        "objetivo": "Terminales",
+        "columna_score": "score_terminales",
+        "valor_negocio": 0.8,
+        "canales_permitidos": [
+          "asesor",
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      },
+      {
+        "id": "C-OTT",
+        "nombre": "Upgrade OTT (Netflix, Amazon Prime, Win)",
+        "producto": "OTT",
+        "objetivo": "Upgrade",
+        "columna_score": "score_upgrade_ott",
+        "valor_negocio": 0.4,
+        "canales_permitidos": [
+          "whatsapp",
+          "correo",
+          "sms"
+        ],
+        "vigencia_inicio": "2026-11-01",
+        "vigencia_fin": "2026-12-31",
+        "activa": true
+      }
+    ],
+    "reglas": [
+      {
+        "id": "R01",
+        "control": "R01",
+        "nombre": "Sin venta a clientes en mora",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "en_mora",
+          "operador": "==",
+          "valor": 1
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R02",
+        "control": "R02",
+        "nombre": "Terminales solo con calificacion E, A o B",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-TER"
+          ]
+        },
+        "condicion": {
+          "atributo": "calificacion_riesgo",
+          "operador": "en",
+          "valor": [
+            "C",
+            "P"
+          ]
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R03",
+        "control": "R03",
+        "nombre": "Terminales solo con equipo de 18 meses o mas",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-TER"
+          ]
+        },
+        "condicion": {
+          "atributo": "edad_equipo_meses",
+          "operador": "<",
+          "valor": 18
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R04",
+        "control": "R04",
+        "nombre": "Venta cruzada Hogar solo a quien no tiene Hogar",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-VCH"
+          ]
+        },
+        "condicion": {
+          "atributo": "tiene_hogar",
+          "operador": "==",
+          "valor": 1
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R05",
+        "control": "R05",
+        "nombre": "Upgrade OTT solo si le falta alguna OTT",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "campana",
+          "valores": [
+            "C-OTT"
+          ]
+        },
+        "condicion": {
+          "atributo": "cantidad_ott",
+          "operador": ">=",
+          "valor": 3
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R06",
+        "control": "R06",
+        "nombre": "No repetir un producto ya ofertado en el mes",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "productos_ofertados_mes",
+          "operador": "contiene",
+          "valor": "$producto"
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R07",
+        "control": "R07",
+        "nombre": "Sin venta a clientes con 3 o mas quejas",
+        "tipo": "elegibilidad",
+        "alcance": {
+          "nivel": "global",
+          "valores": []
+        },
+        "condicion": {
+          "atributo": "quejas_90d",
+          "operador": ">=",
+          "valor": 3
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R08",
+        "control": "R09",
+        "nombre": "WhatsApp requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "whatsapp"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_whatsapp",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R09",
+        "control": "R09",
+        "nombre": "Correo requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "correo"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_correo",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R10",
+        "control": "R09",
+        "nombre": "SMS requiere autorizacion",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "sms"
+          ]
+        },
+        "condicion": {
+          "atributo": "autoriza_sms",
+          "operador": "==",
+          "valor": 0
+        },
+        "accion": "excluir",
+        "activa": true
+      },
+      {
+        "id": "R11",
+        "control": "R10",
+        "nombre": "Maximo 2 llamadas de asesor al mes",
+        "tipo": "canal",
+        "alcance": {
+          "nivel": "canal",
+          "valores": [
+            "asesor"
+          ]
+        },
+        "condicion": {
+          "atributo": "contactos_asesor_mes",
+          "operador": ">=",
+          "valor": 2
+        },
+        "accion": "excluir",
+        "activa": true
+      }
+    ],
+    "parametros": {
+      "priorizacion": {
+        "modo": "ponderado",
+        "modos_disponibles": [
+          "ponderado",
+          "jerarquia_estricta"
+        ],
+        "jerarquia": [
+          "C-VCH",
+          "C-TER",
+          "C-OTT"
+        ],
+        "pesos": {
+          "score_producto": 0.6,
+          "valor_negocio": 0.2,
+          "jerarquia": 0.2
+        },
+        "umbral_score_producto": 0.35,
+        "desempate": [
+          "score_producto",
+          "valor_negocio"
+        ]
+      },
+      "canal": {
+        "criterio": "score_canal",
+        "criterios_disponibles": [
+          "score_canal",
+          "orden_preferencia"
+        ],
+        "orden_preferencia": [
+          "whatsapp",
+          "correo",
+          "sms",
+          "asesor"
+        ],
+        "umbral_score_canal": 0.25,
+        "capacidad_por_corrida": {
+          "asesor": 2500,
+          "whatsapp": 15000,
+          "correo": 30000,
+          "sms": 40000
+        },
+        "columnas_score": {
+          "asesor": "score_canal_asesor",
+          "whatsapp": "score_canal_whatsapp",
+          "correo": "score_canal_correo",
+          "sms": "score_canal_sms"
+        }
+      },
+      "politica_contacto": {
+        "canales_por_cliente": 1,
+        "max_contactos_semana": 3,
+        "max_productos_por_canal": {
+          "asesor": 1,
+          "whatsapp": 2,
+          "correo": 2,
+          "sms": 2
+        }
+      },
+      "optimizacion": {
+        "objetivo": "valor_esperado",
+        "limite_segundos": 180,
+        "tolerancia_entera": 1e-07
+      }
+    }
+  },
+  "referencia": {
+    "violaciones": 0,
+    "controles": {
+      "R01": 0,
+      "R02": 0,
+      "R03": 0,
+      "R04": 0,
+      "R05": 0,
+      "R06": 0,
+      "R07": 0,
+      "R08": 0,
+      "R09": 0,
+      "R10": 0,
+      "R11": 0,
+      "R12": 0,
+      "R13": 0,
+      "R14": 0,
+      "R15": 0,
+      "R16": 0
+    },
+    "muestras_errores": [],
+    "exceso_cupos": {},
+    "clientes": 100000,
+    "clientes_con_accion": 55393,
+    "productos_asignados": 70444,
+    "valor_esperado": 10241.59334503203,
+    "indicador_jerarquia": 0.9967685447619735,
+    "uso_canales": {
+      "asesor": 2500,
+      "whatsapp": 15000,
+      "correo": 16553,
+      "sms": 21340
+    },
+    "ejecucion": {
+      "metodo": "baseline",
+      "segundos": 0.3900617000181228
+    },
+    "casos_kit_en_corrida_completa": [
+      {
+        "id_cliente": "CL000018",
+        "coincide": true,
+        "esperado": {
+          "estado": "asignado",
+          "canal": "correo",
+          "campana_1": "C-TER",
+          "campana_2": "C-OTT"
+        },
+        "obtenido": {
+          "estado": "asignado",
+          "canal": "correo",
+          "campana_1": "C-TER",
+          "campana_2": "C-OTT"
+        }
+      },
+      {
+        "id_cliente": "CL000020",
+        "coincide": true,
+        "esperado": {
+          "estado": "sin_accion",
+          "canal": "",
+          "campana_1": "",
+          "campana_2": ""
+        },
+        "obtenido": {
+          "estado": "sin_accion",
+          "canal": "",
+          "campana_1": "",
+          "campana_2": ""
+        }
+      },
+      {
+        "id_cliente": "CL000039",
+        "coincide": true,
+        "esperado": {
+          "estado": "asignado",
+          "canal": "asesor",
+          "campana_1": "C-VCH",
+          "campana_2": ""
+        },
+        "obtenido": {
+          "estado": "asignado",
+          "canal": "asesor",
+          "campana_1": "C-VCH",
+          "campana_2": ""
+        }
+      },
+      {
+        "id_cliente": "CL000089",
+        "coincide": true,
+        "esperado": {
+          "estado": "sin_accion",
+          "canal": "",
+          "campana_1": "",
+          "campana_2": ""
+        },
+        "obtenido": {
+          "estado": "sin_accion",
+          "canal": "",
+          "campana_1": "",
+          "campana_2": ""
+        }
+      },
+      {
+        "id_cliente": "CL000741",
+        "coincide": true,
+        "esperado": {
+          "estado": "asignado",
+          "canal": "sms",
+          "campana_1": "C-TER",
+          "campana_2": "C-OTT"
+        },
+        "obtenido": {
+          "estado": "asignado",
+          "canal": "sms",
+          "campana_1": "C-TER",
+          "campana_2": "C-OTT"
+        }
+      }
+    ]
+  },
+  "procedencia_commit": "2d12528",
+  "tipo": "Referencia hist?rica; no se ejecuta en las simulaciones"
+}

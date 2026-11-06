@@ -83,6 +83,8 @@ def verify_certificate(problem, grid, certificate):
     if gap < 0:
         raise ValueError("La cota dual quedó por debajo del primal")
     return {"certificado_dual_valido": True, "optimo_exacto": gap == 0,
+            "objetivo": problem.objective, "valor_objetivo_exacto": decimal_string(primal, problem.scale),
+            "valor_esperado_exacto": problem.expected_value(grid),
             "valor_numerador": primal, "cota_numerador": bound, "brecha_numerador": gap,
             "denominador": problem.scale, "valor_exacto": decimal_string(primal, problem.scale),
             "cota_exacta": decimal_string(bound, problem.scale), "brecha_exacta": decimal_string(gap, problem.scale),

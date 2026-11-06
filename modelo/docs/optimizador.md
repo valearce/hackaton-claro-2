@@ -17,7 +17,21 @@ La [guía de entorno](entorno.md) describe el Python WSL y la dependencia local 
 
 `optimizacion/problema.py` lee los valores decimales originales sin convertir previamente los scores a flotantes. Evalúa campañas activas y vigentes, elegibilidad, autorizaciones, reglas por ámbito, umbrales, historial y límites de contacto. Enumera todos los paquetes de uno y dos productos distintos por cliente y canal y conserva el de mayor aporte exacto.
 
-Esta reducción es válida para el objetivo aditivo actual: no hay cupos globales por producto ni otras restricciones que acoplen el contenido de los paquetes. Los valores se convierten a enteros con una potencia de diez común; para el CSV inicial el denominador es 1.000.000.000. Se comprueban precisión y rangos int64. No se redondean scores para forzar una solución.
+Esta reducción es válida para los objetivos aditivos: no hay cupos globales por producto ni otras restricciones que acoplen el contenido de los paquetes. Los valores se convierten a enteros exactos; para el objetivo comercial del CSV inicial el denominador es 1.000.000.000. La prioridad incorpora además el denominador de la jerarquía normalizada. Se comprueban precisión y rangos int64. No se redondean scores para forzar una solución.
+
+## Prioridad configurable
+
+El objetivo predeterminado `valor_esperado` mantiene la métrica comercial del reto. El objetivo opcional `prioridad` maximiza, por producto y canal:
+
+```text
+score_canal × (peso_modelo × score_producto
+             + peso_valor × valor_negocio
+             + peso_jerarquia × (1 - rango / max(campanas - 1, 1)))
+```
+
+Los tres pesos son no negativos, suman exactamente uno y admiten hasta tres decimales en la consola. El rango empieza en cero; una campaña única recibe prioridad jerárquica uno. La jerarquía se calcula como fracción exacta, incluso con cuatro o más campañas. La interfaz distingue el objetivo ponderado del valor esperado comercial: optimizar prioridad puede reducir el valor comercial respecto de 10.940,0024511.
+
+`jerarquia_estricta` exige que todo contacto incluya la campaña elegible de mayor jerarquía, además de las demás reglas. Se rechazan y auditan asignaciones que incumplan esa condición. Ambos objetivos y modos usan el mismo solver de flujo. El certificado comprueba el objetivo seleccionado; el valor comercial se reconstruye y reporta por separado.
 
 ## Red de flujo
 
@@ -71,7 +85,7 @@ Los tiempos de solución excluyen la construcción común, certificación, arran
 
 ## Alcance
 
-- Solo backend `flujo_ortools`, objetivo `valor_esperado`, modo `ponderado`, un canal y hasta dos productos distintos.
+- Solo backend `flujo_ortools`, objetivos `valor_esperado` o `prioridad`, modos `ponderado` o `jerarquia_estricta`, un canal y hasta dos productos distintos.
 - Nuevos presupuestos globales, cupos por producto u horarios requieren ampliar el modelo y el verificador.
 - La optimalidad se acredita respecto de los datos y reglas configurados; no valida comercialmente los scores ni demuestra ventas futuras.
 - Puede haber parrillas distintas con exactamente el mismo valor óptimo.

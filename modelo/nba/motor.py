@@ -44,7 +44,7 @@ class Engine:
         stamp = time.perf_counter()
         certificate, proof = create_certificate(self.problem, grid)
         self.certificate = certificate
-        diagnostics = {**solver, "metodo": "optimo", "objetivo": "valor_esperado",
+        diagnostics = {**solver, "metodo": "optimo", "objetivo": self.problem.objective,
                        "preparar_modelo_seg": self.preparation_seconds,
                        "certificar_seg": time.perf_counter() - stamp,
                        "certificado": proof,
@@ -162,6 +162,8 @@ def validate_grid(data, grid, config, as_of=None):
             ):
                 eligible.append(campaign_id)
         hierarchy_hits += bool(eligible and eligible[0] in picked)
+        if params["priorizacion"]["modo"] == "jerarquia_estricta" and eligible and eligible[0] not in picked:
+            fail("PRIORIDAD", customer, "No incluye el producto exigido por la jerarquía")
         products = []
         for campaign_id in picked:
             if campaign_id not in campaigns:

@@ -15,17 +15,16 @@ LOCAL_ORTOOLS = RAIZ / ".local/python/ortools-linux"
 
 def load_flow_module():
     """Carga únicamente graph; no importa CP-SAT ni protobuf Python."""
-    if sys.platform != "linux":
-        raise RuntimeError("El backend de flujo instalado es Linux; usa el entorno WSL estándar")
-    if not LOCAL_ORTOOLS.is_dir():
-        raise RuntimeError("Falta el módulo local OR-Tools; consulta modelo/docs/optimizador.md")
-    sys.path.insert(0, str(LOCAL_ORTOOLS))
+    local = sys.platform == "linux" and LOCAL_ORTOOLS.is_dir()
+    if local:
+        sys.path.insert(0, str(LOCAL_ORTOOLS))
     try:
         ortools = importlib.import_module("ortools")
         module = importlib.import_module("ortools.graph.python.min_cost_flow")
     finally:
-        sys.path.remove(str(LOCAL_ORTOOLS))
-    if ortools.__version__ != ORTOOLS_VERSION or not Path(ortools.__file__).resolve().is_relative_to(LOCAL_ORTOOLS):
+        if local:
+            sys.path.remove(str(LOCAL_ORTOOLS))
+    if ortools.__version__ != ORTOOLS_VERSION or (local and not Path(ortools.__file__).resolve().is_relative_to(LOCAL_ORTOOLS)):
         raise RuntimeError("El módulo OR-Tools no coincide con la versión/ubicación fijada")
     return module
 

@@ -1,5 +1,10 @@
 /.local/
 /tmp/
+/.vercel/
+/backend/modelo/
+/backend/datos/
+/web/.next/
+*.tsbuildinfo
 
 # Entornos y archivos de trabajo de Python.
 .venv/

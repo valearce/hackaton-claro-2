@@ -22,6 +22,8 @@ En la evaluación guardada de 100.000 clientes, el motor obtiene **10.940,002451
 
 ## Modelo
 
+La consola usa **Next.js** para la interfaz y compilación, y FastAPI para el motor Python. Desde la raíz, `npm ci` y `npm run build` generan el panel. `npm start` inicia la consola local en el puerto 3000 con su API en el 8001. La [guía de la consola](backend/README.md) incluye instalación, persistencia y despliegue conjunto en Vercel.
+
 Desde la raíz, con Python 3.11:
 
 ```powershell

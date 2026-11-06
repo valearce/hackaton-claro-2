@@ -1,6 +1,6 @@
 {
   "backend": "flujo_ortools",
-  "fecha_utc": "2026-11-06T05:00:14.521349+00:00",
+  "fecha_utc": "2026-11-06T06:14:18.625935+00:00",
   "optimo": {
     "violaciones": 0,
     "controles": {
@@ -42,17 +42,20 @@
       "nodos": 100006,
       "arcos": 334470,
       "divisor_costes": 2,
-      "preparar_backend_seg": 0.012366717000006133,
-      "resolver_seg": 0.16537748400000396,
-      "reconstruir_seg": 0.15328872099999558,
-      "total_backend_seg": 0.33103292200000567,
+      "preparar_backend_seg": 0.01120158300000007,
+      "resolver_seg": 0.15633228699999968,
+      "reconstruir_seg": 0.17550383100000033,
+      "total_backend_seg": 0.3430377010000001,
       "metodo": "optimo",
       "objetivo": "valor_esperado",
-      "preparar_modelo_seg": 1.6447479309999977,
-      "certificar_seg": 1.0151292439999935,
+      "preparar_modelo_seg": 1.6059996370000005,
+      "certificar_seg": 1.0306101180000002,
       "certificado": {
         "certificado_dual_valido": true,
         "optimo_exacto": true,
+        "objetivo": "valor_esperado",
+        "valor_objetivo_exacto": "10940.0024511",
+        "valor_esperado_exacto": "10940.0024511",
         "valor_numerador": 10940002451100,
         "cota_numerador": 10940002451100,
         "brecha_numerador": 0,
@@ -76,7 +79,7 @@
         },
         "limite": "Verificación entera en Python del modelo configurado. No es una prueba comprobada por Lean."
       },
-      "segundos": 3.193954178999988
+      "segundos": 3.610657446000001
     }
   },
   "comparacion": {
@@ -351,7 +354,8 @@
       "priorizacion": {
         "modo": "ponderado",
         "modos_disponibles": [
-          "ponderado"
+          "ponderado",
+          "jerarquia_estricta"
         ],
         "jerarquia": [
           "C-VCH",
@@ -415,18 +419,18 @@
   "codigo_sha256": {
     "modelo/__init__.py": "5efa9fe8aa0fbd4dd9ab84ecaf10a93808d404b4623c1da3085f9a69d10ce6de",
     "modelo/certificado.py": "bb10c7f7a217e4c464eb450671a31fa00d1c520ce73d036c0b724a28e3afc978",
-    "modelo/ejecutar.py": "386373645fe60279ecaec1a698c8df1101d4c997d11e0bdab1e90bb0a4b86b1a",
+    "modelo/ejecutar.py": "c7f896e02e68b1c705077835c441d481aaf136442daa9fae4d1ad077d65045d3",
     "modelo/entorno/__init__.py": "a16e058bcb837a441eb476c60b4870ee6e306d85618e7a3d7c851becf6d067f3",
     "modelo/entorno/dispositivo.py": "61161b1d5afa3c32400225caf722400ad6b7ad03d1bb7a1e0c1684c65a0daf63",
     "modelo/entorno/kernel.py": "001302101bd200775ce1aeff4604d4c41e9491ef0bb8ec40f3c65b9e9976ce17",
     "modelo/exportar_evaluacion.py": "f0f7507a33f7498c2c4c478c06d1aecef70208dd56d0f2c5915ecf43e94eedb6",
-    "modelo/importar_kit.py": "eb3c7adb3d902881698de5582804b0a436cb5d5ab77447c1fdccfc4549f211cd",
+    "modelo/importar_kit.py": "4c4ebbb89e1a5632cd7c729b06cf65bf86c6289ff965c67dd3446b4541a9e37c",
     "modelo/nba/__init__.py": "70f7a339385230ae9f4bbb7a221baf4c0540f17295c1f14a6e8b6e0c0ec067ba",
-    "modelo/nba/motor.py": "0076c76191fa0866bcc20a87cb75bb9ac4f0c0cd614d4bbaecce9614251c6429",
+    "modelo/nba/motor.py": "ac27a12a6925985222754b0dbcf336a48740f4c98ee205a23b421309d339f060",
     "modelo/optimizacion/__init__.py": "edec7e2da12c5f627ecbeb6947be6aa42334e6e2372dda598a0fbc95a10c65ce",
-    "modelo/optimizacion/certificado.py": "6c8fb6b53f673bf4d45e21d47dc6e27ca36a08149a65266871b3175ccdb1ff03",
-    "modelo/optimizacion/problema.py": "a8097dd91b79f219433c598ed1b9f023487b856710f96b5c406b8ad247bf8110",
-    "modelo/optimizacion/solvers.py": "4b90fa4b6bb9216691bab4b13a598e46e537b249003cc305672f3dc726b06fae",
+    "modelo/optimizacion/certificado.py": "8837e1a6778ecb2f50d8d26d057d595a1f9e6f0d54ca3f84b5e1f86237f19a8f",
+    "modelo/optimizacion/problema.py": "300c3712f3c36f79a3bf90a41f4251e5eda099bcdf9b7706c4444ecb462a6b7b",
+    "modelo/optimizacion/solvers.py": "d59221aacf35a34096e9a14a3e55496d384bd1721c7bf02b99a769882f878405",
     "modelo/perfiles/__init__.py": "dc13ae2f3e0fcf75b6b434bf9d160e7b41559897167f511e61f7d114c3c5f06d",
     "modelo/perfiles/autoencoder.py": "f841e952c3d1b33af6ca64a949c346da4f86420e7ed213570f39fa440c95f46b",
     "modelo/rutas.py": "dc0127742693476a1652e3d5c55db89ed8cfef0cdd21af630fb1dc62fd49c266"
